@@ -1,0 +1,217 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main {
+  flex-grow: 1;
+}
+
+/* Story Section */
+.storySection {
+  padding: 120px 0;
+  background-color: var(--background-secondary);
+  position: relative;
+  overflow: hidden;
+}
+
+.storyContainer {
+  display: flex;
+  align-items: center;
+  gap: 80px;
+}
+
+/* Image collage */
+.storyImageWrapper {
+  flex: 1.1;
+  position: relative;
+}
+
+.imageGrid {
+  display: flex;
+  gap: 20px;
+  position: relative;
+  z-index: 2;
+}
+
+.mainImageCol {
+  flex: 2;
+}
+
+.storyImg1 {
+  border-radius: 4px;
+  object-fit: cover;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-slow);
+}
+
+.subImageCol {
+  flex: 1;
+  align-self: flex-end;
+  margin-bottom: -40px;
+}
+
+.storyImg2 {
+  border-radius: 4px;
+  object-fit: cover;
+  box-shadow: var(--shadow-lg);
+  transition: transform var(--transition-slow);
+  border: 4px solid var(--background-secondary);
+}
+
+.storyImageWrapper:hover .storyImg1 {
+  transform: translateY(-4px);
+}
+
+.storyImageWrapper:hover .storyImg2 {
+  transform: translateY(-8px) scale(1.02);
+}
+
+.shadowCaster {
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  width: 140px;
+  height: 140px;
+  border-left: 2px solid var(--accent);
+  border-top: 2px solid var(--accent);
+  opacity: 0.5;
+  z-index: 1;
+}
+
+/* Text Content */
+.storyContent {
+  flex: 1;
+  max-width: 540px;
+}
+
+.storyTagline {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.storyTitle {
+  font-size: 44px;
+  font-weight: 300;
+  line-height: 1.2;
+  color: var(--primary);
+  margin-bottom: 24px;
+}
+
+.storyDivider {
+  width: 50px;
+  height: 1.5px;
+  background-color: var(--accent);
+  margin-bottom: 32px;
+}
+
+.storyParagraph {
+  font-size: 15px;
+  color: var(--foreground-secondary);
+  line-height: 1.7;
+  font-weight: 300;
+  margin-bottom: 40px;
+}
+
+/* Points List */
+.storyPoints {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.point {
+  display: flex;
+  gap: 20px;
+}
+
+.pointNumber {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--accent);
+  line-height: 1;
+  padding-top: 4px;
+}
+
+.pointText h3 {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.pointText p {
+  font-size: 13px;
+  color: var(--foreground-secondary);
+  line-height: 1.5;
+  font-weight: 300;
+}
+
+/* Responsiveness */
+@media (max-width: 1024px) {
+  .storyTitle {
+    font-size: 36px;
+  }
+  
+  .storyContainer {
+    gap: 40px;
+  }
+}
+
+@media (max-width: 900px) {
+  .storySection {
+    padding: 80px 0 120px 0;
+  }
+  
+  .storyContainer {
+    flex-direction: column;
+    gap: 80px;
+  }
+  
+  .storyImageWrapper {
+    width: 100%;
+    max-width: 500px;
+  }
+  
+  .subImageCol {
+    margin-bottom: -30px;
+  }
+  
+  .storyContent {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .storyTitle {
+    font-size: 32px;
+  }
+  
+  .imageGrid {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .subImageCol {
+    margin-bottom: 0;
+    align-self: flex-start;
+    width: 100%;
+  }
+  
+  .storyImg1, .storyImg2 {
+    width: 100%;
+    height: auto;
+  }
+  
+  .shadowCaster {
+    display: none;
+  }
+}

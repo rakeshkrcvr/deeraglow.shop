@@ -1,0 +1,146 @@
+.footer {
+  background-color: var(--primary);
+  color: var(--background-secondary);
+  padding: 80px 0 0 0;
+  border-top: 1px solid rgba(250, 248, 245, 0.05);
+}
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 40px;
+  padding-bottom: 60px;
+}
+
+.brandCol {
+  flex: 2;
+  min-width: 280px;
+  max-width: 380px;
+}
+
+.logo {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
+}
+
+.logoText {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  color: var(--background);
+  line-height: 1.1;
+}
+
+.logoSub {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  margin-top: 4px;
+}
+
+.bio {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(250, 248, 245, 0.7);
+  font-weight: 300;
+  margin-bottom: 24px;
+}
+
+.socials {
+  display: flex;
+  gap: 12px;
+}
+
+.socialLink {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(250, 248, 245, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(250, 248, 245, 0.7);
+  transition: all var(--transition-fast);
+}
+
+.socialLink:hover {
+  color: var(--primary);
+  background-color: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+/* Links Columns */
+.linksCol {
+  flex: 1;
+  min-width: 150px;
+}
+
+.linksCol h3 {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+.linksCol ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.linksCol a {
+  font-size: 14px;
+  color: rgba(250, 248, 245, 0.7);
+  font-weight: 300;
+}
+
+.linksCol a:hover {
+  color: var(--background);
+  padding-left: 4px;
+}
+
+/* Footer Bottom */
+.footerBottom {
+  border-top: 1px solid rgba(250, 248, 245, 0.05);
+  padding: 30px 0;
+  background-color: rgba(0, 0, 0, 0.1);
+  font-size: 13px;
+  color: rgba(250, 248, 245, 0.5);
+  font-weight: 300;
+}
+
+.bottomContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.handcrafted {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(250, 248, 245, 0.7);
+}
+
+/* Responsiveness */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    gap: 32px;
+  }
+  
+  .brandCol {
+    max-width: 100%;
+    margin-bottom: 16px;
+  }
+}

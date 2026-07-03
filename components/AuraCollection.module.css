@@ -1,0 +1,299 @@
+.section {
+  padding: 100px 0;
+  background-color: #0b1a11; /* Deepest emerald/forest green matching user screenshot */
+  color: #FAF8F5;
+  position: relative;
+  overflow: hidden;
+}
+
+.section::before {
+  content: '';
+  position: absolute;
+  top: 20%;
+  left: 10%;
+  width: 350px;
+  height: 350px;
+  background-color: rgba(28, 179, 119, 0.08); /* Glow matching screenshot green badge */
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+}
+
+.sectionHeader {
+  text-align: center;
+  max-width: 650px;
+  margin: 0 auto 60px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.subtitle {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  color: var(--accent);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.title {
+  font-size: 42px;
+  font-weight: 300;
+  color: #FAF8F5;
+  margin-bottom: 20px;
+}
+
+.titleLine {
+  width: 60px;
+  height: 1.5px;
+  background-color: var(--accent);
+  margin-bottom: 24px;
+}
+
+.leadText {
+  font-size: 15px;
+  color: rgba(250, 248, 245, 0.7);
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+/* Grid Layout */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+
+/* Glassmorphic Card */
+.glassCard {
+  background: rgba(25, 48, 36, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(250, 248, 245, 0.09);
+  border-radius: 20px; /* Rounded corners as in user screenshot */
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: all var(--transition-normal);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+}
+
+.glassCard:hover {
+  transform: translateY(-8px);
+  border-color: rgba(28, 179, 119, 0.35); /* Glow border on hover */
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35), 0 0 20px rgba(28, 179, 119, 0.1);
+}
+
+/* Floating Indicator/Badge */
+.indicator {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: #1cb377; /* Mint green indicator badge */
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  box-shadow: 0 0 10px rgba(28, 179, 119, 0.4);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* Image Container */
+.imageContainer {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.image {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  transition: transform var(--transition-slow);
+}
+
+.glassCard:hover .image {
+  transform: scale(1.03);
+}
+
+/* Info Section */
+.info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.features {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.productName {
+  font-family: var(--font-sans);
+  font-size: 19px;
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: rgba(250, 248, 245, 0.7);
+  margin-bottom: 20px;
+}
+
+.stars {
+  color: var(--accent);
+  font-size: 14px;
+}
+
+.reviews {
+  color: rgba(250, 248, 245, 0.45);
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background-color: rgba(250, 248, 245, 0.08);
+  margin-bottom: 20px;
+  margin-top: auto;
+}
+
+/* Card Bottom Price and Button */
+.cardBottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.actionButtons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.textAddBtn {
+  background-color: transparent;
+  color: rgba(250, 248, 245, 0.9);
+  border: 1px solid rgba(250, 248, 245, 0.2);
+  border-radius: 20px;
+  padding: 8px 14px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all var(--transition-fast);
+}
+
+.textAddBtn:hover {
+  background-color: rgba(250, 248, 245, 0.08);
+  border-color: rgba(250, 248, 245, 0.4);
+}
+
+.buyNowBtn {
+  background-color: var(--accent);
+  color: #0b1a11;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all var(--transition-fast);
+}
+
+.buyNowBtn:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.price {
+  font-size: 20px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.addBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  color: #0b1a11;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  font-size: 16px;
+}
+
+.addBtn:hover {
+  background-color: #1cb377;
+  color: #ffffff;
+  transform: scale(1.05);
+}
+
+.adding {
+  background-color: #1cb377 !important;
+  color: #ffffff !important;
+  cursor: not-allowed;
+  transform: scale(1.05);
+}
+
+/* Responsiveness */
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 60px 0;
+  }
+  
+  .title {
+    font-size: 32px;
+  }
+}
+
+.imageLink {
+  display: block;
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .glassCard {
+    padding: 20px;
+  }
+}

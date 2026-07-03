@@ -1,0 +1,148 @@
+.collectionsSection {
+  background-color: var(--primary);
+  color: var(--background-secondary);
+  padding: 80px 0;
+  border-top: 1px solid rgba(250, 248, 245, 0.1);
+  overflow: hidden;
+}
+
+.collectionsContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 32px;
+}
+
+.collectionCard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  transition: transform var(--transition-normal);
+}
+
+.imageContainer {
+  width: 100%;
+  max-width: 320px;
+  height: 240px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  margin-bottom: 24px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  background-color: rgba(250, 248, 245, 0.05);
+}
+
+.image {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  transition: transform var(--transition-slow);
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(27, 59, 43, 0) 50%, rgba(27, 59, 43, 0.4) 100%);
+  pointer-events: none;
+}
+
+.collectionCard:hover .image {
+  transform: scale(1.05);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.title {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: var(--background);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.features {
+  font-size: 12px;
+  color: rgba(250, 248, 245, 0.7);
+  letter-spacing: 0.05em;
+  margin-bottom: 20px;
+  max-width: 260px;
+  line-height: 1.5;
+}
+
+.ctaLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+  transition: gap var(--transition-fast), color var(--transition-fast);
+}
+
+.ctaLink svg {
+  transition: transform var(--transition-fast);
+}
+
+.ctaLink:hover {
+  color: var(--background);
+  gap: 12px;
+}
+
+.ctaLink:hover svg {
+  transform: translateX(4px);
+}
+
+/* Vertical Divider for desktop screens */
+.divider {
+  position: absolute;
+  right: -16px;
+  top: 10%;
+  height: 80%;
+  width: 1px;
+  background-color: rgba(250, 248, 245, 0.1);
+}
+
+/* Responsiveness */
+@media (max-width: 900px) {
+  .collectionsContainer {
+    flex-direction: column;
+    gap: 60px;
+  }
+  
+  .divider {
+    display: none;
+  }
+  
+  .collectionCard {
+    width: 100%;
+    padding-bottom: 40px;
+    border-bottom: 1px solid rgba(250, 248, 245, 0.1);
+  }
+  
+  .collectionCard:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  
+  .imageContainer {
+    max-width: 100%;
+    height: 280px;
+  }
+}

@@ -1,0 +1,131 @@
+"use client";
+
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Product } from '@/lib/products';
+
+export interface CartItem {
+  product: Product;
+  quantity: number;
+  selectedFragrance: string;
+}
+
+interface CartContextType {
+  cartItems: CartItem[];
+  cartCount: number;
+  cartSubtotal: number;
+  addToCart: (product?: Product, quantity?: number, selectedFragrance?: string) => void;
+  removeFromCart: (productId: number, selectedFragrance: string) => void;
+  updateQuantity: (productId: number, selectedFragrance: string, quantity: number) => void;
+  clearCart: () => void;
+  isCartOpen: boolean;
+  setIsCartOpen: (isOpen: boolean) => void;
+}
+
+const CartContext = createContext<CartContextType | undefined>(undefined);
+
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
+
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    const savedItems = localStorage.getItem('deeksha_cart_items');
+    if (savedItems) {
+      try {
+        setCartItems(JSON.parse(savedItems));
+      } catch (e) {
+        console.error("Failed to parse cart items:", e);
+      }
+    }
+  }, []);
+
+  const saveCartItems = (items: CartItem[]) => {
+    setCartItems(items);
+    localStorage.setItem('deeksha_cart_items', JSON.stringify(items));
+    localStorage.setItem('deeksha_cart_count', items.reduce((acc, item) => acc + item.quantity, 0).toString());
+  };
+
+  const addToCart = (product?: Product, quantity: number = 1, selectedFragrance: string = 'Vanilla') => {
+    let targetProduct = product;
+    if (!targetProduct) {
+      targetProduct = {
+        id: 1,
+        name: "Sandalwood Sacred Ritual",
+        slug: "sandalwood-sacred-ritual",
+        collection: "Scented Candles",
+        price: 899,
+        rating: 4.9,
+        reviews_count: 124,
+        description: "A deep, grounding aroma featuring raw Indian Mysore sandalwood, incense smoke, and dried jasmine blossoms.",
+        image_url: "/images/hero_candle.png",
+        features: "Sandalwood • Incense • Jasmine"
+      };
+    }
+
+    const newItems = [...cartItems];
+    const existingIndex = newItems.findIndex(
+      item => item.product.id === targetProduct!.id && item.selectedFragrance === selectedFragrance
+    );
+
+    if (existingIndex > -1) {
+      newItems[existingIndex].quantity += quantity;
+    } else {
+      newItems.push({ product: targetProduct, quantity, selectedFragrance });
+    }
+
+    saveCartItems(newItems);
+    setIsCartOpen(true);
+  };
+
+  const removeFromCart = (productId: number, selectedFragrance: string) => {
+    const newItems = cartItems.filter(
+      item => !(item.product.id === productId && item.selectedFragrance === selectedFragrance)
+    );
+    saveCartItems(newItems);
+  };
+
+  const updateQuantity = (productId: number, selectedFragrance: string, quantity: number) => {
+    if (quantity < 1) {
+      removeFromCart(productId, selectedFragrance);
+      return;
+    }
+    const newItems = cartItems.map(item => {
+      if (item.product.id === productId && item.selectedFragrance === selectedFragrance) {
+        return { ...item, quantity };
+      }
+      return item;
+    });
+    saveCartItems(newItems);
+  };
+
+  const clearCart = () => {
+    saveCartItems([]);
+  };
+
+  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const cartSubtotal = cartItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+
+  return (
+    <CartContext.Provider value={{ 
+      cartItems, 
+      cartCount, 
+      cartSubtotal, 
+      addToCart, 
+      removeFromCart, 
+      updateQuantity, 
+      clearCart, 
+      isCartOpen, 
+      setIsCartOpen 
+    }}>
+      {children}
+    </CartContext.Provider>
+  );
+}
+
+export function useCart() {
+  const context = useContext(CartContext);
+  if (context === undefined) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
+}
