@@ -203,36 +203,28 @@ export default function Header() {
       ? 'Add 1 more product to unlock Buy 2 Get 2 Free!'
       : 'Add 2 products to unlock Buy 2 Get 2 Free!';
   const progressPercent = Math.min((cartCount / 2) * 100, 100);
-  const eligibleFreeGiftUnits = Math.floor(cartCount / 2) * 2;
+  const eligibleFreeGiftUnits = Math.floor(cartCount / 4) * 2;
 
   // Cart summary calculations
-  let freeGiftValue = 0;
-  let remainingEligibleFreeGiftUnits = eligibleFreeGiftUnits;
-  
-  cartItems.forEach(item => {
-    const itemFreeGiftUnits = Math.min(item.quantity, remainingEligibleFreeGiftUnits);
-    freeGiftValue += item.product.price * itemFreeGiftUnits;
-    remainingEligibleFreeGiftUnits -= itemFreeGiftUnits;
+  const cartItemKey = (productId: number, selectedFragrance: string) => `${productId}-${selectedFragrance}`;
+  const freeGiftValuesByItem = new Map<string, number>();
+  const discountCandidates = cartItems
+    .flatMap(item => Array.from({ length: item.quantity }, () => item))
+    .sort((a, b) => a.product.price - b.product.price)
+    .slice(0, eligibleFreeGiftUnits);
+
+  discountCandidates.forEach(item => {
+    const key = cartItemKey(item.product.id, item.selectedFragrance);
+    freeGiftValuesByItem.set(key, (freeGiftValuesByItem.get(key) || 0) + item.product.price);
   });
 
-  const estimatedTotal = cartSubtotal;
-  const offerCompareTotal = estimatedTotal + freeGiftValue;
-  const totalSaved = freeGiftValue;
+  const totalSaved = Array.from(freeGiftValuesByItem.values()).reduce((acc, value) => acc + value, 0);
+  const estimatedTotal = Math.max(cartSubtotal - totalSaved, 0);
+  const offerCompareTotal = cartSubtotal;
   const savePercent = offerCompareTotal > 0 ? Math.round((totalSaved / offerCompareTotal) * 100) : 0;
 
   const getItemFreeGiftValue = (productId: number, selectedFragrance: string) => {
-    if (!isBuy2Get2Unlocked) return 0;
-
-    let remainingUnits = eligibleFreeGiftUnits;
-    for (const item of cartItems) {
-      const itemGiftUnits = Math.min(item.quantity, remainingUnits);
-      if (item.product.id === productId && item.selectedFragrance === selectedFragrance) {
-        return item.product.price * itemGiftUnits;
-      }
-      remainingUnits -= itemGiftUnits;
-    }
-
-    return 0;
+    return freeGiftValuesByItem.get(cartItemKey(productId, selectedFragrance)) || 0;
   };
 
   const cartProductIds = new Set(cartItems.map(item => item.product.id));
@@ -462,7 +454,9 @@ export default function Header() {
                   <div className={styles.itemsScrollContainer}>
                     {cartItems.map((item) => {
                       const itemBasePrice = item.product.price;
+                      const itemSubtotal = itemBasePrice * item.quantity;
                       const itemGiftValue = getItemFreeGiftValue(item.product.id, item.selectedFragrance);
+                      const itemEstimatedTotal = itemSubtotal - itemGiftValue;
                       
                       return (
                         <div key={`${item.product.id}-${item.selectedFragrance}`} className={styles.cartItem}>
@@ -475,7 +469,7 @@ export default function Header() {
                             <div className={styles.itemRowAlignTop}>
                               <h3 className={styles.itemTitle}>{item.product.name}</h3>
                               <div className={styles.itemFinalPrice}>
-                                ₹ {(itemBasePrice * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                ₹ {itemEstimatedTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               </div>
                             </div>
                             
@@ -484,7 +478,7 @@ export default function Header() {
                               <span className={styles.itemMeta}>Fragrance: {item.selectedFragrance}</span>
                               {itemGiftValue > 0 && (
                                 <div className={styles.itemComparePrice}>
-                                  ₹ {(itemBasePrice * item.quantity + itemGiftValue).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  ₹ {itemSubtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </div>
                               )}
                             </div>
