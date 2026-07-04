@@ -6,6 +6,27 @@ import { useCart } from '@/context/CartContext';
 import { Product } from '@/lib/products';
 import styles from './Header.module.css';
 
+type RazorpayResponse = { razorpay_payment_id: string };
+type RazorpayOptions = {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  image: string;
+  handler: (response: RazorpayResponse) => void;
+  prefill: { name: string; email: string; contact: string };
+  notes: { address: string };
+  theme: { color: string };
+  modal: { ondismiss: () => void };
+};
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: RazorpayOptions) => { open: () => void };
+  }
+}
+
 export default function Header() {
   const { cartItems, cartCount, cartSubtotal, isCartOpen, setIsCartOpen, clearCart, addToCart, updateQuantity } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -94,10 +115,6 @@ export default function Header() {
     fetchCrossSellProducts();
   }, []);
 
-  React.useEffect(() => {
-    setSlideIndex(0);
-  }, [cartCount, crossSellProducts.length]);
-
   const normalizeAssetUrl = (url: string) => {
     if (!url) return '';
 
@@ -157,7 +174,7 @@ export default function Header() {
         name: "Deeksha Candles",
         description: `Order Payment for ${cartCount} items`,
         image: "/images/hero_candle.png",
-        handler: function (response: any) {
+        handler: function (response: RazorpayResponse) {
           setIsProcessingCheckout(false);
           setCheckoutSuccess(true);
           saveOrderToDb(response.razorpay_payment_id);
@@ -180,7 +197,11 @@ export default function Header() {
         }
       };
 
-      const rzp = new (window as any).Razorpay(options);
+      if (!window.Razorpay) {
+        throw new Error('Razorpay checkout script is not loaded yet.');
+      }
+
+      const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (err) {
       console.error("Razorpay trigger error:", err);
@@ -230,7 +251,8 @@ export default function Header() {
   const cartProductIds = new Set(cartItems.map(item => item.product.id));
   const availableCrossSells = crossSellProducts.filter(product => !cartProductIds.has(product.id));
   const crossSellPages = Math.max(1, Math.ceil(availableCrossSells.length / 3));
-  const displayedCrossSells = availableCrossSells.slice(slideIndex * 3, slideIndex * 3 + 3);
+  const boundedSlideIndex = Math.min(slideIndex, crossSellPages - 1);
+  const displayedCrossSells = availableCrossSells.slice(boundedSlideIndex * 3, boundedSlideIndex * 3 + 3);
 
   return (
     <>
@@ -328,7 +350,7 @@ export default function Header() {
                 <Link href="/category/anniversary" onClick={() => setMobileMenuOpen(false)}>Anniversary</Link>
                 <Link href="/category/housewarming" onClick={() => setMobileMenuOpen(false)}>Housewarming</Link>
                 <Link href="/category/diwali" onClick={() => setMobileMenuOpen(false)}>Diwali</Link>
-                <Link href="/category/valentines" onClick={() => setMobileMenuOpen(false)}>Valentine's</Link>
+                <Link href="/category/valentines" onClick={() => setMobileMenuOpen(false)}>Valentine&apos;s</Link>
               </div>
             </div>
 

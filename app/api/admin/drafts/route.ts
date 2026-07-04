@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
+import { getErrorMessage } from '@/lib/errors';
+
+type CountRow = { count: string };
+type DraftRow = { id: number; customer: string; total_price: string; items_count: string };
 
 export async function GET() {
   try {
@@ -17,7 +21,7 @@ export async function GET() {
     `;
 
     // Seed if empty
-    const checkCount = await sql`SELECT COUNT(*) FROM drafts` as any;
+    const checkCount = await sql`SELECT COUNT(*) FROM drafts` as unknown as CountRow[];
     const count = parseInt(checkCount[0].count, 10);
 
     if (count === 0) {
@@ -33,9 +37,9 @@ export async function GET() {
 
     const drafts = await sql`SELECT * FROM drafts ORDER BY id DESC`;
     return NextResponse.json(drafts);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in drafts GET:', error);
-    return NextResponse.json({ error: error.message || 'Database error' }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }
 
@@ -58,9 +62,9 @@ export async function POST(request: Request) {
     `;
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating draft:', error);
-    return NextResponse.json({ error: error.message || 'Database error' }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }
 
@@ -75,7 +79,7 @@ export async function PUT(request: Request) {
     }
 
     // Retrieve draft details
-    const draftRes = await sql`SELECT * FROM drafts WHERE id = ${parseInt(id, 10)}` as any;
+    const draftRes = await sql`SELECT * FROM drafts WHERE id = ${parseInt(id, 10)}` as unknown as DraftRow[];
     if (draftRes.length === 0) {
       return NextResponse.json({ error: 'Draft not found' }, { status: 404 });
     }
@@ -95,9 +99,9 @@ export async function PUT(request: Request) {
     `;
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error completing draft:', error);
-    return NextResponse.json({ error: error.message || 'Database error' }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }
 export const dynamic = 'force-dynamic';

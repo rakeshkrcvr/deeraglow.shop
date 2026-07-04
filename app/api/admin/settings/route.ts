@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
+import { getErrorMessage } from '@/lib/errors';
 
 export async function GET() {
   try {
@@ -39,9 +40,9 @@ export async function GET() {
     };
 
     return NextResponse.json({ ...defaults, ...settings });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching settings:', error);
-    return NextResponse.json({ error: error.message || 'Database error' }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }
 
@@ -69,8 +70,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error saving settings:', error);
-    return NextResponse.json({ error: error.message || 'Database error' }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }

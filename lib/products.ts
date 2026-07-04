@@ -1,5 +1,7 @@
 import { sql } from './db';
 
+type DatabaseError = Error & { code?: string };
+
 export interface Product {
   id: number;
   name: string;
@@ -56,7 +58,7 @@ export async function getProducts(): Promise<Product[]> {
     // 2. Safely run schema migrations
     try {
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS slug VARCHAR(255) UNIQUE`;
-    } catch (e) {}
+    } catch {}
 
     const migrations = ['tagline', 'fragrances', 'dimensions', 'weight', 'burn_hours', 'acc_burn_time', 'acc_ingredients', 'acc_instructions', 'acc_shipping', 'images'];
     for (const m of migrations) {
@@ -262,11 +264,12 @@ export async function getProducts(): Promise<Product[]> {
             VALUES (${prod.name}, ${prod.slug}, ${prod.collection}, ${prod.price}, ${prod.rating}, ${prod.reviews_count}, ${prod.description}, ${prod.image_url}, ${prod.features})
           `;
           needsRequery = true;
-        } catch (e: any) {
-          if (e.code === '23505') {
+        } catch (e: unknown) {
+          const error = e as DatabaseError;
+          if (error.code === '23505') {
             console.log(`Seeding: Product ${prod.name} already inserted by concurrent worker.`);
           } else {
-            console.error(`Seeding failed for ${prod.name}:`, e);
+            console.error(`Seeding failed for ${prod.name}:`, error);
           }
         }
       } else if (dbProdByName && !dbProdByName.slug) {
@@ -276,9 +279,10 @@ export async function getProducts(): Promise<Product[]> {
             UPDATE products SET slug = ${prod.slug} WHERE id = ${dbProdByName.id}
           `;
           needsRequery = true;
-        } catch (e: any) {
-          if (e.code !== '23505') {
-            console.error(e);
+        } catch (e: unknown) {
+          const error = e as DatabaseError;
+          if (error.code !== '23505') {
+            console.error(error);
           }
         }
       }

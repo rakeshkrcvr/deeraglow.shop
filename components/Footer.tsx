@@ -132,8 +132,8 @@ export default function Footer() {
             <li><Link href="/category/housewarming">Housewarming Gifts</Link></li>
             <li><Link href="/category/diwali">Diwali Collection</Link></li>
             <li><Link href="/category/christmas">Christmas Collection</Link></li>
-            <li><Link href="/category/valentines">Valentine's Day</Link></li>
-            <li><Link href="/category/mothers-day">Mother's Day</Link></li>
+            <li><Link href="/category/valentines">Valentine&apos;s Day</Link></li>
+            <li><Link href="/category/mothers-day">Mother&apos;s Day</Link></li>
           </ul>
         </div>
 

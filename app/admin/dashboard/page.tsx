@@ -103,7 +103,10 @@ interface MediaFile {
 }
 
 export default function AdminDashboard() {
-  const [authorized, setAuthorized] = useState(false);
+  const [authorized] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('deeksha_admin_logged_in') === 'true';
+  });
   const [activeTab, setActiveTab] = useState<'orders' | 'drafts' | 'abandoned' | 'products' | 'collections' | 'files' | 'discounts' | 'customers' | 'growth' | 'content' | 'analytics' | 'settings'>('orders');
   
   // Collapsible Dropdown States
@@ -438,7 +441,6 @@ export default function AdminDashboard() {
     if (!isLoggedIn) {
       router.push('/admin');
     } else {
-      setAuthorized(true);
       fetchProducts();
       fetchOrders();
       fetchDrafts();
@@ -3186,7 +3188,7 @@ export default function AdminDashboard() {
                       </div>
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Ingredients & How It's Made</label>
+                        <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Ingredients & How It&apos;s Made</label>
                         <textarea 
                           value={accIngredients} onChange={(e) => setAccIngredients(e.target.value)} required rows={2} placeholder="Ingredients..."
                           style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'none' }}

@@ -34,7 +34,7 @@ export default function ContactPage() {
             fontWeight: '300'
           }}>
             <p style={{ textAlign: 'center', marginBottom: '40px', fontSize: '16px' }}>
-              Have questions about our collections, scent ingredients, or wholesale partnerships? Send us a message and we'll reply within 24 hours.
+              Have questions about our collections, scent ingredients, or wholesale partnerships? Send us a message and we&apos;ll reply within 24 hours.
             </p>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginBottom: '40px' }}>

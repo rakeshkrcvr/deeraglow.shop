@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
+import { getErrorMessage } from '@/lib/errors';
+
+type CountRow = { count: string };
+type CollectionNameRow = { name: string };
 
 export async function GET() {
   try {
@@ -14,7 +18,7 @@ export async function GET() {
     `;
 
     // Check count - if less than 35, let's clear and seed all 40 requested categories!
-    const checkCount = await sql`SELECT COUNT(*) FROM collections` as any;
+    const checkCount = await sql`SELECT COUNT(*) FROM collections` as unknown as CountRow[];
     const count = parseInt(checkCount[0].count, 10);
 
     if (count < 35) {
@@ -84,9 +88,9 @@ export async function GET() {
 
     const collections = await sql`SELECT * FROM collections ORDER BY id ASC`;
     return NextResponse.json(collections);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in collections GET:', error);
-    return NextResponse.json({ error: error.message || 'Database error' }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }
 
@@ -114,9 +118,9 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in collections POST:', error);
-    return NextResponse.json({ error: error.message || 'Database error' }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }
 
@@ -132,7 +136,7 @@ export async function PUT(request: Request) {
     const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
     // 1. Fetch old collection name
-    const oldCollRes = await sql`SELECT name FROM collections WHERE id = ${parseInt(id, 10)}` as any;
+    const oldCollRes = await sql`SELECT name FROM collections WHERE id = ${parseInt(id, 10)}` as unknown as CollectionNameRow[];
     if (oldCollRes.length > 0) {
       const oldName = oldCollRes[0].name;
 
@@ -155,9 +159,9 @@ export async function PUT(request: Request) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in collections PUT:', error);
-    return NextResponse.json({ error: error.message || 'Database error' }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }
 
@@ -172,9 +176,9 @@ export async function DELETE(request: Request) {
 
     await sql`DELETE FROM collections WHERE id = ${parseInt(id, 10)}`;
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in collections DELETE:', error);
-    return NextResponse.json({ error: error.message || 'Database error' }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }
 export const dynamic = 'force-dynamic';

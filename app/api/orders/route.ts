@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
+import { getErrorMessage } from '@/lib/errors';
+
+type CountRow = { count: string };
+type MaxOrderRow = { max: number | null };
 
 export async function GET() {
   try {
@@ -20,7 +24,7 @@ export async function GET() {
     `;
 
     // 2. Check if table is empty
-    const checkCount = await sql`SELECT COUNT(*) FROM orders` as any;
+    const checkCount = await sql`SELECT COUNT(*) FROM orders` as unknown as CountRow[];
     const count = parseInt(checkCount[0].count, 10);
 
     if (count === 0) {
@@ -55,9 +59,9 @@ export async function GET() {
 
     const orders = await sql`SELECT * FROM orders ORDER BY id DESC`;
     return NextResponse.json(orders);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in orders API:', error);
-    return NextResponse.json({ error: error.message || 'Database error' }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }
 
@@ -67,7 +71,7 @@ export async function POST(request: Request) {
     const { customer, total_price, payment_status, items_count, channel } = body;
     
     // Generate order number
-    const rows = await sql`SELECT MAX(id) FROM orders` as any;
+    const rows = await sql`SELECT MAX(id) FROM orders` as unknown as MaxOrderRow[];
     const maxId = rows[0]?.max || 1034;
     const nextNumber = maxId + 1;
     const order_number = `#${nextNumber}`;
@@ -98,9 +102,9 @@ export async function POST(request: Request) {
     `;
 
     return NextResponse.json({ success: true, order_number });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating order:', error);
-    return NextResponse.json({ error: error.message || 'Database error' }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }
 

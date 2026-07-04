@@ -47,7 +47,7 @@ export default function AboutPage() {
               color: '#ffffff',
               fontSize: '18px'
             }}>
-              "We believe that a candle is not just a source of light, but a silent companion to your daily rituals, meditation, and quiet reflections."
+              &quot;We believe that a candle is not just a source of light, but a silent companion to your daily rituals, meditation, and quiet reflections.&quot;
             </blockquote>
 
             <h3 style={{ color: '#ffffff', fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: '400', marginTop: '40px', marginBottom: '16px' }}>

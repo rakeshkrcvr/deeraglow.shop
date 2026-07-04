@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
+import { getErrorMessage } from '@/lib/errors';
+
+type CountRow = { count: string };
 
 export async function GET() {
   try {
@@ -18,7 +21,7 @@ export async function GET() {
     `;
 
     // Seed if empty
-    const checkCount = await sql`SELECT COUNT(*) FROM abandoned_checkouts` as any;
+    const checkCount = await sql`SELECT COUNT(*) FROM abandoned_checkouts` as unknown as CountRow[];
     const count = parseInt(checkCount[0].count, 10);
 
     if (count === 0) {
@@ -38,9 +41,9 @@ export async function GET() {
 
     const checkouts = await sql`SELECT * FROM abandoned_checkouts ORDER BY id DESC`;
     return NextResponse.json(checkouts);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in checkouts GET:', error);
-    return NextResponse.json({ error: error.message || 'Database error' }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }
 
@@ -61,9 +64,9 @@ export async function PUT(request: Request) {
     `;
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating checkout:', error);
-    return NextResponse.json({ error: error.message || 'Database error' }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }
 export const dynamic = 'force-dynamic';

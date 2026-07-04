@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
@@ -20,26 +20,28 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
   const [adding, setAdding] = useState<boolean>(false);
   const [addingRelatedId, setAddingRelatedId] = useState<number | null>(null);
   
-  const fragrancesList = (product.fragrances || 'Oud, Jasmin, Rose, Vanilla')
-    .split(',')
-    .map(f => f.trim())
-    .filter(Boolean);
+  const fragrancesList = useMemo(() => (
+    (product.fragrances || 'Oud, Jasmin, Rose, Vanilla')
+      .split(',')
+      .map(f => f.trim())
+      .filter(Boolean)
+  ), [product.fragrances]);
 
-  const [selectedFragrance, setSelectedFragrance] = useState<string>('');
-
-  useEffect(() => {
-    if (fragrancesList.length > 0) {
-      setSelectedFragrance(fragrancesList[0]);
-    }
-  }, [product.fragrances]);
+  const [selectedFragranceByProduct, setSelectedFragranceByProduct] = useState<Record<number, string>>({});
+  const selectedFragrance = selectedFragranceByProduct[product.id] || fragrancesList[0] || 'Vanilla';
 
   const [sliderPosition, setSliderPosition] = useState<number>(50);
-  const [activeImgIndex, setActiveImgIndex] = useState<number>(0);
-
-  // Reset index to 0 when product changes
-  useEffect(() => {
-    setActiveImgIndex(0);
-  }, [product.id]);
+  const [activeImgIndexByProduct, setActiveImgIndexByProduct] = useState<Record<number, number>>({});
+  const activeImgIndex = activeImgIndexByProduct[product.id] || 0;
+  const setActiveImgIndex = (nextIndex: number | ((prev: number) => number)) => {
+    setActiveImgIndexByProduct(prev => {
+      const currentIndex = prev[product.id] || 0;
+      return {
+        ...prev,
+        [product.id]: typeof nextIndex === 'function' ? nextIndex(currentIndex) : nextIndex
+      };
+    });
+  };
   
   // Accordion Toggle States
   const [openAccordion, setOpenAccordion] = useState<string | null>('ingredients');
@@ -212,7 +214,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             {/* Alert Banner */}
             <div className={styles.alertBanner}>
               <span className={styles.redDot}></span>
-              <p>Only <strong>7 jars</strong> left in this batch — next pour isn't for 3 weeks.</p>
+              <p>Only <strong>7 jars</strong> left in this batch — next pour isn&apos;t for 3 weeks.</p>
             </div>
 
             {/* Scent Notes Section */}
@@ -257,7 +259,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
                     key={frag}
                     type="button"
                     className={`${styles.fragranceCard} ${selectedFragrance === frag ? styles.fragranceSelected : ''}`}
-                    onClick={() => setSelectedFragrance(frag)}
+                    onClick={() => setSelectedFragranceByProduct(prev => ({ ...prev, [product.id]: frag }))}
                   >
                     {frag}
                   </button>
@@ -348,7 +350,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
               {/* Ingredients Accordion */}
               <div className={styles.accordionCard}>
                 <button className={styles.accordionHeader} onClick={() => toggleAccordion('ingredients')}>
-                  <span>Ingredients & how it's made</span>
+                  <span>Ingredients & how it&apos;s made</span>
                   <span className={styles.accordionIcon}>{openAccordion === 'ingredients' ? '−' : '+'}</span>
                 </button>
                 {openAccordion === 'ingredients' && (
@@ -412,7 +414,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             <div className={styles.storyCard}>
               <span className={styles.storyCardIcon}>✋</span>
               <h3>Poured in batches of 40</h3>
-              <p>We don't mass produce. Each batch is hand-poured, cured for two days, and hand-labelled before it ever reaches your cart.</p>
+              <p>We don&apos;t mass produce. Each batch is hand-poured, cured for two days, and hand-labelled before it ever reaches your cart.</p>
             </div>
             <div className={styles.storyCard}>
               <span className={styles.storyCardIcon}>♻️</span>
@@ -432,7 +434,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
           <div className={styles.storyGrid}>
             <div className={styles.storyCard}>
               <div className={styles.cardStars}>★★★★★</div>
-              <p className={styles.feedbackText}>"The whole flat smells like a five-star hotel lobby now. Burns evenly, no tunnelling even on the first light."</p>
+              <p className={styles.feedbackText}>&quot;The whole flat smells like a five-star hotel lobby now. Burns evenly, no tunnelling even on the first light.&quot;</p>
               <div className={styles.buyerInfo}>
                 <div className={styles.buyerAvatar}>P</div>
                 <div className={styles.buyerDetails}>
@@ -443,7 +445,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             </div>
             <div className={styles.storyCard}>
               <div className={styles.cardStars}>★★★★★</div>
-              <p className={styles.feedbackText}>"Bought this as a gift and ended up ordering three more for myself. The wooden wick crackle is so calming."</p>
+              <p className={styles.feedbackText}>&quot;Bought this as a gift and ended up ordering three more for myself. The wooden wick crackle is so calming.&quot;</p>
               <div className={styles.buyerInfo}>
                 <div className={styles.buyerAvatar}>A</div>
                 <div className={styles.buyerDetails}>
@@ -454,7 +456,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             </div>
             <div className={styles.storyCard}>
               <div className={styles.cardStars}>★★★★★</div>
-              <p className={styles.feedbackText}>"Genuinely lasted the full 40 hours they promised. Rare for a candle at this price. Reordering already."</p>
+              <p className={styles.feedbackText}>&quot;Genuinely lasted the full 40 hours they promised. Rare for a candle at this price. Reordering already.&quot;</p>
               <div className={styles.buyerInfo}>
                 <div className={styles.buyerAvatar}>S</div>
                 <div className={styles.buyerDetails}>
