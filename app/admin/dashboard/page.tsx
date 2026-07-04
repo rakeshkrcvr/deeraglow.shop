@@ -441,14 +441,16 @@ export default function AdminDashboard() {
     if (!isLoggedIn) {
       router.push('/admin');
     } else {
-      fetchProducts();
-      fetchOrders();
-      fetchDrafts();
-      fetchAbandoned();
-      fetchDiscounts();
-      fetchCollections();
-      fetchMediaFiles();
-      fetchSettings();
+      void Promise.resolve().then(() => {
+        fetchProducts();
+        fetchOrders();
+        fetchDrafts();
+        fetchAbandoned();
+        fetchDiscounts();
+        fetchCollections();
+        fetchMediaFiles();
+        fetchSettings();
+      });
     }
   }, []);
 

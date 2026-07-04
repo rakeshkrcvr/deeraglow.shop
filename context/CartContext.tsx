@@ -41,15 +41,18 @@ const writeCartItems = (items: CartItem[]) => {
 };
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    if (typeof window === 'undefined') return [];
-    return parseSavedCartItems();
-  });
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
 
   // Load cart from localStorage, then refresh each product from the live catalog.
   useEffect(() => {
     let isCancelled = false;
+
+    void Promise.resolve().then(() => {
+      if (!isCancelled) {
+        setCartItems(parseSavedCartItems());
+      }
+    });
 
     const syncCartWithCatalog = async () => {
       try {

@@ -343,12 +343,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 20px;
+  padding: 0px 19px;
   border-bottom: 1px solid var(--border);
 }
 
 .drawerHeader h2 {
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.05em;
 }
@@ -429,10 +429,10 @@
 .cartItem {
   display: flex;
   align-items: flex-start;
-  gap: 15px;
+  gap: 7px;
   padding-bottom: 18px;
   border-bottom: 1px solid var(--border-light);
-  margin-bottom: 18px;
+  margin-bottom: 0px;
 }
 
 .itemImageMock {
@@ -656,14 +656,14 @@
 
 /* Redesigned active cart elements */
 .urgencyCountdownBar {
-  background-color: #fff5d6;
   color: #8a4f00;
-  font-size: 12px;
-  font-weight: 600;
   letter-spacing: 0.02em;
-  padding: 8px 16px;
   text-align: center;
-  border-bottom: 1px solid rgba(138, 79, 0, 0.08);
+  background-color: #fff5d6;
+  border-bottom: 1px solid #8a4f0014;
+  padding: 1px 16px;
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .timerBold {
@@ -679,11 +679,11 @@
 }
 
 .milestoneUnlockedTitle {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
   text-align: center;
   color: var(--primary);
-  margin-bottom: 2px;
+  margin-bottom: 5px;
   line-height: 1.1;
 }
 
@@ -754,7 +754,7 @@
 
 .milestoneLabelName {
   position: absolute;
-  top: 23px;
+  top: 31px;
   font-size: 8px;
   font-weight: 600;
   color: #888;
@@ -901,7 +901,7 @@
 }
 
 .itemRowAlignCenter:last-child {
-  margin-top: 8px !important;
+  margin-top: 0px !important;
 }
 
 .itemCouponBadge span {
@@ -983,7 +983,7 @@
 .cartSummaryRedesigned {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0;
 }
 
 .drawerFooter {
@@ -1007,9 +1007,9 @@
 .summarySavePill {
   background: linear-gradient(135deg, #0f6256 0%, #228b7e 100%);
   color: #ffffff;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  padding: 8px 18px;
+  padding: 3px 13px;
   border-radius: 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
   letter-spacing: 0.02em;
