@@ -200,6 +200,15 @@ export default function AdminDashboard() {
   const [settingsSuccess, setSettingsSuccess] = useState('');
   const [settingsError, setSettingsError] = useState('');
 
+  // Logos & Socials configurations
+  const [logoHeaderUrl, setLogoHeaderUrl] = useState('');
+  const [logoFooterUrl, setLogoFooterUrl] = useState('');
+  const [instagramUrl, setInstagramUrl] = useState('');
+  const [facebookUrl, setFacebookUrl] = useState('');
+  const [pinterestUrl, setPinterestUrl] = useState('');
+  const [twitterUrl, setTwitterUrl] = useState('');
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+
   // Campaigns Mock Data (Growth)
   const campaigns: Campaign[] = [
     { name: 'Instagram Influencer Collab', impressions: '142,500', clicks: '8,420', conversions: 184, spend: '₹25,000', sales: '₹1,24,000', roi: '4.96x' },
@@ -348,6 +357,13 @@ export default function AdminDashboard() {
         setShiprocketEmail(data.shiprocketEmail || '');
         setShiprocketPassword(data.shiprocketPassword || '');
         setShiprocketToken(data.shiprocketToken || '');
+        setLogoHeaderUrl(data.logoHeaderUrl || '');
+        setLogoFooterUrl(data.logoFooterUrl || '');
+        setInstagramUrl(data.instagramUrl || '');
+        setFacebookUrl(data.facebookUrl || '');
+        setPinterestUrl(data.pinterestUrl || '');
+        setTwitterUrl(data.twitterUrl || '');
+        setYoutubeUrl(data.youtubeUrl || '');
       }
     } catch (err) {
       console.error(err);
@@ -2584,6 +2600,121 @@ export default function AdminDashboard() {
 
                     <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', alignSelf: 'flex-start', marginTop: '6px' }}>
                       Save Shiprocket Credentials
+                    </button>
+                  </form>
+                </div>
+
+                {/* Website Branding (Logos) */}
+                <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                  <div style={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px', marginBottom: '16px' }}>
+                    <h3 style={{ fontSize: '15px', fontWeight: '700', margin: 0 }}>Website Branding</h3>
+                    <span style={{ backgroundColor: '#ff9800', color: '#ffffff', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '12px', textTransform: 'uppercase' }}>Logos</span>
+                  </div>
+                  <form onSubmit={e => { e.preventDefault(); handleSaveSettings({ logoHeaderUrl, logoFooterUrl }); }} style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Header Logo URL</label>
+                      <input 
+                        type="text" 
+                        value={logoHeaderUrl} 
+                        onChange={e => setLogoHeaderUrl(e.target.value)} 
+                        placeholder="https://example.com/logo-header.png" 
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                      />
+                      {logoHeaderUrl && (
+                        <div style={{ marginTop: '6px', border: '1px dashed #ccc', padding: '6px', borderRadius: '4px', textAlign: 'center', backgroundColor: '#fafafa' }}>
+                          <img src={logoHeaderUrl} alt="Header Preview" style={{ maxHeight: '35px', objectFit: 'contain' }} />
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Footer Logo URL</label>
+                      <input 
+                        type="text" 
+                        value={logoFooterUrl} 
+                        onChange={e => setLogoFooterUrl(e.target.value)} 
+                        placeholder="https://example.com/logo-footer.png" 
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                      />
+                      {logoFooterUrl && (
+                        <div style={{ marginTop: '6px', border: '1px dashed #ccc', padding: '6px', borderRadius: '4px', textAlign: 'center', backgroundColor: '#fafafa' }}>
+                          <img src={logoFooterUrl} alt="Footer Preview" style={{ maxHeight: '35px', objectFit: 'contain' }} />
+                        </div>
+                      )}
+                    </div>
+
+                    <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', alignSelf: 'flex-start', marginTop: '6px' }}>
+                      Save Logo Settings
+                    </button>
+                  </form>
+                </div>
+
+                {/* Social Media Links */}
+                <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                  <div style={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px', marginBottom: '16px' }}>
+                    <h3 style={{ fontSize: '15px', fontWeight: '700', margin: 0 }}>Social Media Links</h3>
+                    <span style={{ backgroundColor: '#e91e63', color: '#ffffff', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '12px', textTransform: 'uppercase' }}>Socials</span>
+                  </div>
+                  <form onSubmit={e => { e.preventDefault(); handleSaveSettings({ instagramUrl, facebookUrl, pinterestUrl, twitterUrl, youtubeUrl }); }} style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Instagram URL</label>
+                      <input 
+                        type="text" 
+                        value={instagramUrl} 
+                        onChange={e => setInstagramUrl(e.target.value)} 
+                        placeholder="https://instagram.com/your-brand" 
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Facebook URL</label>
+                      <input 
+                        type="text" 
+                        value={facebookUrl} 
+                        onChange={e => setFacebookUrl(e.target.value)} 
+                        placeholder="https://facebook.com/your-brand" 
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Pinterest URL</label>
+                      <input 
+                        type="text" 
+                        value={pinterestUrl} 
+                        onChange={e => setPinterestUrl(e.target.value)} 
+                        placeholder="https://pinterest.com/your-brand" 
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Twitter / X URL</label>
+                      <input 
+                        type="text" 
+                        value={twitterUrl} 
+                        onChange={e => setTwitterUrl(e.target.value)} 
+                        placeholder="https://twitter.com/your-brand" 
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>YouTube URL</label>
+                      <input 
+                        type="text" 
+                        value={youtubeUrl} 
+                        onChange={e => setYoutubeUrl(e.target.value)} 
+                        placeholder="https://youtube.com/your-brand" 
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                      />
+                    </div>
+
+                    <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', alignSelf: 'flex-start', marginTop: '6px' }}>
+                      Save Social Links
                     </button>
                   </form>
                 </div>

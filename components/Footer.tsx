@@ -5,6 +5,44 @@ import Link from 'next/link';
 import styles from './Footer.module.css';
 
 export default function Footer() {
+  const [footerLogoUrl, setFooterLogoUrl] = React.useState('');
+
+  React.useEffect(() => {
+    const fetchLogoSettings = async () => {
+      try {
+        const res = await fetch('/api/admin/settings', { cache: 'no-store' });
+        if (!res.ok) return;
+
+        const settings = await res.json();
+        if (typeof settings.logoFooterUrl === 'string') {
+          setFooterLogoUrl(settings.logoFooterUrl);
+        }
+      } catch (err) {
+        console.error('Error loading footer logo:', err);
+      }
+    };
+
+    fetchLogoSettings();
+  }, []);
+
+  const normalizeAssetUrl = (url: string) => {
+    if (!url) return '';
+
+    try {
+      const parsedUrl = new URL(url);
+      const currentHostname = typeof window === 'undefined' ? '' : window.location.hostname;
+      if (parsedUrl.hostname === 'localhost' || parsedUrl.hostname === currentHostname) {
+        return `${parsedUrl.pathname}${parsedUrl.search}`;
+      }
+    } catch {
+      return url;
+    }
+
+    return url;
+  };
+
+  const normalizedFooterLogoUrl = normalizeAssetUrl(footerLogoUrl);
+
   return (
     <footer className={styles.footer}>
       <div className={`container ${styles.container}`}>
@@ -12,8 +50,14 @@ export default function Footer() {
         {/* Brand Column */}
         <div className={styles.brandCol}>
           <Link href="/" className={styles.logo}>
-            <span className={styles.logoText}>D E E K S H A</span>
-            <span className={styles.logoSub}>ARTISANAL ILLUMINATION</span>
+            {normalizedFooterLogoUrl ? (
+              <img src={normalizedFooterLogoUrl} alt="Deeksha Candles" className={styles.logoImage} />
+            ) : (
+              <>
+                <span className={styles.logoText}>D E E K S H A</span>
+                <span className={styles.logoSub}>ARTISANAL ILLUMINATION</span>
+              </>
+            )}
           </Link>
           <p className={styles.bio}>
             Crafting multisensory experiences to bring peace and presence to modern dwellings. Hand-poured with natural ingredients.

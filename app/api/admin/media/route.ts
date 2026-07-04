@@ -1,22 +1,38 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
-import fs from 'fs';
-import path from 'path';
+import { randomUUID } from 'crypto';
+
+const MAX_FILE_SIZE = 8 * 1024 * 1024;
+
+async function ensureMediaTable() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS media_files (
+      id SERIAL PRIMARY KEY,
+      url VARCHAR(500) NOT NULL UNIQUE,
+      filename VARCHAR(255) NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+
+  await sql`ALTER TABLE media_files ADD COLUMN IF NOT EXISTS storage_key VARCHAR(255) UNIQUE`;
+  await sql`ALTER TABLE media_files ADD COLUMN IF NOT EXISTS mime_type VARCHAR(100)`;
+  await sql`ALTER TABLE media_files ADD COLUMN IF NOT EXISTS data_base64 TEXT`;
+  await sql`ALTER TABLE media_files ADD COLUMN IF NOT EXISTS file_size INT`;
+}
+
+function cleanFilename(filename: string) {
+  return filename.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/_+/g, '_').slice(0, 80);
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
 
 export async function GET() {
   try {
-    // 1. Ensure table exists
-    await sql`
-      CREATE TABLE IF NOT EXISTS media_files (
-        id SERIAL PRIMARY KEY,
-        url VARCHAR(500) NOT NULL UNIQUE,
-        filename VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      )
-    `;
+    await ensureMediaTable();
 
-    // 2. Check if we need to seed the 6 default mock images
-    const checkCount = await sql`SELECT COUNT(*) FROM media_files` as any;
+    const checkCount = await sql`SELECT COUNT(*) FROM media_files` as unknown as { count: string }[];
     const count = parseInt(checkCount[0].count, 10);
 
     if (count === 0) {
@@ -44,78 +60,64 @@ export async function GET() {
 
     const files = await sql`SELECT * FROM media_files ORDER BY id DESC`;
     return NextResponse.json(files);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error in media GET:', err);
-    return NextResponse.json({ error: err.message || 'Database error' }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(err, 'Database error') }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
+    await ensureMediaTable();
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    if (!file) {
+    if (!file || file.size === 0) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Write file to public/uploads/
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+    if (!file.type.startsWith('image/')) {
+      return NextResponse.json({ error: 'Only image files are allowed' }, { status: 400 });
     }
 
-    const filename = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
-    const filepath = path.join(uploadDir, filename);
-    fs.writeFileSync(filepath, buffer);
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: 'Image must be smaller than 8MB' }, { status: 400 });
+    }
 
-    const url = `/uploads/${filename}`;
+    const bytes = await file.arrayBuffer();
+    const dataBase64 = Buffer.from(bytes).toString('base64');
+    const storageKey = `${Date.now()}-${randomUUID()}-${cleanFilename(file.name)}`;
+    const url = `/api/media/${storageKey}`;
 
-    // Record in database
     await sql`
-      INSERT INTO media_files (url, filename)
-      VALUES (${url}, ${file.name})
+      INSERT INTO media_files (url, filename, storage_key, mime_type, data_base64, file_size)
+      VALUES (${url}, ${file.name}, ${storageKey}, ${file.type}, ${dataBase64}, ${file.size})
       ON CONFLICT (url) DO NOTHING
     `;
 
     return NextResponse.json({ success: true, url, filename: file.name });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error in media POST:', err);
-    return NextResponse.json({ error: err.message || 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(err, 'Server error') }, { status: 500 });
   }
 }
 
 export async function DELETE(request: Request) {
   try {
+    await ensureMediaTable();
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     if (!id) {
       return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
     }
 
-    // Get url first
-    const fileRes = await sql`SELECT url FROM media_files WHERE id = ${parseInt(id, 10)}` as any;
-    if (fileRes.length > 0) {
-      const url = fileRes[0].url;
-
-      // Delete from DB
-      await sql`DELETE FROM media_files WHERE id = ${parseInt(id, 10)}`;
-
-      // Optionally delete from local filesystem if in /uploads/
-      if (url.startsWith('/uploads/')) {
-        const filepath = path.join(process.cwd(), 'public', url);
-        if (fs.existsSync(filepath)) {
-          fs.unlinkSync(filepath);
-        }
-      }
-    }
+    await sql`DELETE FROM media_files WHERE id = ${parseInt(id, 10)}`;
 
     return NextResponse.json({ success: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error in media DELETE:', err);
-    return NextResponse.json({ error: err.message || 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: getErrorMessage(err, 'Server error') }, { status: 500 });
   }
 }
 

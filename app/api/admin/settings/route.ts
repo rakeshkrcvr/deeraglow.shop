@@ -28,7 +28,14 @@ export async function GET() {
       razorpayKeySecret: '',
       shiprocketEmail: '',
       shiprocketPassword: '',
-      shiprocketToken: ''
+      shiprocketToken: '',
+      instagramUrl: 'https://instagram.com/deekshacandles',
+      facebookUrl: 'https://facebook.com/deekshacandles',
+      pinterestUrl: 'https://pinterest.com/deekshacandles',
+      twitterUrl: '',
+      youtubeUrl: '',
+      logoHeaderUrl: '',
+      logoFooterUrl: ''
     };
 
     return NextResponse.json({ ...defaults, ...settings });

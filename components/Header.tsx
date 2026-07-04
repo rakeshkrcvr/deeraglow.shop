@@ -10,6 +10,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [slideIndex, setSlideIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(179); // 2m 59s
+  const [headerLogoUrl, setHeaderLogoUrl] = useState('');
 
   // Checkout Drawer states
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -54,6 +55,42 @@ export default function Header() {
     script.async = true;
     document.body.appendChild(script);
   }, []);
+
+  React.useEffect(() => {
+    const fetchLogoSettings = async () => {
+      try {
+        const res = await fetch('/api/admin/settings', { cache: 'no-store' });
+        if (!res.ok) return;
+
+        const settings = await res.json();
+        if (typeof settings.logoHeaderUrl === 'string') {
+          setHeaderLogoUrl(settings.logoHeaderUrl);
+        }
+      } catch (err) {
+        console.error('Error loading header logo:', err);
+      }
+    };
+
+    fetchLogoSettings();
+  }, []);
+
+  const normalizeAssetUrl = (url: string) => {
+    if (!url) return '';
+
+    try {
+      const parsedUrl = new URL(url);
+      const currentHostname = typeof window === 'undefined' ? '' : window.location.hostname;
+      if (parsedUrl.hostname === 'localhost' || parsedUrl.hostname === currentHostname) {
+        return `${parsedUrl.pathname}${parsedUrl.search}`;
+      }
+    } catch {
+      return url;
+    }
+
+    return url;
+  };
+
+  const normalizedHeaderLogoUrl = normalizeAssetUrl(headerLogoUrl);
 
   const saveOrderToDb = async (paymentId: string) => {
     try {
@@ -237,8 +274,14 @@ export default function Header() {
 
           {/* Logo */}
           <Link href="/" className={styles.logoContainer}>
-            <span className={styles.logoTitle}>D E E K S H A</span>
-            <span className={styles.logoSubtitle}>ARTISANAL ILLUMINATION</span>
+            {normalizedHeaderLogoUrl ? (
+              <img src={normalizedHeaderLogoUrl} alt="Deeksha Candles" className={styles.logoImage} />
+            ) : (
+              <>
+                <span className={styles.logoTitle}>D E E K S H A</span>
+                <span className={styles.logoSubtitle}>ARTISANAL ILLUMINATION</span>
+              </>
+            )}
           </Link>
 
           {/* Desktop Navigation links */}
