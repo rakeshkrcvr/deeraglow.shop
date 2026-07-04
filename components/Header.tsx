@@ -19,17 +19,17 @@ export default function Header() {
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
   
-  // Delivery address fields (pre-filled with values from user's Screenshot 4)
-  const [deliveryEmail, setDeliveryEmail] = useState('rakeshkrcvr@gmail.com');
-  const [deliveryFirstName, setDeliveryFirstName] = useState('Rakesh');
-  const [deliveryLastName, setDeliveryLastName] = useState('Kumar');
-  const [deliveryAddress, setDeliveryAddress] = useState('110084 Tomar Colony Kamal Pur Burari');
-  const [deliveryApartment, setDeliveryApartment] = useState('House No 213');
-  const [deliveryCity, setDeliveryCity] = useState('Delhi');
-  const [deliveryState, setDeliveryState] = useState('Delhi');
-  const [deliveryPincode, setDeliveryPincode] = useState('110084');
-  const [deliveryPhone, setDeliveryPhone] = useState('9318416649');
-  const [saveInfo, setSaveInfo] = useState(true);
+  // Delivery address fields
+  const [deliveryEmail, setDeliveryEmail] = useState('');
+  const [deliveryFirstName, setDeliveryFirstName] = useState('');
+  const [deliveryLastName, setDeliveryLastName] = useState('');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [deliveryApartment, setDeliveryApartment] = useState('');
+  const [deliveryCity, setDeliveryCity] = useState('');
+  const [deliveryState, setDeliveryState] = useState('');
+  const [deliveryPincode, setDeliveryPincode] = useState('');
+  const [deliveryPhone, setDeliveryPhone] = useState('');
+  const [saveInfo, setSaveInfo] = useState(false);
   
   const appliedCoupon = 'BUY 2 GET 2 FREE';
   
@@ -870,6 +870,7 @@ export default function Header() {
                       onChange={(e) => setDeliveryEmail(e.target.value)}
                       style={{ 
                         width: '100%', 
+                        boxSizing: 'border-box',
                         padding: '10px 12px', 
                         border: '1px solid #cccccc', 
                         borderRadius: '8px', 
@@ -885,14 +886,16 @@ export default function Header() {
                     <h4 style={{ margin: '0', fontSize: '14px', fontWeight: '600', color: '#1a1a1a' }}>Delivery Details</h4>
                     
                     {/* First & Last Name row */}
-                    <div style={{ display: 'flex', gap: '10px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px' }}>
                       <input 
                         type="text" 
                         placeholder="First Name" 
                         value={deliveryFirstName}
                         onChange={(e) => setDeliveryFirstName(e.target.value)}
                         style={{ 
-                          flex: 1,
+                          width: '100%',
+                          minWidth: 0,
+                          boxSizing: 'border-box',
                           padding: '10px 12px', 
                           border: '1px solid #cccccc', 
                           borderRadius: '8px', 
@@ -907,7 +910,9 @@ export default function Header() {
                         value={deliveryLastName}
                         onChange={(e) => setDeliveryLastName(e.target.value)}
                         style={{ 
-                          flex: 1,
+                          width: '100%',
+                          minWidth: 0,
+                          boxSizing: 'border-box',
                           padding: '10px 12px', 
                           border: '1px solid #cccccc', 
                           borderRadius: '8px', 
@@ -926,6 +931,7 @@ export default function Header() {
                       onChange={(e) => setDeliveryAddress(e.target.value)}
                       style={{ 
                         width: '100%', 
+                        boxSizing: 'border-box',
                         padding: '10px 12px', 
                         border: '1px solid #cccccc', 
                         borderRadius: '8px', 
@@ -943,6 +949,7 @@ export default function Header() {
                       onChange={(e) => setDeliveryApartment(e.target.value)}
                       style={{ 
                         width: '100%', 
+                        boxSizing: 'border-box',
                         padding: '10px 12px', 
                         border: '1px solid #cccccc', 
                         borderRadius: '8px', 
@@ -953,14 +960,16 @@ export default function Header() {
                     />
 
                     {/* City, State & PIN code row */}
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px' }}>
                       <input 
                         type="text" 
                         placeholder="City" 
                         value={deliveryCity}
                         onChange={(e) => setDeliveryCity(e.target.value)}
                         style={{ 
-                          flex: 1.2,
+                          width: '100%',
+                          minWidth: 0,
+                          boxSizing: 'border-box',
                           padding: '10px 12px', 
                           border: '1px solid #cccccc', 
                           borderRadius: '8px', 
@@ -975,7 +984,9 @@ export default function Header() {
                         value={deliveryState}
                         onChange={(e) => setDeliveryState(e.target.value)}
                         style={{ 
-                          flex: 1,
+                          width: '100%',
+                          minWidth: 0,
+                          boxSizing: 'border-box',
                           padding: '10px 12px', 
                           border: '1px solid #cccccc', 
                           borderRadius: '8px', 
@@ -990,7 +1001,9 @@ export default function Header() {
                         value={deliveryPincode}
                         onChange={(e) => setDeliveryPincode(e.target.value)}
                         style={{ 
-                          flex: 1,
+                          width: '100%',
+                          minWidth: 0,
+                          boxSizing: 'border-box',
                           padding: '10px 12px', 
                           border: '1px solid #cccccc', 
                           borderRadius: '8px', 

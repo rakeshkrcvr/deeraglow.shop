@@ -141,6 +141,7 @@ export default function AdminDashboard() {
   const [formSuccess, setFormSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
+  const [duplicatingProductId, setDuplicatingProductId] = useState<number | null>(null);
   const [productSearchQuery, setProductSearchQuery] = useState('');
 
   // Bulk Edit States
@@ -545,6 +546,65 @@ export default function AdminDashboard() {
     setAccShipping(prod.acc_shipping || 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the candle is completely unburned and in its original packaging.');
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const getDuplicateProductName = (productName: string) => {
+    const baseName = `${productName} Copy`;
+    let duplicateName = baseName;
+    let copyNumber = 2;
+    const existingProductNames = new Set(products.map(product => product.name.trim().toLowerCase()));
+
+    while (existingProductNames.has(duplicateName.trim().toLowerCase())) {
+      duplicateName = `${baseName} ${copyNumber}`;
+      copyNumber++;
+    }
+
+    return duplicateName;
+  };
+
+  const handleDuplicateProduct = async (prod: Product) => {
+    setFormError('');
+    setFormSuccess('');
+    setDuplicatingProductId(prod.id);
+
+    try {
+      const payload = {
+        name: getDuplicateProductName(prod.name),
+        collection: prod.collection,
+        price: prod.price,
+        description: prod.description,
+        image_url: prod.image_url,
+        features: prod.features,
+        tagline: prod.tagline || '100% natural soy wax — wooden wick — 30-40 hours burn time',
+        fragrances: prod.fragrances || 'Oud, Jasmin, Rose, Vanilla',
+        dimensions: prod.dimensions || 'W: 2.5 inch x H: 3 inch',
+        weight: prod.weight || '350 gms',
+        burn_hours: prod.burn_hours || '32 Hrs',
+        acc_burn_time: prod.acc_burn_time || '32 Hours average',
+        acc_ingredients: prod.acc_ingredients || '100% natural soy wax, phthalate-free premium fragrance oils, cotton-core crackling wooden wicks, reusable amber glass jars. No paraffin, no artificial dyes. Every jar is hand-poured and cured for 48 hours before it ships.',
+        acc_instructions: prod.acc_instructions || 'Trim the wooden wick to 1/4 inch before each burn. Allow the wax to melt to the edges on first burn to avoid tunneling. Never burn for more than 4 hours at a time. Keep away from drafts, children, and pets.',
+        acc_shipping: prod.acc_shipping || 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the candle is completely unburned and in its original packaging.',
+        images: prod.images || prod.image_url
+      };
+
+      const res = await fetch('/api/admin/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        setFormSuccess(`Duplicated "${prod.name}" successfully.`);
+        fetchProducts();
+      } else {
+        const data = await res.json();
+        setFormError(data.error || 'Failed to duplicate product.');
+      }
+    } catch (err) {
+      setFormError('Network error. Please try again.');
+    } finally {
+      setDuplicatingProductId(null);
+    }
   };
 
   const handleDeleteProduct = async (id: number) => {
@@ -3395,6 +3455,21 @@ export default function AdminDashboard() {
                                     Edit
                                   </button>
                                   <button 
+                                    onClick={() => handleDuplicateProduct(prod)}
+                                    disabled={duplicatingProductId === prod.id}
+                                    style={{
+                                      background: 'transparent',
+                                      border: 'none',
+                                      color: '#2d5c4d',
+                                      cursor: duplicatingProductId === prod.id ? 'not-allowed' : 'pointer',
+                                      fontSize: '12px',
+                                      fontWeight: '600',
+                                      opacity: duplicatingProductId === prod.id ? 0.6 : 1
+                                    }}
+                                  >
+                                    {duplicatingProductId === prod.id ? 'Copying...' : 'Duplicate'}
+                                  </button>
+                                  <button
                                     onClick={() => handleDeleteProduct(prod.id)}
                                     style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
                                   >
