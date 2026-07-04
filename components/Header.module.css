@@ -429,10 +429,10 @@
 .cartItem {
   display: flex;
   align-items: flex-start;
-  gap: 20px;
-  padding-bottom: 24px;
+  gap: 14px;
+  padding-bottom: 18px;
   border-bottom: 1px solid var(--border-light);
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .itemImageMock {
@@ -674,34 +674,33 @@
 .offerMilestonesSection {
   background-color: #ffffff;
   border-bottom: 1px solid var(--border-light);
-  padding: 24px 20px 28px 20px;
+  padding: 22px 24px 22px 24px;
   margin-bottom: 8px;
 }
 
 .milestoneUnlockedTitle {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   text-align: center;
   color: var(--primary);
-  margin-bottom: 22px;
+  margin-bottom: 12px;
 }
 
 .tierProgressBarContainer {
   position: relative;
-  height: 6px;
-  background-color: #f0f0f0;
-  border-radius: 3px;
-  margin: 0 10px;
+  height: 48px;
+  margin: 0 6px;
 }
 
 .tierProgressBarLine {
   position: absolute;
-  top: 0;
+  top: 20px;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 5px;
   overflow: hidden;
   border-radius: 3px;
+  background-color: #f0f0f0;
 }
 
 .tierProgressBarFill {
@@ -712,16 +711,17 @@
 
 .milestoneTick {
   position: absolute;
-  top: 50%;
+  top: 20px;
   transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 72px;
 }
 
 .milestoneCircle {
-  width: 24px;
-  height: 24px;
+  width: 25px;
+  height: 25px;
   border-radius: 50%;
   background-color: #ffffff;
   border: 2px solid #ccc;
@@ -743,20 +743,22 @@
 
 .milestoneLabelPrice {
   position: absolute;
-  bottom: 16px;
-  font-size: 11px;
+  top: -23px;
+  font-size: 10px;
   font-weight: 700;
   color: #666;
   white-space: nowrap;
+  line-height: 1;
 }
 
 .milestoneLabelName {
   position: absolute;
-  top: 16px;
-  font-size: 9px;
+  top: 25px;
+  font-size: 8px;
   font-weight: 600;
   color: #888;
   white-space: nowrap;
+  line-height: 1.15;
 }
 
 .activeLabel {
@@ -768,8 +770,8 @@
 }
 
 .itemImageContainer {
-  width: 100px;
-  height: 100px;
+  width: 92px;
+  height: 92px;
   border-radius: 4px;
   overflow: hidden;
   border: 1px solid var(--border-light);
@@ -785,6 +787,7 @@
 
 .itemContentArea {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
@@ -793,6 +796,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 10px;
   width: 100%;
 }
 
@@ -800,16 +804,23 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
   width: 100%;
 }
 
 .itemTitle {
   font-family: var(--font-sans);
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 600;
   color: #1a1a1a;
   margin: 0;
-  line-height: 1.35;
+  line-height: 1.32;
+  min-width: 0;
+  max-width: 100%;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .itemMeta {
@@ -820,19 +831,21 @@
 
 .itemFinalPrice {
   font-family: var(--font-sans);
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
   color: #000000;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .itemComparePrice {
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 12px;
   text-decoration: line-through;
   color: #a0a0a0;
   white-space: nowrap;
   margin-top: 4px;
+  flex-shrink: 0;
 }
 
 .qtyBox {
@@ -877,11 +890,18 @@
 
 .itemCouponBadge {
   color: #1a1a1a;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
+}
+
+.itemCouponBadge span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tagIcon {
@@ -892,10 +912,11 @@
 
 .itemSavingsAmount {
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: #1a1a1a;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Redesigned Checkout sticky footer area */
