@@ -23,26 +23,76 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const parseSavedCartItems = (): CartItem[] => {
+  const savedItems = localStorage.getItem('deeksha_cart_items');
+  if (!savedItems) return [];
+
+  try {
+    return JSON.parse(savedItems);
+  } catch (e) {
+    console.error("Failed to parse cart items:", e);
+    return [];
+  }
+};
+
+const writeCartItems = (items: CartItem[]) => {
+  localStorage.setItem('deeksha_cart_items', JSON.stringify(items));
+  localStorage.setItem('deeksha_cart_count', items.reduce((acc, item) => acc + item.quantity, 0).toString());
+};
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
 
-  // Load cart from localStorage on mount
+  // Load cart from localStorage, then refresh each product from the live catalog.
   useEffect(() => {
-    const savedItems = localStorage.getItem('deeksha_cart_items');
-    if (savedItems) {
+    const savedItems = parseSavedCartItems();
+    setCartItems(savedItems);
+
+    let isCancelled = false;
+
+    const syncCartWithCatalog = async () => {
       try {
-        setCartItems(JSON.parse(savedItems));
-      } catch (e) {
-        console.error("Failed to parse cart items:", e);
+        const res = await fetch('/api/products', { cache: 'no-store' });
+        if (!res.ok) return;
+
+        const products = await res.json() as Product[];
+        const productById = new Map(products.map(product => [product.id, product]));
+        const productBySlug = new Map(products.map(product => [product.slug, product]));
+        const currentItems = parseSavedCartItems();
+
+        const syncedItems = currentItems.flatMap((item) => {
+          const liveProduct = productById.get(item.product.id) || productBySlug.get(item.product.slug);
+          if (!liveProduct) return [];
+
+          return [{
+            ...item,
+            product: {
+              ...liveProduct,
+              price: Number(liveProduct.price)
+            }
+          }];
+        });
+
+        if (!isCancelled) {
+          setCartItems(syncedItems);
+          writeCartItems(syncedItems);
+        }
+      } catch (err) {
+        console.error("Failed to sync cart products:", err);
       }
-    }
+    };
+
+    syncCartWithCatalog();
+
+    return () => {
+      isCancelled = true;
+    };
   }, []);
 
   const saveCartItems = (items: CartItem[]) => {
     setCartItems(items);
-    localStorage.setItem('deeksha_cart_items', JSON.stringify(items));
-    localStorage.setItem('deeksha_cart_count', items.reduce((acc, item) => acc + item.quantity, 0).toString());
+    writeCartItems(items);
   };
 
   const addToCart = (product?: Product, quantity: number = 1, selectedFragrance: string = 'Vanilla') => {

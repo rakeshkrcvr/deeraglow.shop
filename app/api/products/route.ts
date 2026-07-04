@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
-import { sql } from '@/lib/db';
+import { getProducts } from '@/lib/products';
 
 export async function GET() {
   try {
-    const products = await sql`SELECT * FROM products ORDER BY id ASC`;
+    const products = await getProducts();
     return NextResponse.json(products);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching products:', error);
-    return NextResponse.json({ error: error.message || 'Database error' }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Database error' }, { status: 500 });
   }
 }
 export const dynamic = 'force-dynamic';

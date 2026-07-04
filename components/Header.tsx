@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
+import { Product } from '@/lib/products';
 import styles from './Header.module.css';
 
 export default function Header() {
@@ -11,6 +12,7 @@ export default function Header() {
   const [slideIndex, setSlideIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(179); // 2m 59s
   const [headerLogoUrl, setHeaderLogoUrl] = useState('');
+  const [crossSellProducts, setCrossSellProducts] = useState<Product[]>([]);
 
   // Checkout Drawer states
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -29,8 +31,7 @@ export default function Header() {
   const [deliveryPhone, setDeliveryPhone] = useState('9318416649');
   const [saveInfo, setSaveInfo] = useState(true);
   
-  const [couponCode, setCouponCode] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState('2999 - FREE GIFT + EXTRA 15%');
+  const appliedCoupon = 'BUY 2 GET 2 FREE';
   
   React.useEffect(() => {
     if (!isCartOpen) return;
@@ -73,6 +74,29 @@ export default function Header() {
 
     fetchLogoSettings();
   }, []);
+
+  React.useEffect(() => {
+    const fetchCrossSellProducts = async () => {
+      try {
+        const res = await fetch('/api/products', { cache: 'no-store' });
+        if (!res.ok) return;
+
+        const products = await res.json() as Product[];
+        setCrossSellProducts(products.map(product => ({
+          ...product,
+          price: Number(product.price)
+        })));
+      } catch (err) {
+        console.error('Error loading cart product suggestions:', err);
+      }
+    };
+
+    fetchCrossSellProducts();
+  }, []);
+
+  React.useEffect(() => {
+    setSlideIndex(0);
+  }, [cartCount, crossSellProducts.length]);
 
   const normalizeAssetUrl = (url: string) => {
     if (!url) return '';
@@ -171,69 +195,50 @@ export default function Header() {
     return `${mins.toString().padStart(2, '0')}m : ${secs.toString().padStart(2, '0')}s`;
   };
 
-  // Tier Discount logic
-  let activeDiscountPercent = 0;
-  let activeDiscountLabel = '';
-  let unlockedMessage = '';
-  
-  if (cartSubtotal >= 2999) {
-    activeDiscountPercent = 15;
-    activeDiscountLabel = '2999 - Free Gift + Extra 15%';
-    unlockedMessage = '🎉 Unlocked Free Gift + 15% Discount';
-  } else if (cartSubtotal >= 1999) {
-    activeDiscountPercent = 10;
-    activeDiscountLabel = '1999 - Extra 10%';
-    unlockedMessage = '🎉 Unlocked Extra 10% Discount';
-  } else if (cartSubtotal >= 999) {
-    activeDiscountPercent = 5;
-    activeDiscountLabel = '999 - Extra 5%';
-    unlockedMessage = '🎉 Unlocked Extra 5% Discount';
-  } else {
-    activeDiscountPercent = 0;
-    activeDiscountLabel = '';
-    unlockedMessage = `Add ₹${999 - cartSubtotal} more to unlock Extra 5% Discount!`;
-  }
-
-  // Calculate Progress Percent
-  let progressPercent = 0;
-  if (cartSubtotal === 0) {
-    progressPercent = 0;
-  } else if (cartSubtotal < 999) {
-    progressPercent = (cartSubtotal / 999) * 33.3;
-  } else if (cartSubtotal < 1999) {
-    progressPercent = 33.3 + ((cartSubtotal - 999) / 1000) * 33.3;
-  } else if (cartSubtotal < 2999) {
-    progressPercent = 66.6 + ((cartSubtotal - 1999) / 1000) * 33.4;
-  } else {
-    progressPercent = 100;
-  }
+  const offerLabel = 'Buy 2 Get 2 Free';
+  const isBuy2Get2Unlocked = cartCount >= 2;
+  const unlockedMessage = isBuy2Get2Unlocked
+    ? '🎉 Unlocked Buy 2 Get 2 Free'
+    : cartCount === 1
+      ? 'Add 1 more product to unlock Buy 2 Get 2 Free!'
+      : 'Add 2 products to unlock Buy 2 Get 2 Free!';
+  const progressPercent = Math.min((cartCount / 2) * 100, 100);
+  const eligibleFreeGiftUnits = Math.floor(cartCount / 2) * 2;
 
   // Cart summary calculations
-  let compareTotal = 0;
-  let estimatedTotal = 0;
+  let freeGiftValue = 0;
+  let remainingEligibleFreeGiftUnits = eligibleFreeGiftUnits;
   
   cartItems.forEach(item => {
-    const itemComparePrice = Math.round(item.product.price * 2.3);
-    const itemSellingPrice = item.product.price * (1 - activeDiscountPercent / 100);
-    compareTotal += itemComparePrice * item.quantity;
-    estimatedTotal += itemSellingPrice * item.quantity;
+    const itemFreeGiftUnits = Math.min(item.quantity, remainingEligibleFreeGiftUnits);
+    freeGiftValue += item.product.price * itemFreeGiftUnits;
+    remainingEligibleFreeGiftUnits -= itemFreeGiftUnits;
   });
 
-  const totalSaved = compareTotal - estimatedTotal;
-  const savePercent = compareTotal > 0 ? Math.round((totalSaved / compareTotal) * 100) : 0;
+  const estimatedTotal = cartSubtotal;
+  const offerCompareTotal = estimatedTotal + freeGiftValue;
+  const totalSaved = freeGiftValue;
+  const savePercent = offerCompareTotal > 0 ? Math.round((totalSaved / offerCompareTotal) * 100) : 0;
 
-  const CROSS_SELL_PRODUCTS = [
-    { id: 1, name: "Sandalwood Sacred Ritual", price: 899, image_url: "/images/hero_candle.png", slug: "sandalwood-sacred-ritual" },
-    { id: 2, name: "Lavender & Midnight Oud", price: 849, image_url: "/images/lavender_candle.png", slug: "lavender-midnight-oud" },
-    { id: 3, name: "Jasmine & Crushed Mint", price: 799, image_url: "/images/jasmine_candle.png", slug: "jasmine-crushed-mint" },
-    { id: 4, name: "Eucalyptus & Silver Cedar", price: 949, image_url: "/images/eucalyptus_candle.png", slug: "eucalyptus-silver-cedar" },
-    { id: 5, name: "Amber Vanilla & Warm Tobacco", price: 999, image_url: "/images/vanilla_candle.png", slug: "amber-vanilla-warm-tobacco" },
-    { id: 6, name: "Mystic Rose & Smoke Oud", price: 899, image_url: "/images/rose_candle.png", slug: "mystic-rose-smoke-oud" }
-  ];
+  const getItemFreeGiftValue = (productId: number, selectedFragrance: string) => {
+    if (!isBuy2Get2Unlocked) return 0;
 
-  const displayedCrossSells = slideIndex === 0 
-    ? CROSS_SELL_PRODUCTS.slice(0, 3) 
-    : CROSS_SELL_PRODUCTS.slice(3, 6);
+    let remainingUnits = eligibleFreeGiftUnits;
+    for (const item of cartItems) {
+      const itemGiftUnits = Math.min(item.quantity, remainingUnits);
+      if (item.product.id === productId && item.selectedFragrance === selectedFragrance) {
+        return item.product.price * itemGiftUnits;
+      }
+      remainingUnits -= itemGiftUnits;
+    }
+
+    return 0;
+  };
+
+  const cartProductIds = new Set(cartItems.map(item => item.product.id));
+  const availableCrossSells = crossSellProducts.filter(product => !cartProductIds.has(product.id));
+  const crossSellPages = Math.max(1, Math.ceil(availableCrossSells.length / 3));
+  const displayedCrossSells = availableCrossSells.slice(slideIndex * 3, slideIndex * 3 + 3);
 
   return (
     <>
@@ -413,27 +418,27 @@ export default function Header() {
                 </div>
                 
                 <div className={styles.milestoneTick} style={{ left: '33.3%' }}>
-                  <div className={`${styles.milestoneCircle} ${cartSubtotal >= 999 ? styles.activeCircle : ''}`}>
-                    {cartSubtotal >= 999 ? '✓' : '%'}
+                  <div className={`${styles.milestoneCircle} ${cartCount >= 1 ? styles.activeCircle : ''}`}>
+                    {cartCount >= 1 ? '✓' : '%'}
                   </div>
-                  <div className={styles.milestoneLabelPrice}>₹999</div>
-                  <div className={styles.milestoneLabelName}>Extra 5%</div>
+                  <div className={styles.milestoneLabelPrice}>1 Item</div>
+                  <div className={styles.milestoneLabelName}>Regular Price</div>
                 </div>
 
                 <div className={styles.milestoneTick} style={{ left: '66.6%' }}>
-                  <div className={`${styles.milestoneCircle} ${cartSubtotal >= 1999 ? styles.activeCircle : ''}`}>
-                    {cartSubtotal >= 1999 ? '✓' : '%'}
+                  <div className={`${styles.milestoneCircle} ${cartCount >= 2 ? styles.activeCircle : ''}`}>
+                    {cartCount >= 2 ? '✓' : '%'}
                   </div>
-                  <div className={styles.milestoneLabelPrice}>₹1,999</div>
-                  <div className={styles.milestoneLabelName}>Extra 10%</div>
+                  <div className={styles.milestoneLabelPrice}>2 Items</div>
+                  <div className={styles.milestoneLabelName}>Get 2 Free</div>
                 </div>
 
                 <div className={styles.milestoneTick} style={{ left: '100%' }}>
-                  <div className={`${styles.milestoneCircle} ${cartSubtotal >= 2999 ? styles.activeCircle : ''}`}>
-                    {cartSubtotal >= 2999 ? '✓' : '%'}
+                  <div className={`${styles.milestoneCircle} ${cartCount >= 2 ? styles.activeCircle : ''}`}>
+                    {cartCount >= 2 ? '✓' : '%'}
                   </div>
-                  <div className={styles.milestoneLabelPrice} style={{ right: 0, whiteSpace: 'nowrap' }}>₹2,999</div>
-                  <div className={styles.milestoneLabelName} style={{ right: 0, whiteSpace: 'nowrap' }}>Free Gift + 15%</div>
+                  <div className={styles.milestoneLabelPrice} style={{ right: 0, whiteSpace: 'nowrap' }}>Offer</div>
+                  <div className={styles.milestoneLabelName} style={{ right: 0, whiteSpace: 'nowrap' }}>Buy 2 Get 2</div>
                 </div>
               </div>
             </div>
@@ -457,9 +462,7 @@ export default function Header() {
                   <div className={styles.itemsScrollContainer}>
                     {cartItems.map((item) => {
                       const itemBasePrice = item.product.price;
-                      const itemComparePriceSingle = Math.round(itemBasePrice * 2.3);
-                      const itemDiscountedPriceSingle = itemBasePrice * (1 - activeDiscountPercent / 100);
-                      const itemTierDiscountAmount = itemBasePrice * (activeDiscountPercent / 100);
+                      const itemGiftValue = getItemFreeGiftValue(item.product.id, item.selectedFragrance);
                       
                       return (
                         <div key={`${item.product.id}-${item.selectedFragrance}`} className={styles.cartItem}>
@@ -472,16 +475,18 @@ export default function Header() {
                             <div className={styles.itemRowAlignTop}>
                               <h3 className={styles.itemTitle}>{item.product.name}</h3>
                               <div className={styles.itemFinalPrice}>
-                                ₹ {(itemDiscountedPriceSingle * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                ₹ {(itemBasePrice * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               </div>
                             </div>
                             
                             {/* Row 2: Fragrance selection (subtle) and Compare Price */}
                             <div className={styles.itemRowAlignTop}>
                               <span className={styles.itemMeta}>Fragrance: {item.selectedFragrance}</span>
-                              <div className={styles.itemComparePrice}>
-                                ₹ {(itemComparePriceSingle * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                              </div>
+                              {itemGiftValue > 0 && (
+                                <div className={styles.itemComparePrice}>
+                                  ₹ {(itemBasePrice * item.quantity + itemGiftValue).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </div>
+                              )}
                             </div>
                             
                             {/* Row 3: Quantity selector */}
@@ -506,17 +511,17 @@ export default function Header() {
                             </div>
                             
                             {/* Row 4: Coupon Applied Badge & Tier Savings */}
-                            {activeDiscountPercent > 0 && (
+                            {itemGiftValue > 0 && (
                               <div className={styles.itemRowAlignCenter} style={{ marginTop: '10px' }}>
                                 <div className={styles.itemCouponBadge}>
                                   <svg className={styles.tagIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px', verticalAlign: 'middle' }}>
                                     <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
                                     <line x1="7" y1="7" x2="7.01" y2="7"></line>
                                   </svg>
-                                  <span>{activeDiscountLabel}</span>
+                                  <span>{offerLabel}</span>
                                 </div>
                                 <div className={styles.itemSavingsAmount}>
-                                  -₹{(itemTierDiscountAmount * item.quantity).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  Free ₹{itemGiftValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </div>
                               </div>
                             )}
@@ -527,23 +532,26 @@ export default function Header() {
                   </div>
 
                   {/* Related Products Cross-sell Slider */}
+                  {displayedCrossSells.length > 0 && (
                   <div className={styles.crossSellSection}>
                     <div className={styles.crossSellHeader}>
                       <h3>Complete Your Ritual</h3>
                       <div className={styles.crossSellArrows}>
                         <button 
                           type="button"
-                          onClick={() => setSlideIndex(prev => (prev === 0 ? 1 : 0))} 
+                          onClick={() => setSlideIndex(prev => (prev === 0 ? crossSellPages - 1 : prev - 1))} 
                           className={styles.arrowBtn}
                           aria-label="Previous suggestions"
+                          disabled={crossSellPages <= 1}
                         >
                           ‹
                         </button>
                         <button 
                           type="button"
-                          onClick={() => setSlideIndex(prev => (prev === 1 ? 0 : 1))} 
+                          onClick={() => setSlideIndex(prev => (prev + 1) % crossSellPages)} 
                           className={styles.arrowBtn}
                           aria-label="Next suggestions"
+                          disabled={crossSellPages <= 1}
                         >
                           ›
                         </button>
@@ -561,21 +569,7 @@ export default function Header() {
                           <button 
                             type="button"
                             className={styles.crossSellAddBtn}
-                            onClick={() => {
-                              const fullProd = {
-                                id: prod.id,
-                                name: prod.name,
-                                slug: prod.slug,
-                                price: prod.price,
-                                image_url: prod.image_url,
-                                collection: 'Scented Candles',
-                                rating: 4.8,
-                                reviews_count: 18,
-                                description: 'Aromatic luxury candle designed to elevate your mood.',
-                                features: 'Scented • Soy Wax • Cotton Wick'
-                              };
-                              addToCart(fullProd, 1, 'Vanilla');
-                            }}
+                            onClick={() => addToCart(prod, 1, 'Vanilla')}
                           >
                             + Add
                           </button>
@@ -583,6 +577,7 @@ export default function Header() {
                       ))}
                     </div>
                   </div>
+                  )}
                 </>
               )}
             </div>
@@ -600,7 +595,7 @@ export default function Header() {
                   <div className={styles.originalTotalRow}>
                     <span></span>
                     <span className={styles.originalTotalPriceText}>
-                      ₹{compareTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ₹{offerCompareTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                   
@@ -616,7 +611,7 @@ export default function Header() {
                       <div className={styles.estimatedTotalAmountValue}>
                         ₹{estimatedTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
-                      {activeDiscountPercent > 0 && (
+                      {isBuy2Get2Unlocked && (
                         <div className={styles.estimatedTotalOffPercent}>
                           {savePercent}% OFF
                         </div>
@@ -837,9 +832,9 @@ export default function Header() {
                       ₹{totalSaved.toLocaleString('en-IN', { maximumFractionDigits: 0 })} saved so far • {cartCount} items
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      {compareTotal > 0 && (
+                      {offerCompareTotal > 0 && (
                         <span style={{ fontSize: '11px', textDecoration: 'line-through', color: '#8c8c8c' }}>
-                          ₹{compareTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                          ₹{offerCompareTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                         </span>
                       )}
                       <span style={{ fontSize: '14px', fontWeight: '700', color: '#1a1a1a' }}>
@@ -1051,7 +1046,7 @@ export default function Header() {
                   <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e3e3e3', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', fontWeight: '600', color: '#2d5c4d' }}>
                       <span>Coupon Applied:</span>
-                      <span>"{appliedCoupon}"</span>
+                      <span>{appliedCoupon}</span>
                     </div>
                   </div>
 

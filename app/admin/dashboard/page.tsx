@@ -3666,7 +3666,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Scrollable Gallery */}
-              <div style={{ overflowY: 'auto', flexGrow: 1, padding: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '12px' }}>
+              <div style={{ overflowY: 'auto', flexGrow: 1, padding: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 128px)', justifyContent: 'center', gap: '16px', alignItems: 'start' }}>
                 {mediaError ? (
                   <div style={{ gridColumn: '1 / -1', padding: '24px', textAlign: 'center', color: '#b42318', fontSize: '13px' }}>
                     {mediaError}
@@ -3703,21 +3703,24 @@ export default function AdminDashboard() {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
+                        width: '128px',
+                        height: '154px',
+                        minWidth: 0,
                         backgroundColor: '#ffffff'
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.borderColor = '#1a1a1a';
-                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)';
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.borderColor = '#e3e3e3';
-                        e.currentTarget.style.transform = 'none';
+                        e.currentTarget.style.boxShadow = 'none';
                       }}
                     >
-                      <div style={{ height: '80px', width: '100%', backgroundColor: '#f9f9f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <img src={file.url} alt={file.filename} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                      <div style={{ width: '128px', height: '128px', padding: '8px', boxSizing: 'border-box', backgroundColor: '#f9f9f9', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                        <img src={file.url} alt={file.filename} style={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', objectFit: 'contain', display: 'block' }} />
                       </div>
-                      <div style={{ padding: '6px', fontSize: '10px', color: '#6d6d6d', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', width: '100%', textAlign: 'center' }} title={file.filename}>
+                      <div style={{ padding: '5px 6px', fontSize: '10px', color: '#6d6d6d', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', width: '100%', textAlign: 'center', boxSizing: 'border-box', lineHeight: '14px' }} title={file.filename}>
                         {file.filename}
                       </div>
                     </div>
