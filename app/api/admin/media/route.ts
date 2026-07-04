@@ -4,6 +4,15 @@ import { randomUUID } from 'crypto';
 
 const MAX_FILE_SIZE = 8 * 1024 * 1024;
 
+const defaultMedia = [
+  { url: '/images/hero_candle.png', name: 'Sandalwood Jar (Hero)' },
+  { url: '/images/lavender_candle.png', name: 'Lavender Amber Jar' },
+  { url: '/images/jasmine_candle.png', name: 'Jasmine White Jar' },
+  { url: '/images/eucalyptus_candle.png', name: 'Eucalyptus Clear Jar' },
+  { url: '/images/vanilla_candle.png', name: 'Vanilla Matte Jar' },
+  { url: '/images/rose_candle.png', name: 'Rose Pink Glass Jar' }
+];
+
 async function ensureMediaTable() {
   await sql`
     CREATE TABLE IF NOT EXISTS media_files (
@@ -24,41 +33,38 @@ function cleanFilename(filename: string) {
   return filename.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/_+/g, '_').slice(0, 80);
 }
 
+function displayFilename(filename: string) {
+  return filename.replace(/["\r\n]/g, '_').slice(0, 255);
+}
+
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
+}
+
+async function seedDefaultMedia() {
+  for (const media of defaultMedia) {
+    try {
+      await sql`
+        INSERT INTO media_files (url, filename)
+        VALUES (${media.url}, ${media.name})
+        ON CONFLICT (url) DO NOTHING
+      `;
+    } catch (e) {
+      console.error('Seeding media error:', e);
+    }
+  }
 }
 
 export async function GET() {
   try {
     await ensureMediaTable();
+    await seedDefaultMedia();
 
-    const checkCount = await sql`SELECT COUNT(*) FROM media_files` as unknown as { count: string }[];
-    const count = parseInt(checkCount[0].count, 10);
-
-    if (count === 0) {
-      const defaultMedia = [
-        { url: '/images/hero_candle.png', name: 'Sandalwood Jar (Hero)' },
-        { url: '/images/lavender_candle.png', name: 'Lavender Amber Jar' },
-        { url: '/images/jasmine_candle.png', name: 'Jasmine White Jar' },
-        { url: '/images/eucalyptus_candle.png', name: 'Eucalyptus Clear Jar' },
-        { url: '/images/vanilla_candle.png', name: 'Vanilla Matte Jar' },
-        { url: '/images/rose_candle.png', name: 'Rose Pink Glass Jar' }
-      ];
-
-      for (const media of defaultMedia) {
-        try {
-          await sql`
-            INSERT INTO media_files (url, filename)
-            VALUES (${media.url}, ${media.name})
-            ON CONFLICT (url) DO NOTHING
-          `;
-        } catch (e) {
-          console.error('Seeding media error:', e);
-        }
-      }
-    }
-
-    const files = await sql`SELECT * FROM media_files ORDER BY id DESC`;
+    const files = await sql`
+      SELECT id, url, filename, storage_key, mime_type, file_size, created_at
+      FROM media_files
+      ORDER BY id DESC
+    `;
     return NextResponse.json(files);
   } catch (err: unknown) {
     console.error('Error in media GET:', err);
@@ -88,14 +94,15 @@ export async function POST(request: Request) {
     const dataBase64 = Buffer.from(bytes).toString('base64');
     const storageKey = `${Date.now()}-${randomUUID()}-${cleanFilename(file.name)}`;
     const url = `/api/media/${storageKey}`;
+    const filename = displayFilename(file.name);
 
-    await sql`
+    const files = await sql`
       INSERT INTO media_files (url, filename, storage_key, mime_type, data_base64, file_size)
-      VALUES (${url}, ${file.name}, ${storageKey}, ${file.type}, ${dataBase64}, ${file.size})
-      ON CONFLICT (url) DO NOTHING
+      VALUES (${url}, ${filename}, ${storageKey}, ${file.type}, ${dataBase64}, ${file.size})
+      RETURNING id, url, filename, storage_key, mime_type, file_size, created_at
     `;
 
-    return NextResponse.json({ success: true, url, filename: file.name });
+    return NextResponse.json({ success: true, file: files[0], url, filename });
   } catch (err: unknown) {
     console.error('Error in media POST:', err);
     return NextResponse.json({ error: getErrorMessage(err, 'Server error') }, { status: 500 });

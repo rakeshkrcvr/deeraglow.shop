@@ -95,6 +95,13 @@ interface Collection {
   slug: string;
 }
 
+interface MediaFile {
+  id: number;
+  url: string;
+  filename: string;
+  created_at: string;
+}
+
 export default function AdminDashboard() {
   const [authorized, setAuthorized] = useState(false);
   const [activeTab, setActiveTab] = useState<'orders' | 'drafts' | 'abandoned' | 'products' | 'collections' | 'files' | 'discounts' | 'customers' | 'growth' | 'content' | 'analytics' | 'settings'>('orders');
@@ -178,8 +185,9 @@ export default function AdminDashboard() {
   const [tempSelectedProductIds, setTempSelectedProductIds] = useState<number[]>([]);
 
   // Media Files States
-  const [mediaFiles, setMediaFiles] = useState<{ id: number, url: string, filename: string, created_at: string }[]>([]);
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [loadingMedia, setLoadingMedia] = useState(true);
+  const [mediaError, setMediaError] = useState('');
   const [showMediaModal, setShowMediaModal] = useState(false);
   const [mediaSelectorMode, setMediaSelectorMode] = useState<'product' | 'general'>('product');
 
@@ -333,16 +341,49 @@ export default function AdminDashboard() {
   const fetchMediaFiles = async () => {
     try {
       setLoadingMedia(true);
-      const res = await fetch('/api/admin/media');
+      setMediaError('');
+      const res = await fetch('/api/admin/media', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setMediaFiles(data);
+      } else {
+        const data = await res.json().catch(() => null);
+        setMediaError(data?.error || 'Failed to load media files.');
       }
     } catch (err) {
       console.error('Error loading media files:', err);
+      setMediaError('Network error loading media files.');
     } finally {
       setLoadingMedia(false);
     }
+  };
+
+  const uploadMediaFile = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const uploadRes = await fetch('/api/admin/media', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await uploadRes.json().catch(() => null);
+
+    if (!uploadRes.ok) {
+      throw new Error(data?.error || 'Failed to upload image.');
+    }
+
+    if (data?.file) {
+      setMediaFiles((prev) => [data.file, ...prev.filter((item) => item.id !== data.file.id)]);
+    }
+
+    if (!data?.file?.url && !data?.url) {
+      throw new Error('Upload finished, but the server did not return an image URL.');
+    }
+
+    return {
+      url: data?.file?.url || data?.url,
+      filename: data?.file?.filename || data?.filename || file.name
+    };
   };
 
   const fetchSettings = async () => {
@@ -3003,22 +3044,14 @@ export default function AdminDashboard() {
                           onChange={async (e) => {
                             if (e.target.files && e.target.files[0]) {
                               const file = e.target.files[0];
-                              const formData = new FormData();
-                              formData.append('file', file);
                               try {
-                                const uploadRes = await fetch('/api/admin/media', {
-                                  method: 'POST',
-                                  body: formData
-                                });
-                                if (uploadRes.ok) {
-                                  const data = await uploadRes.json();
-                                  setGalleryImages((prev) => [...prev.filter(img => img !== '/images/hero_candle.png'), data.url]);
-                                  fetchMediaFiles();
-                                } else {
-                                  alert('Failed to upload image.');
-                                }
+                                const data = await uploadMediaFile(file);
+                                setGalleryImages((prev) => [...prev.filter(img => img !== '/images/hero_candle.png'), data.url]);
+                                await fetchMediaFiles();
                               } catch (err) {
-                                alert('Error uploading file.');
+                                alert(err instanceof Error ? err.message : 'Error uploading file.');
+                              } finally {
+                                e.target.value = '';
                               }
                             }
                           }}
@@ -3415,24 +3448,19 @@ export default function AdminDashboard() {
                       const filesArray = Array.from(e.target.files);
                       let successCount = 0;
                       for (const file of filesArray) {
-                        const formData = new FormData();
-                        formData.append('file', file);
                         try {
-                          const uploadRes = await fetch('/api/admin/media', {
-                            method: 'POST',
-                            body: formData
-                          });
-                          if (uploadRes.ok) {
-                            successCount++;
-                          }
+                          await uploadMediaFile(file);
+                          successCount++;
                         } catch (err) {
                           console.error(err);
+                          setMediaError(err instanceof Error ? err.message : 'Error uploading file.');
                         }
                       }
                       if (successCount > 0) {
-                        fetchMediaFiles();
+                        await fetchMediaFiles();
                         alert(`Successfully uploaded ${successCount} files!`);
                       }
+                      e.target.value = '';
                     }
                   }}
                   style={{ display: 'none' }}
@@ -3441,6 +3469,11 @@ export default function AdminDashboard() {
             </div>
 
             {/* Media Files Catalog grid */}
+            {mediaError && (
+              <div style={{ marginBottom: '16px', padding: '10px 12px', borderRadius: '6px', backgroundColor: '#fff4f4', color: '#b42318', border: '1px solid #ffd6d6', fontSize: '13px' }}>
+                {mediaError}
+              </div>
+            )}
             <div style={{ 
               display: 'grid', 
               gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
@@ -3612,23 +3645,18 @@ export default function AdminDashboard() {
                     onChange={async (e) => {
                       if (e.target.files && e.target.files[0]) {
                         const file = e.target.files[0];
-                        const formData = new FormData();
-                        formData.append('file', file);
                         try {
-                          const uploadRes = await fetch('/api/admin/media', {
-                            method: 'POST',
-                            body: formData
-                          });
-                          if (uploadRes.ok) {
-                            const data = await uploadRes.json();
-                            if (mediaSelectorMode === 'product') {
-                              setGalleryImages((prev) => [...prev.filter(img => img !== '/images/hero_candle.png'), data.url]);
-                            }
-                            fetchMediaFiles();
-                            setShowMediaModal(false);
+                          const data = await uploadMediaFile(file);
+                          if (mediaSelectorMode === 'product') {
+                            setGalleryImages((prev) => [...prev.filter(img => img !== '/images/hero_candle.png'), data.url]);
                           }
+                          await fetchMediaFiles();
+                          setShowMediaModal(false);
                         } catch (err) {
                           console.error(err);
+                          alert(err instanceof Error ? err.message : 'Error uploading file.');
+                        } finally {
+                          e.target.value = '';
                         }
                       }
                     }}
@@ -3639,7 +3667,11 @@ export default function AdminDashboard() {
 
               {/* Scrollable Gallery */}
               <div style={{ overflowY: 'auto', flexGrow: 1, padding: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '12px' }}>
-                {mediaFiles.filter(file => {
+                {mediaError ? (
+                  <div style={{ gridColumn: '1 / -1', padding: '24px', textAlign: 'center', color: '#b42318', fontSize: '13px' }}>
+                    {mediaError}
+                  </div>
+                ) : mediaFiles.filter(file => {
                   if (!modalSearchQuery) return true;
                   return file.filename.toLowerCase().includes(modalSearchQuery.toLowerCase());
                 }).length === 0 ? (
