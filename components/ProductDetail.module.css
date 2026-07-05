@@ -41,7 +41,7 @@
 @media (max-width: 900px) {
   .layoutGrid {
     grid-template-columns: 1fr;
-    gap: 48px;
+    gap: 9px;
   }
   .galleryColumn {
     position: static !important;
@@ -590,12 +590,26 @@
 
 /* Responsiveness adjustments */
 @media (max-width: 600px) {
+  .productDetailContainer {
+    padding: 12px 0 180px;
+  }
+
+  .breadcrumb {
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .activeBreadcrumb {
+    font-size: 6px;
+  }
+
   .title {
-    font-size: 32px;
+    font-size: 17px;
   }
   
   .imageCard {
-    padding: 20px;
+    padding: 1px;
   }
   
   .trustGrid {
@@ -604,15 +618,53 @@
   }
   
   .actionsSection {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 54px;
+    z-index: 80;
     flex-direction: column;
+    gap: 0;
+    margin-bottom: 0;
+    padding: 8px 8px 10px;
+    background-color: #0b1a11;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(24px);
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
   }
   
   .qtyContainer {
-    width: 100%;
+    display: none;
   }
   
-  .qtyBtn {
+  .addBtn {
     flex: 1;
+    padding: 14px;
+    width: 100%;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.18);
+  }
+
+  .buyNowBtn {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 80;
+    width: calc(100% - 16px);
+    margin: 0 8px 8px;
+    background-color: #0b1a11;
+    box-shadow: 0 -10px 28px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(24px);
+    transition: opacity var(--transition-fast), transform var(--transition-fast), background-color var(--transition-fast);
+  }
+
+  .stickyActionsVisible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
   }
 }
 
@@ -624,6 +676,14 @@
   border: 1px solid rgba(250, 248, 245, 0.05);
   border-radius: 12px;
   padding: 20px;
+}
+
+@media (max-width: 600px) {
+  .specsBlock {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 13px;
+  }
 }
 
 .specsList {
@@ -1443,5 +1503,44 @@
 @media (max-width: 480px) {
   .chooseGrid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .productDetailContainer {
+    padding: 12px 0 24px;
+  }
+
+  .brandStorySection,
+  .testimonialsSection,
+  .relatedSection {
+    margin-top: 0;
+    padding-top: 28px;
+  }
+
+  .storyTitle {
+    margin-bottom: 12px;
+    font-size: 31px;
+  }
+
+  .trustGrid {
+    grid-template-columns: 1fr;
+    gap: 13px;
+    margin-bottom: 0;
+  }
+
+  .comparisonSection {
+    margin-top: 0;
+    padding-top: 31px;
+  }
+
+  .comparisonSubTitle {
+    margin-top: 3px;
+    margin-bottom: 0;
+  }
+
+  .instagramSection {
+    margin-top: 0;
+    padding-top: 22px;
   }
 }

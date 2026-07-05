@@ -91,9 +91,9 @@
   position: absolute;
   top: 20px;
   left: 20px;
-  width: 26px;
+  min-width: 42px;
   height: 26px;
-  border-radius: 50%;
+  border-radius: 999px;
   background-color: #1cb377; /* Mint green indicator badge */
   color: #ffffff;
   display: flex;
@@ -101,8 +101,13 @@
   justify-content: center;
   z-index: 10;
   box-shadow: 0 0 10px rgba(28, 179, 119, 0.4);
+  padding: 0 10px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 /* Image Container */
@@ -274,7 +279,7 @@
 
 @media (max-width: 768px) {
   .section {
-    padding: 60px 0;
+    padding: 0;
   }
   
   .title {
@@ -301,9 +306,11 @@
   .indicator {
     top: 10px;
     left: 10px;
-    width: 22px;
+    min-width: 34px;
     height: 22px;
-    font-size: 11px;
+    padding: 0 7px;
+    font-size: 8px;
+    letter-spacing: 0.04em;
   }
 
   .imageContainer {

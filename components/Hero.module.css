@@ -251,13 +251,51 @@
   .ctaGroup {
     flex-direction: column;
     gap: 12px;
+    margin-bottom: 2px;
   }
   
   .values {
-    grid-template-columns: 1fr;
-    gap: 20px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    padding: 14px 10px 0;
   }
-  
+
+  .valueItem {
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 10px 4px;
+    text-align: center;
+    border: 1px solid var(--border-light);
+    background: rgba(255, 255, 255, 0.34);
+  }
+
+  .valueIcon {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+  }
+
+  .valueIcon svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .valueText {
+    min-width: 0;
+  }
+
+  .valueText h4 {
+    margin-bottom: 0;
+    font-size: 10px;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .valueText p {
+    display: none;
+  }
+
   .heroImg {
     width: 100%;
     height: auto;

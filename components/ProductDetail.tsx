@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
@@ -19,6 +19,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
   const [quantity, setQuantity] = useState<number>(1);
   const [adding, setAdding] = useState<boolean>(false);
   const [addingRelatedId, setAddingRelatedId] = useState<number | null>(null);
+  const [showStickyActions, setShowStickyActions] = useState<boolean>(false);
   
   const fragrancesList = useMemo(() => (
     (product.fragrances || 'Oud, Jasmin, Rose, Vanilla')
@@ -45,6 +46,16 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
   
   // Accordion Toggle States
   const [openAccordion, setOpenAccordion] = useState<string | null>('ingredients');
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowStickyActions(window.scrollY > 24);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const currentPrice = product.price;
   const originalPrice = Math.round(currentPrice * 1.4); // 30% mark-up for discount look
@@ -268,7 +279,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             </div>
 
             {/* Quantity and Actions row */}
-            <div className={styles.actionsSection}>
+            <div className={`${styles.actionsSection} ${showStickyActions ? styles.stickyActionsVisible : ''}`}>
               
               {/* Qty Selector */}
               <div className={styles.qtyContainer}>
@@ -289,7 +300,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             </div>
 
             {/* Buy it Now Button */}
-            <button className={styles.buyNowBtn} onClick={handleBuyNow}>
+            <button className={`${styles.buyNowBtn} ${showStickyActions ? styles.stickyActionsVisible : ''}`} onClick={handleBuyNow}>
               Buy it now
             </button>
 

@@ -40,15 +40,16 @@ export default function AuraCollection({ products }: AuraCollectionProps) {
 
         {/* Glassmorphic Grid */}
         <div className={styles.grid}>
-          {products.map((product) => {
+          {products.map((product, index) => {
             const isAdding = addingId === product.id;
+            const badgeLabel = index === 0 ? 'Best Seller' : 'New';
             
             return (
               <div key={product.id} className={styles.glassCard}>
                 
-                {/* Green Dollar Indicator Badge from the user's screenshot */}
+                {/* Product status badge */}
                 <div className={styles.indicator}>
-                  <span>$</span>
+                  <span>{badgeLabel}</span>
                 </div>
 
                  {/* Pedestal Product Image */}

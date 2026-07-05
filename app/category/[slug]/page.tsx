@@ -3,7 +3,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AuraCollection from '@/components/AuraCollection';
 import { getProducts, Product } from '@/lib/products';
-import Link from 'next/link';
+import styles from './page.module.css';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -45,23 +45,14 @@ export default async function CategoryPage({ params }: PageProps) {
   const displayProducts = hasProducts ? filteredProducts : products;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#0b1a11' }}>
+    <div className={styles.page}>
       <Header />
       
-      <main style={{ flexGrow: 1, padding: '80px 0 100px 0', color: '#FAF8F5' }}>
+      <main className={styles.main}>
         <div className="container">
           
           {/* Category Banner */}
-          <div style={{ 
-            textAlign: 'center', 
-            maxWidth: '800px', 
-            margin: '0 auto 60px auto', 
-            background: 'rgba(25, 48, 36, 0.4)', 
-            backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(250, 248, 245, 0.08)',
-            padding: '40px 20px',
-            borderRadius: '20px'
-          }}>
+          <div className={styles.categoryBanner}>
             <span style={{ fontSize: '12px', fontWeight: '600', letterSpacing: '0.2em', color: 'var(--accent)', textTransform: 'uppercase' }}>
               Artisanal Curation
             </span>
