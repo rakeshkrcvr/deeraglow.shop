@@ -68,6 +68,9 @@ interface Discount {
   discount_type: string;
   status: string;
   used_count: number;
+  value_type?: 'fixed' | 'percentage';
+  value_amount?: string | number;
+  minimum_order_value?: string | number;
 }
 
 interface Campaign {
@@ -177,6 +180,11 @@ export default function AdminDashboard() {
   const [selectedDiscountType, setSelectedDiscountType] = useState('Amount off products');
   const [newDiscountTitle, setNewDiscountTitle] = useState('');
   const [newDiscountSummary, setNewDiscountSummary] = useState('');
+  const [newDiscountValueType, setNewDiscountValueType] = useState<'fixed' | 'percentage'>('fixed');
+  const [newDiscountValue, setNewDiscountValue] = useState('');
+  const [newDiscountMinimumOrder, setNewDiscountMinimumOrder] = useState('');
+  const [newDiscountStatus, setNewDiscountStatus] = useState<'Active' | 'Expired'>('Active');
+  const [editingDiscountId, setEditingDiscountId] = useState<number | null>(null);
 
   // Collections CRUD Form States
   const [collName, setCollName] = useState('');
@@ -775,28 +783,57 @@ export default function AdminDashboard() {
     }
   };
 
-  // Create Discount Code
+  const resetDiscountForm = () => {
+    setNewDiscountTitle('');
+    setNewDiscountSummary('');
+    setNewDiscountValueType('fixed');
+    setNewDiscountValue('');
+    setNewDiscountMinimumOrder('');
+    setNewDiscountStatus('Active');
+    setEditingDiscountId(null);
+  };
+
+  const handleEditDiscount = (discount: Discount) => {
+    setEditingDiscountId(discount.id);
+    setSelectedDiscountType(discount.discount_type || 'Amount off products');
+    setNewDiscountTitle(discount.title);
+    setNewDiscountSummary(discount.summary);
+    setNewDiscountValueType(discount.value_type === 'percentage' ? 'percentage' : 'fixed');
+    setNewDiscountValue(String(discount.value_amount ?? ''));
+    setNewDiscountMinimumOrder(String(discount.minimum_order_value ?? ''));
+    setNewDiscountStatus(discount.status === 'Expired' ? 'Expired' : 'Active');
+    setShowDiscountTypeModal(false);
+    setShowCreateDiscountForm(true);
+  };
+
+  // Create or update Discount Code
   const handleCreateDiscount = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newDiscountTitle || !newDiscountSummary) return;
+    if (!newDiscountTitle || !newDiscountSummary || !newDiscountValue) return;
 
     try {
+      const isEditingDiscount = editingDiscountId !== null;
+      const method = isEditingDiscount ? 'PATCH' : 'POST';
       const res = await fetch('/api/admin/discounts', {
-        method: 'POST',
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          id: editingDiscountId,
           title: newDiscountTitle.toUpperCase().replace(/\s+/g, ''),
           summary: newDiscountSummary,
-          discount_type: selectedDiscountType
+          discount_type: selectedDiscountType,
+          value_type: newDiscountValueType,
+          value_amount: newDiscountValue,
+          minimum_order_value: newDiscountMinimumOrder || '0',
+          status: newDiscountStatus
         })
       });
 
       if (res.ok) {
-        setNewDiscountTitle('');
-        setNewDiscountSummary('');
+        resetDiscountForm();
         setShowCreateDiscountForm(false);
         fetchDiscounts();
-        alert('Discount code successfully created!');
+        alert(isEditingDiscount ? 'Discount code successfully updated!' : 'Discount code successfully created!');
       }
     } catch (err) {
       console.error(err);
@@ -2063,7 +2100,10 @@ export default function AdminDashboard() {
                   Export
                 </button>
                 <button 
-                  onClick={() => setShowDiscountTypeModal(true)}
+                  onClick={() => {
+                    resetDiscountForm();
+                    setShowDiscountTypeModal(true);
+                  }}
                   style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}
                 >
                   Create discount
@@ -2074,20 +2114,42 @@ export default function AdminDashboard() {
             {/* Custom create form if type selected */}
             {showCreateDiscountForm && (
               <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', marginBottom: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: '700', margin: '0 0 16px 0' }}>Configure: {selectedDiscountType}</h3>
+                <h3 style={{ fontSize: '14px', fontWeight: '700', margin: '0 0 16px 0' }}>{editingDiscountId ? 'Edit' : 'Configure'}: {selectedDiscountType}</h3>
                 <form onSubmit={handleCreateDiscount} style={{ display: 'flex', gap: '16px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Discount Code Title</label>
                     <input type="text" value={newDiscountTitle} onChange={e => setNewDiscountTitle(e.target.value)} required placeholder="e.g. FESTIVE30" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }} />
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Discount Value Type</label>
+                    <select value={newDiscountValueType} onChange={e => setNewDiscountValueType(e.target.value as 'fixed' | 'percentage')} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }}>
+                      <option value="fixed">Fixed amount</option>
+                      <option value="percentage">Percentage</option>
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>{newDiscountValueType === 'percentage' ? 'Percent Off' : 'Amount Off'}</label>
+                    <input type="number" min="0" step="0.01" value={newDiscountValue} onChange={e => setNewDiscountValue(e.target.value)} required placeholder={newDiscountValueType === 'percentage' ? 'e.g. 10' : 'e.g. 50'} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px', width: '110px' }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Minimum Cart</label>
+                    <input type="number" min="0" step="0.01" value={newDiscountMinimumOrder} onChange={e => setNewDiscountMinimumOrder(e.target.value)} placeholder="0" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px', width: '110px' }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Status</label>
+                    <select value={newDiscountStatus} onChange={e => setNewDiscountStatus(e.target.value as 'Active' | 'Expired')} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }}>
+                      <option value="Active">Active</option>
+                      <option value="Expired">Expired</option>
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Summary Text</label>
                     <input type="text" value={newDiscountSummary} onChange={e => setNewDiscountSummary(e.target.value)} required placeholder="e.g. 30% off select candles" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px', width: '260px' }} />
                   </div>
                   <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', padding: '10px 20px', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-                    Save Code
+                    {editingDiscountId ? 'Update Code' : 'Save Code'}
                   </button>
-                  <button type="button" onClick={() => setShowCreateDiscountForm(false)} style={{ backgroundColor: 'transparent', border: '1px solid #ccc', padding: '10px 16px', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>
+                  <button type="button" onClick={() => { resetDiscountForm(); setShowCreateDiscountForm(false); }} style={{ backgroundColor: 'transparent', border: '1px solid #ccc', padding: '10px 16px', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>
                     Cancel
                   </button>
                 </form>
@@ -2111,16 +2173,17 @@ export default function AdminDashboard() {
                       <th style={{ padding: '12px 16px' }}>Type</th>
                       <th style={{ padding: '12px 16px' }}>Combinations</th>
                       <th style={{ padding: '12px 16px' }}>Used</th>
+                      <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {loadingDiscounts ? (
                       <tr>
-                        <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: '#9e9e9e' }}>Loading discounts catalog...</td>
+                        <td colSpan={7} style={{ padding: '24px', textAlign: 'center', color: '#9e9e9e' }}>Loading discounts catalog...</td>
                       </tr>
                     ) : discounts.length === 0 ? (
                       <tr>
-                        <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: '#9e9e9e' }}>No discounts configured.</td>
+                        <td colSpan={7} style={{ padding: '24px', textAlign: 'center', color: '#9e9e9e' }}>No discounts configured.</td>
                       </tr>
                     ) : (
                       discounts.map((disc) => (
@@ -2145,6 +2208,14 @@ export default function AdminDashboard() {
                           <td style={{ padding: '12px 16px', color: '#6d6d6d' }}>{disc.discount_type}</td>
                           <td style={{ padding: '12px 16px', color: '#ccc' }}>✉ 📦</td>
                           <td style={{ padding: '12px 16px', fontWeight: '600' }}>{disc.used_count} used</td>
+                          <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                            <button
+                              onClick={() => handleEditDiscount(disc)}
+                              style={{ backgroundColor: '#ffffff', border: '1px solid #ccc', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                            >
+                              Edit
+                            </button>
+                          </td>
                         </tr>
                       ))
                     )}

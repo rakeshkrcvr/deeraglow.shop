@@ -7,6 +7,17 @@ import { Product } from '@/lib/products';
 import styles from './Header.module.css';
 
 type RazorpayResponse = { razorpay_payment_id: string };
+type Discount = {
+  id: number;
+  title: string;
+  summary: string;
+  discount_type: string;
+  status: string;
+  used_count: number;
+  value_type?: 'fixed' | 'percentage';
+  value_amount?: string | number;
+  minimum_order_value?: string | number;
+};
 type RazorpayOptions = {
   key: string;
   amount: number;
@@ -34,6 +45,11 @@ export default function Header() {
   const [timeLeft, setTimeLeft] = useState(179); // 2m 59s
   const [headerLogoUrl, setHeaderLogoUrl] = useState('');
   const [crossSellProducts, setCrossSellProducts] = useState<Product[]>([]);
+  const [discounts, setDiscounts] = useState<Discount[]>([]);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState<Discount | null>(null);
+  const [couponMessage, setCouponMessage] = useState('');
+  const [couponError, setCouponError] = useState('');
 
   // Checkout Drawer states
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -53,7 +69,7 @@ export default function Header() {
   const [deliveryPhone, setDeliveryPhone] = useState('');
   const [saveInfo, setSaveInfo] = useState(false);
   
-  const appliedCoupon = 'BUY 2 GET 2 FREE';
+  const automaticCoupon = 'BUY 2 GET 2 FREE';
   
   React.useEffect(() => {
     if (!isCartOpen) return;
@@ -116,6 +132,22 @@ export default function Header() {
     fetchCrossSellProducts();
   }, []);
 
+  React.useEffect(() => {
+    const fetchDiscounts = async () => {
+      try {
+        const res = await fetch('/api/admin/discounts', { cache: 'no-store' });
+        if (!res.ok) return;
+
+        const data = await res.json() as Discount[];
+        setDiscounts(data);
+      } catch (err) {
+        console.error('Error loading discount codes:', err);
+      }
+    };
+
+    fetchDiscounts();
+  }, []);
+
   const normalizeAssetUrl = (url: string) => {
     if (!url) return '';
 
@@ -163,6 +195,20 @@ export default function Header() {
     }
   };
 
+  const markDiscountUsed = async () => {
+    if (!appliedDiscount) return;
+
+    try {
+      await fetch('/api/admin/discounts', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: appliedDiscount.id })
+      });
+    } catch (err) {
+      console.error('Error marking discount as used:', err);
+    }
+  };
+
   const handleProceedToRazorpay = async () => {
     setIsProcessingCheckout(true);
     try {
@@ -186,6 +232,7 @@ export default function Header() {
         handler: function (response: RazorpayResponse) {
           setIsProcessingCheckout(false);
           setCheckoutSuccess(true);
+          markDiscountUsed();
           saveOrderToDb(response.razorpay_payment_id);
         },
         prefill: {
@@ -248,8 +295,20 @@ export default function Header() {
     freeGiftValuesByItem.set(key, (freeGiftValuesByItem.get(key) || 0) + item.product.price);
   });
 
-  const totalSaved = Array.from(freeGiftValuesByItem.values()).reduce((acc, value) => acc + value, 0);
-  const estimatedTotal = Math.max(cartSubtotal - totalSaved, 0);
+  const automaticSaved = Array.from(freeGiftValuesByItem.values()).reduce((acc, value) => acc + value, 0);
+  const couponBaseTotal = Math.max(cartSubtotal - automaticSaved, 0);
+  const appliedDiscountValue = Number(appliedDiscount?.value_amount || 0);
+  const appliedDiscountMinimumOrder = Number(appliedDiscount?.minimum_order_value || 0);
+  const appliedDiscountRawAmount = appliedDiscount
+    ? appliedDiscount.value_type === 'percentage'
+      ? couponBaseTotal * (appliedDiscountValue / 100)
+      : appliedDiscountValue
+    : 0;
+  const manualDiscountAmount = appliedDiscount && couponBaseTotal >= appliedDiscountMinimumOrder
+    ? Math.min(Math.max(appliedDiscountRawAmount, 0), couponBaseTotal)
+    : 0;
+  const totalSaved = automaticSaved + manualDiscountAmount;
+  const estimatedTotal = Math.max(couponBaseTotal - manualDiscountAmount, 0);
   const offerCompareTotal = cartSubtotal;
   const savePercent = offerCompareTotal > 0 ? Math.round((totalSaved / offerCompareTotal) * 100) : 0;
 
@@ -262,6 +321,65 @@ export default function Header() {
   const crossSellPages = Math.max(1, Math.ceil(availableCrossSells.length / 3));
   const boundedSlideIndex = Math.min(slideIndex, crossSellPages - 1);
   const displayedCrossSells = availableCrossSells.slice(boundedSlideIndex * 3, boundedSlideIndex * 3 + 3);
+
+  const applyCouponCode = () => {
+    const normalizedCode = couponCode.trim().toUpperCase();
+    const discount = discounts.find((item) => item.title.toUpperCase() === normalizedCode);
+
+    setCouponMessage('');
+    setCouponError('');
+
+    if (!normalizedCode) {
+      setCouponError('Enter a coupon code.');
+      return;
+    }
+
+    if (!discount) {
+      setCouponError('Coupon code is not valid.');
+      setAppliedDiscount(null);
+      return;
+    }
+
+    if (discount.status !== 'Active') {
+      setCouponError('This coupon is not active.');
+      setAppliedDiscount(null);
+      return;
+    }
+
+    if (discount.discount_type === 'Buy X get Y') {
+      setCouponMessage('Buy 2 Get 2 Free is already applied automatically.');
+      setAppliedDiscount(null);
+      return;
+    }
+
+    const minimumOrderValue = Number(discount.minimum_order_value || 0);
+    if (couponBaseTotal < minimumOrderValue) {
+      setCouponError(`Add ₹${(minimumOrderValue - couponBaseTotal).toLocaleString('en-IN', { maximumFractionDigits: 0 })} more to use this coupon.`);
+      setAppliedDiscount(null);
+      return;
+    }
+
+    const valueAmount = Number(discount.value_amount || 0);
+    if (valueAmount <= 0) {
+      setCouponError('Coupon is missing a discount value.');
+      setAppliedDiscount(null);
+      return;
+    }
+
+    setAppliedDiscount(discount);
+    setCouponCode(discount.title);
+    setCouponMessage(`${discount.title} applied. You saved ${
+      discount.value_type === 'percentage'
+        ? `${valueAmount}%`
+        : `₹${valueAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+    }.`);
+  };
+
+  const removeAppliedCoupon = () => {
+    setAppliedDiscount(null);
+    setCouponMessage('');
+    setCouponError('');
+  };
 
   React.useEffect(() => {
     if (!isCheckoutOpen || checkoutSuccess || cartCount === 0 || !abandonedCheckoutReference) return;
@@ -668,6 +786,46 @@ export default function Header() {
                     </div>
                   </div>
                   )}
+
+                  <div className={styles.couponBox}>
+                    <div className={styles.couponBoxHeader}>
+                      <span>Discount Coupon</span>
+                      {appliedDiscount && (
+                        <button type="button" onClick={removeAppliedCoupon} className={styles.couponRemoveBtn}>
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                    <div className={styles.couponInputRow}>
+                      <input
+                        type="text"
+                        value={couponCode}
+                        onChange={(e) => {
+                          setCouponCode(e.target.value.toUpperCase());
+                          setCouponError('');
+                          setCouponMessage('');
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            applyCouponCode();
+                          }
+                        }}
+                        placeholder="Enter coupon code"
+                        className={styles.couponInput}
+                      />
+                      <button type="button" onClick={applyCouponCode} className={styles.couponApplyBtn}>
+                        Apply
+                      </button>
+                    </div>
+                    {appliedDiscount && manualDiscountAmount > 0 && (
+                      <div className={styles.couponSuccess}>
+                        {appliedDiscount.title} applied. Saved ₹{manualDiscountAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </div>
+                    )}
+                    {couponMessage && !appliedDiscount && <div className={styles.couponSuccess}>{couponMessage}</div>}
+                    {couponError && <div className={styles.couponError}>{couponError}</div>}
+                  </div>
                 </>
               )}
             </div>
@@ -1155,9 +1313,83 @@ export default function Header() {
                   {/* Offers & Rewards Coupon Status */}
                   <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e3e3e3', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', fontWeight: '600', color: '#2d5c4d' }}>
-                      <span>Coupon Applied:</span>
-                      <span>{appliedCoupon}</span>
+                      <span>Coupon</span>
+                      <span>{appliedDiscount ? appliedDiscount.title : automaticCoupon}</span>
                     </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input
+                        type="text"
+                        value={couponCode}
+                        onChange={(e) => {
+                          setCouponCode(e.target.value.toUpperCase());
+                          setCouponError('');
+                          setCouponMessage('');
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            applyCouponCode();
+                          }
+                        }}
+                        placeholder="Enter coupon code"
+                        style={{
+                          flex: 1,
+                          minWidth: 0,
+                          boxSizing: 'border-box',
+                          padding: '10px 12px',
+                          border: '1px solid #cccccc',
+                          borderRadius: '8px',
+                          fontSize: '13px',
+                          outline: 'none',
+                          color: '#1a1a1a'
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={applyCouponCode}
+                        style={{
+                          backgroundColor: '#1a1a1a',
+                          color: '#ffffff',
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: '0 14px',
+                          fontSize: '12px',
+                          fontWeight: '700',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Apply
+                      </button>
+                      {appliedDiscount && (
+                        <button
+                          type="button"
+                          onClick={removeAppliedCoupon}
+                          style={{
+                            backgroundColor: '#ffffff',
+                            color: '#6d6d6d',
+                            border: '1px solid #cccccc',
+                            borderRadius: '8px',
+                            padding: '0 12px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                    {appliedDiscount && manualDiscountAmount > 0 && (
+                      <div style={{ fontSize: '11px', color: '#2d5c4d', fontWeight: '600' }}>
+                        {appliedDiscount.title} applied. You saved ₹{manualDiscountAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.
+                      </div>
+                    )}
+                    {couponMessage && !appliedDiscount && (
+                      <div style={{ fontSize: '11px', color: '#2d5c4d', fontWeight: '600' }}>{couponMessage}</div>
+                    )}
+                    {couponError && (
+                      <div style={{ fontSize: '11px', color: '#b42318', fontWeight: '600' }}>{couponError}</div>
+                    )}
                   </div>
 
                   {/* Continue button */}
