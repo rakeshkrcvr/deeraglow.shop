@@ -25,6 +25,7 @@ interface Product {
   acc_instructions?: string;
   acc_shipping?: string;
   images?: string;
+  deleted_at?: string | null;
 }
 
 interface Order {
@@ -38,6 +39,22 @@ interface Order {
   fulfillment_status: string;
   items_count: string;
   delivery_status: string;
+  customer_email?: string;
+  customer_phone?: string;
+  shipping_address?: string;
+  billing_address?: string;
+  notes?: string;
+  order_items?: string;
+}
+
+interface OrderItem {
+  product_id?: number;
+  name: string;
+  image_url: string;
+  quantity: number;
+  selected_fragrance?: string;
+  price: string;
+  total: string;
 }
 
 interface Draft {
@@ -91,6 +108,12 @@ interface BlogPost {
   status: string;
 }
 
+interface NavigationMenu {
+  id: number;
+  menu: string;
+  links: string;
+}
+
 interface Collection {
   id: number;
   name: string;
@@ -120,6 +143,11 @@ export default function AdminDashboard() {
   // Data Lists
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [editableOrder, setEditableOrder] = useState<Order | null>(null);
+  const [editableOrderItems, setEditableOrderItems] = useState<OrderItem[]>([]);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const [orderDetailError, setOrderDetailError] = useState('');
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [abandoned, setAbandoned] = useState<AbandonedCheckout[]>([]);
   const [discounts, setDiscounts] = useState<Discount[]>([]);
@@ -148,6 +176,8 @@ export default function AdminDashboard() {
   const [submitting, setSubmitting] = useState(false);
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [duplicatingProductId, setDuplicatingProductId] = useState<number | null>(null);
+  const [selectedDetailProduct, setSelectedDetailProduct] = useState<Product | null>(null);
+  const [catalogView, setCatalogView] = useState<'active' | 'trash'>('active');
   const [productSearchQuery, setProductSearchQuery] = useState('');
 
   // Bulk Edit States
@@ -201,7 +231,8 @@ export default function AdminDashboard() {
   const [loadingMedia, setLoadingMedia] = useState(true);
   const [mediaError, setMediaError] = useState('');
   const [showMediaModal, setShowMediaModal] = useState(false);
-  const [mediaSelectorMode, setMediaSelectorMode] = useState<'product' | 'general'>('product');
+  const [mediaSelectorMode, setMediaSelectorMode] = useState<'product' | 'hero' | 'general'>('product');
+  const [heroMediaTargetIndex, setHeroMediaTargetIndex] = useState<number | null>(null);
 
   // Settings States
   const [storeName, setStoreName] = useState('Deeksha Candles');
@@ -228,6 +259,18 @@ export default function AdminDashboard() {
   const [pinterestUrl, setPinterestUrl] = useState('');
   const [twitterUrl, setTwitterUrl] = useState('');
   const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [heroEyebrow, setHeroEyebrow] = useState('DEEKSHA RITUALS');
+  const [heroTitle, setHeroTitle] = useState('The Art of');
+  const [heroItalicTitle, setHeroItalicTitle] = useState('Slow Burning');
+  const [heroDescription, setHeroDescription] = useState('Ancestral scents mindfully crafted in small batches. Poured with 100% organic soy wax, pure botanical extracts, and wood wicks to ground your soul and illuminate your sanctuary.');
+  const [heroPrimaryButtonText, setHeroPrimaryButtonText] = useState('Discover Our Rituals');
+  const [heroPrimaryButtonHref, setHeroPrimaryButtonHref] = useState('#products');
+  const [heroSecondaryButtonText, setHeroSecondaryButtonText] = useState('Our Philosophy');
+  const [heroSecondaryButtonHref, setHeroSecondaryButtonHref] = useState('#story');
+  const [heroFloatingTag, setHeroFloatingTag] = useState('Batch No. 042 / Sandalwood');
+  const [heroSliderImages, setHeroSliderImages] = useState<string[]>(['/images/hero_candle.png']);
+  const [contentSuccess, setContentSuccess] = useState('');
+  const [contentError, setContentError] = useState('');
 
   // Campaigns Mock Data (Growth)
   const campaigns: Campaign[] = [
@@ -243,7 +286,20 @@ export default function AdminDashboard() {
     { id: 3, title: 'Why Soy Wax is Better than Paraffin Wax', author: 'Rohan Sen', date: 'Jun 24, 2026', status: 'Published' }
   ]);
   const [newPostTitle, setNewPostTitle] = useState('');
+  const [newPostAuthor, setNewPostAuthor] = useState('Deeksha Sharma');
+  const [newPostDate, setNewPostDate] = useState('');
+  const [newPostStatus, setNewPostStatus] = useState('Published');
+  const [editingPostId, setEditingPostId] = useState<number | null>(null);
   const [showNewPostForm, setShowNewPostForm] = useState(false);
+  const [navigationMenus, setNavigationMenus] = useState<NavigationMenu[]>([
+    { id: 1, menu: 'Main Menu', links: 'Home - Shop - Fragrance - Occasions - About Us - Blogs' },
+    { id: 2, menu: 'Footer Collection List', links: 'Scented Candles - Soy Wax - Jar Candles - Luxury Collection' },
+    { id: 3, menu: 'Footer Scent Categories', links: 'Vanilla - Lavender - Rose - Jasmine - Sandalwood - Coffee' }
+  ]);
+  const [navMenuName, setNavMenuName] = useState('');
+  const [navMenuLinks, setNavMenuLinks] = useState('');
+  const [editingNavMenuId, setEditingNavMenuId] = useState<number | null>(null);
+  const [showNavMenuForm, setShowNavMenuForm] = useState(false);
 
   // Analytics graph values (hover state)
   const [hoveredBarIndex, setHoveredBarIndex] = useState<number | null>(null);
@@ -260,7 +316,7 @@ export default function AdminDashboard() {
   const fetchProducts = async () => {
     try {
       setLoadingProducts(true);
-      const res = await fetch('/api/products');
+      const res = await fetch('/api/admin/products');
       if (res.ok) {
         const data = await res.json();
         setProducts(data);
@@ -279,11 +335,99 @@ export default function AdminDashboard() {
       if (res.ok) {
         const data = await res.json();
         setOrders(data);
+        setSelectedOrder((current) => {
+          if (!current) return null;
+          return data.find((order: Order) => order.id === current.id) || current;
+        });
       }
     } catch (err) {
       console.error('Error loading orders:', err);
     } finally {
       setLoadingOrders(false);
+    }
+  };
+
+  const parseOrderItems = (order?: Order | null): OrderItem[] => {
+    if (!order?.order_items) return [];
+    try {
+      const parsed = JSON.parse(order.order_items);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter((item): item is OrderItem => (
+        typeof item === 'object' &&
+        item !== null &&
+        typeof item.name === 'string' &&
+        typeof item.image_url === 'string'
+      )).map(item => ({
+        ...item,
+        quantity: Number(item.quantity) || 1,
+        price: item.price || '₹0',
+        total: item.total || item.price || '₹0'
+      }));
+    } catch {
+      return [];
+    }
+  };
+
+  const handleOpenOrder = (order: Order) => {
+    setSelectedOrder(order);
+    setEditableOrder({ ...order });
+    setEditableOrderItems(parseOrderItems(order));
+    setOrderDetailError('');
+  };
+
+  const handleOrderFieldChange = (field: keyof Order, value: string) => {
+    setEditableOrder(prev => prev ? { ...prev, [field]: value } : prev);
+  };
+
+  const handleOrderItemChange = (index: number, field: keyof OrderItem, value: string) => {
+    setEditableOrderItems(prev => prev.map((item, itemIndex) => {
+      if (itemIndex !== index) return item;
+      if (field === 'quantity') {
+        return { ...item, quantity: Math.max(parseInt(value, 10) || 1, 1) };
+      }
+      return { ...item, [field]: value };
+    }));
+  };
+
+  const handleSaveOrderDetails = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editableOrder) return;
+
+    setSavingOrder(true);
+    setOrderDetailError('');
+    try {
+      const itemsCount = editableOrderItems.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+      const payload = {
+        ...editableOrder,
+        items_count: `${itemsCount} item${itemsCount === 1 ? '' : 's'}`,
+        order_items: editableOrderItems
+      };
+      const updatedOrder: Order = {
+        ...editableOrder,
+        items_count: payload.items_count,
+        order_items: JSON.stringify(editableOrderItems)
+      };
+
+      const res = await fetch('/api/orders', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || 'Failed to update order.');
+      }
+
+      await fetchOrders();
+      setSelectedOrder(updatedOrder);
+      setEditableOrder(updatedOrder);
+      alert('Order details updated successfully.');
+    } catch (err) {
+      console.error(err);
+      setOrderDetailError(err instanceof Error ? err.message : 'Failed to update order.');
+    } finally {
+      setSavingOrder(false);
     }
   };
 
@@ -417,6 +561,47 @@ export default function AdminDashboard() {
         setPinterestUrl(data.pinterestUrl || '');
         setTwitterUrl(data.twitterUrl || '');
         setYoutubeUrl(data.youtubeUrl || '');
+        setHeroEyebrow(data.heroEyebrow || 'DEEKSHA RITUALS');
+        setHeroTitle(data.heroTitle || 'The Art of');
+        setHeroItalicTitle(data.heroItalicTitle || 'Slow Burning');
+        setHeroDescription(data.heroDescription || 'Ancestral scents mindfully crafted in small batches. Poured with 100% organic soy wax, pure botanical extracts, and wood wicks to ground your soul and illuminate your sanctuary.');
+        setHeroPrimaryButtonText(data.heroPrimaryButtonText || 'Discover Our Rituals');
+        setHeroPrimaryButtonHref(data.heroPrimaryButtonHref || '#products');
+        setHeroSecondaryButtonText(data.heroSecondaryButtonText || 'Our Philosophy');
+        setHeroSecondaryButtonHref(data.heroSecondaryButtonHref || '#story');
+        setHeroFloatingTag(data.heroFloatingTag || 'Batch No. 042 / Sandalwood');
+        try {
+          const parsedImages = JSON.parse(data.heroSliderImages || '[]');
+          setHeroSliderImages(Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages.filter((image): image is string => typeof image === 'string') : ['/images/hero_candle.png']);
+        } catch {
+          setHeroSliderImages(['/images/hero_candle.png']);
+        }
+        try {
+          const parsedPosts = JSON.parse(data.contentBlogPosts || '[]');
+          if (Array.isArray(parsedPosts)) {
+            setBlogPosts(parsedPosts.filter((post): post is BlogPost => (
+              typeof post === 'object' &&
+              post !== null &&
+              typeof post.id === 'number' &&
+              typeof post.title === 'string' &&
+              typeof post.author === 'string' &&
+              typeof post.date === 'string' &&
+              typeof post.status === 'string'
+            )));
+          }
+        } catch {}
+        try {
+          const parsedMenus = JSON.parse(data.contentNavigationMenus || '[]');
+          if (Array.isArray(parsedMenus)) {
+            setNavigationMenus(parsedMenus.filter((menu): menu is NavigationMenu => (
+              typeof menu === 'object' &&
+              menu !== null &&
+              typeof menu.id === 'number' &&
+              typeof menu.menu === 'string' &&
+              typeof menu.links === 'string'
+            )));
+          }
+        } catch {}
       }
     } catch (err) {
       console.error(err);
@@ -441,6 +626,91 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       setSettingsError('Network error saving settings.');
+    }
+  };
+
+  const applyHeroImageSelection = (imageUrl: string) => {
+    setHeroSliderImages((prev) => {
+      const nextImages = [...prev.filter(Boolean)];
+      if (heroMediaTargetIndex === null) {
+        if (!nextImages.includes(imageUrl)) {
+          nextImages.push(imageUrl);
+        }
+        return nextImages.length > 0 ? nextImages : ['/images/hero_candle.png'];
+      }
+
+      nextImages[heroMediaTargetIndex] = imageUrl;
+      return nextImages.length > 0 ? nextImages : ['/images/hero_candle.png'];
+    });
+    setHeroMediaTargetIndex(null);
+  };
+
+  const handleSaveHeroContent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setContentSuccess('');
+    setContentError('');
+
+    if (heroSliderImages.length === 0) {
+      setContentError('Please add at least one slider image.');
+      return;
+    }
+
+    const updatedContent = {
+      heroEyebrow,
+      heroTitle,
+      heroItalicTitle,
+      heroDescription,
+      heroPrimaryButtonText,
+      heroPrimaryButtonHref,
+      heroSecondaryButtonText,
+      heroSecondaryButtonHref,
+      heroFloatingTag,
+      heroSliderImages: JSON.stringify(heroSliderImages.filter(Boolean))
+    };
+
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedContent)
+      });
+
+      if (res.ok) {
+        setContentSuccess('Home page content updated successfully.');
+        await fetchSettings();
+      } else {
+        const data = await res.json().catch(() => null);
+        setContentError(data?.error || 'Failed to update content.');
+      }
+    } catch (err) {
+      console.error(err);
+      setContentError('Network error saving content.');
+    }
+  };
+
+  const saveContentLists = async (nextPosts: BlogPost[], nextMenus: NavigationMenu[]) => {
+    setContentSuccess('');
+    setContentError('');
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contentBlogPosts: JSON.stringify(nextPosts),
+          contentNavigationMenus: JSON.stringify(nextMenus)
+        })
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || 'Failed to save content lists.');
+      }
+
+      setContentSuccess('Content list updated successfully.');
+    } catch (err) {
+      console.error(err);
+      setContentError(err instanceof Error ? err.message : 'Failed to save content lists.');
+      throw err;
     }
   };
 
@@ -533,6 +803,7 @@ export default function AdminDashboard() {
   };
 
   const handleEditProductClick = (prod: Product) => {
+    setSelectedDetailProduct(null);
     setEditingProductId(prod.id);
     setName(prod.name);
     setCollection(prod.collection);
@@ -564,7 +835,7 @@ export default function AdminDashboard() {
     const baseName = `${productName} Copy`;
     let duplicateName = baseName;
     let copyNumber = 2;
-    const existingProductNames = new Set(products.map(product => product.name.trim().toLowerCase()));
+    const existingProductNames = new Set(products.filter(product => !product.deleted_at).map(product => product.name.trim().toLowerCase()));
 
     while (existingProductNames.has(duplicateName.trim().toLowerCase())) {
       duplicateName = `${baseName} ${copyNumber}`;
@@ -620,7 +891,7 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteProduct = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+    if (!confirm('Move this product to trash? It will not show on the live store.')) return;
 
     try {
       const res = await fetch(`/api/admin/products?id=${id}`, {
@@ -628,10 +899,51 @@ export default function AdminDashboard() {
       });
 
       if (res.ok) {
-        alert('Product deleted successfully!');
+        alert('Product moved to trash.');
+        setSelectedCatalogProductIds(prev => prev.filter(productId => productId !== id));
         fetchProducts();
       } else {
-        alert('Failed to delete product.');
+        alert('Failed to move product to trash.');
+      }
+    } catch (err) {
+      alert('Network error.');
+    }
+  };
+
+  const handleRestoreProduct = async (id: number) => {
+    try {
+      const res = await fetch('/api/admin/products', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, action: 'restore' }),
+      });
+
+      if (res.ok) {
+        alert('Product restored successfully.');
+        setSelectedCatalogProductIds(prev => prev.filter(productId => productId !== id));
+        fetchProducts();
+      } else {
+        alert('Failed to restore product.');
+      }
+    } catch (err) {
+      alert('Network error.');
+    }
+  };
+
+  const handlePermanentDeleteProduct = async (id: number) => {
+    if (!confirm('Permanently delete this product? This cannot be undone.')) return;
+
+    try {
+      const res = await fetch(`/api/admin/products?id=${id}&permanent=true`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        alert('Product permanently deleted.');
+        setSelectedCatalogProductIds(prev => prev.filter(productId => productId !== id));
+        fetchProducts();
+      } else {
+        alert('Failed to permanently delete product.');
       }
     } catch (err) {
       alert('Network error.');
@@ -640,7 +952,7 @@ export default function AdminDashboard() {
 
   const handleBulkDelete = async () => {
     if (selectedCatalogProductIds.length === 0) return;
-    if (!confirm(`Are you sure you want to delete ${selectedCatalogProductIds.length} products?`)) return;
+    if (!confirm(`Move ${selectedCatalogProductIds.length} products to trash? They will not show on the live store.`)) return;
     
     setLoadingProducts(true);
     try {
@@ -655,10 +967,61 @@ export default function AdminDashboard() {
       }
       setSelectedCatalogProductIds([]);
       fetchProducts();
-      alert(`Successfully deleted ${successCount} products.`);
+      alert(`Moved ${successCount} products to trash.`);
     } catch (err) {
       console.error("Bulk delete error:", err);
       alert("Error performing bulk delete.");
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
+
+  const handleBulkRestore = async () => {
+    if (selectedCatalogProductIds.length === 0) return;
+    setLoadingProducts(true);
+    try {
+      let successCount = 0;
+      for (const id of selectedCatalogProductIds) {
+        const res = await fetch('/api/admin/products', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, action: 'restore' })
+        });
+        if (res.ok) {
+          successCount++;
+        }
+      }
+      setSelectedCatalogProductIds([]);
+      fetchProducts();
+      alert(`Restored ${successCount} products.`);
+    } catch (err) {
+      console.error("Bulk restore error:", err);
+      alert("Error restoring products.");
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
+
+  const handleBulkPermanentDelete = async () => {
+    if (selectedCatalogProductIds.length === 0) return;
+    if (!confirm(`Permanently delete ${selectedCatalogProductIds.length} products? This cannot be undone.`)) return;
+    setLoadingProducts(true);
+    try {
+      let successCount = 0;
+      for (const id of selectedCatalogProductIds) {
+        const res = await fetch(`/api/admin/products?id=${id}&permanent=true`, {
+          method: 'DELETE'
+        });
+        if (res.ok) {
+          successCount++;
+        }
+      }
+      setSelectedCatalogProductIds([]);
+      fetchProducts();
+      alert(`Permanently deleted ${successCount} products.`);
+    } catch (err) {
+      console.error("Bulk permanent delete error:", err);
+      alert("Error permanently deleting products.");
     } finally {
       setLoadingProducts(false);
     }
@@ -840,23 +1203,94 @@ export default function AdminDashboard() {
     }
   };
 
-  // Create Blog Post
-  const handleCreateBlogPost = (e: React.FormEvent) => {
+  const resetBlogForm = () => {
+    setNewPostTitle('');
+    setNewPostAuthor('Deeksha Sharma');
+    setNewPostDate('');
+    setNewPostStatus('Published');
+    setEditingPostId(null);
+    setShowNewPostForm(false);
+  };
+
+  const handleEditBlogPostClick = (post: BlogPost) => {
+    setNewPostTitle(post.title);
+    setNewPostAuthor(post.author);
+    setNewPostDate(post.date);
+    setNewPostStatus(post.status);
+    setEditingPostId(post.id);
+    setShowNewPostForm(true);
+  };
+
+  // Create / Update Blog Post
+  const handleCreateBlogPost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPostTitle) return;
 
-    const newPost: BlogPost = {
-      id: blogPosts.length + 1,
-      title: newPostTitle,
-      author: 'Deeksha Sharma',
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      status: 'Published'
-    };
+    const formattedDate = newPostDate || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const nextPosts = editingPostId
+      ? blogPosts.map(post => post.id === editingPostId ? { ...post, title: newPostTitle, author: newPostAuthor, date: formattedDate, status: newPostStatus } : post)
+      : [
+          {
+            id: blogPosts.length > 0 ? Math.max(...blogPosts.map(post => post.id)) + 1 : 1,
+            title: newPostTitle,
+            author: newPostAuthor,
+            date: formattedDate,
+            status: newPostStatus
+          },
+          ...blogPosts
+        ];
 
-    setBlogPosts([newPost, ...blogPosts]);
-    setNewPostTitle('');
-    setShowNewPostForm(false);
-    alert('Blog post published successfully!');
+    setBlogPosts(nextPosts);
+    await saveContentLists(nextPosts, navigationMenus);
+    resetBlogForm();
+  };
+
+  const handleDeleteBlogPost = async (id: number) => {
+    if (!confirm('Delete this blog article?')) return;
+    const nextPosts = blogPosts.filter(post => post.id !== id);
+    setBlogPosts(nextPosts);
+    await saveContentLists(nextPosts, navigationMenus);
+  };
+
+  const resetNavMenuForm = () => {
+    setNavMenuName('');
+    setNavMenuLinks('');
+    setEditingNavMenuId(null);
+    setShowNavMenuForm(false);
+  };
+
+  const handleEditNavMenuClick = (menu: NavigationMenu) => {
+    setNavMenuName(menu.menu);
+    setNavMenuLinks(menu.links);
+    setEditingNavMenuId(menu.id);
+    setShowNavMenuForm(true);
+  };
+
+  const handleSaveNavigationMenu = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!navMenuName || !navMenuLinks) return;
+
+    const nextMenus = editingNavMenuId
+      ? navigationMenus.map(menu => menu.id === editingNavMenuId ? { ...menu, menu: navMenuName, links: navMenuLinks } : menu)
+      : [
+          ...navigationMenus,
+          {
+            id: navigationMenus.length > 0 ? Math.max(...navigationMenus.map(menu => menu.id)) + 1 : 1,
+            menu: navMenuName,
+            links: navMenuLinks
+          }
+        ];
+
+    setNavigationMenus(nextMenus);
+    await saveContentLists(blogPosts, nextMenus);
+    resetNavMenuForm();
+  };
+
+  const handleDeleteNavigationMenu = async (id: number) => {
+    if (!confirm('Delete this navigation menu?')) return;
+    const nextMenus = navigationMenus.filter(menu => menu.id !== id);
+    setNavigationMenus(nextMenus);
+    await saveContentLists(blogPosts, nextMenus);
   };
 
   // Collections CRUD Handlers
@@ -933,7 +1367,10 @@ export default function AdminDashboard() {
     );
   }
 
-  const filteredProducts = products.filter(prod => {
+  const activeProductsCount = products.filter(product => !product.deleted_at).length;
+  const trashedProductsCount = products.filter(product => product.deleted_at).length;
+  const visibleCatalogProducts = products.filter(product => catalogView === 'trash' ? product.deleted_at : !product.deleted_at);
+  const filteredProducts = visibleCatalogProducts.filter(prod => {
     const query = productSearchQuery.toLowerCase();
     return (
       prod.name.toLowerCase().includes(query) ||
@@ -1448,8 +1885,14 @@ export default function AdminDashboard() {
                         order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
                         order.channel.toLowerCase().includes(searchQuery.toLowerCase())
                       ).map((order) => (
-                        <tr key={order.id} style={{ borderBottom: '1px solid #e3e3e3' }}>
-                          <td style={{ padding: '12px 16px' }}><input type="checkbox" /></td>
+                        <tr
+                          key={order.id}
+                          onClick={() => handleOpenOrder(order)}
+                          style={{ borderBottom: '1px solid #e3e3e3', cursor: 'pointer', transition: 'background-color 0.15s' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fafafa'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          <td style={{ padding: '12px 16px' }}><input type="checkbox" onClick={(e) => e.stopPropagation()} /></td>
                           <td style={{ padding: '12px 16px', fontWeight: '600' }}>{order.order_number}</td>
                           <td style={{ padding: '12px 16px', color: '#6d6d6d' }}>{order.date_str}</td>
                           <td style={{ padding: '12px 16px' }}>{order.customer}</td>
@@ -1511,6 +1954,205 @@ export default function AdminDashboard() {
               </div>
 
             </div>
+
+            {selectedOrder && editableOrder && (
+              <div
+                role="dialog"
+                aria-modal="true"
+                style={{
+                  position: 'fixed',
+                  inset: 0,
+                  backgroundColor: 'rgba(0,0,0,0.35)',
+                  zIndex: 3000,
+                  display: 'flex',
+                  justifyContent: 'flex-end'
+                }}
+                onClick={() => {
+                  setSelectedOrder(null);
+                  setEditableOrder(null);
+                }}
+              >
+                <form
+                  onSubmit={handleSaveOrderDetails}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    width: 'min(760px, 100%)',
+                    height: '100vh',
+                    overflowY: 'auto',
+                    backgroundColor: '#ffffff',
+                    boxShadow: '-12px 0 30px rgba(0,0,0,0.18)',
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}
+                >
+                  <div style={{ position: 'sticky', top: 0, zIndex: 2, backgroundColor: '#ffffff', borderBottom: '1px solid #e3e3e3', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+                    <div>
+                      <h2 style={{ margin: '0 0 6px 0', fontSize: '20px', fontWeight: '700' }}>Order {selectedOrder.order_number}</h2>
+                      <p style={{ margin: 0, color: '#6d6d6d', fontSize: '13px' }}>{selectedOrder.date_str} - {selectedOrder.customer}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedOrder(null);
+                        setEditableOrder(null);
+                      }}
+                      style={{ width: '34px', height: '34px', border: '1px solid #cccccc', borderRadius: '6px', backgroundColor: '#ffffff', cursor: 'pointer', fontSize: '18px' }}
+                    >
+                      x
+                    </button>
+                  </div>
+
+                  <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    {orderDetailError && (
+                      <div style={{ backgroundColor: '#ffebe9', color: '#b42318', padding: '10px 12px', borderRadius: '6px', fontSize: '13px' }}>
+                        {orderDetailError}
+                      </div>
+                    )}
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '12px' }}>
+                      <div style={{ backgroundColor: '#f8faf9', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '12px' }}>
+                        <div style={{ color: '#6d6d6d', fontSize: '11px', marginBottom: '4px' }}>Total</div>
+                        <input value={editableOrder.total_price} onChange={e => handleOrderFieldChange('total_price', e.target.value)} style={{ width: '100%', border: 'none', background: 'transparent', fontWeight: '700', fontSize: '16px', outline: 'none' }} />
+                      </div>
+                      <div style={{ backgroundColor: '#f8faf9', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '12px' }}>
+                        <div style={{ color: '#6d6d6d', fontSize: '11px', marginBottom: '4px' }}>Payment</div>
+                        <select value={editableOrder.payment_status} onChange={e => handleOrderFieldChange('payment_status', e.target.value)} style={{ width: '100%', border: 'none', background: 'transparent', fontWeight: '700', outline: 'none' }}>
+                          <option>Paid</option>
+                          <option>Payment pending</option>
+                          <option>Refunded</option>
+                          <option>Failed</option>
+                        </select>
+                      </div>
+                      <div style={{ backgroundColor: '#f8faf9', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '12px' }}>
+                        <div style={{ color: '#6d6d6d', fontSize: '11px', marginBottom: '4px' }}>Fulfillment</div>
+                        <select value={editableOrder.fulfillment_status} onChange={e => handleOrderFieldChange('fulfillment_status', e.target.value)} style={{ width: '100%', border: 'none', background: 'transparent', fontWeight: '700', outline: 'none' }}>
+                          <option>Fulfilled</option>
+                          <option>In progress</option>
+                          <option>Not required</option>
+                          <option>Unfulfilled</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '18px' }}>
+                      <h3 style={{ margin: '0 0 14px 0', fontSize: '15px' }}>Customer Details</h3>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                          Customer Name
+                          <input value={editableOrder.customer} onChange={e => handleOrderFieldChange('customer', e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                          Email
+                          <input value={editableOrder.customer_email || ''} onChange={e => handleOrderFieldChange('customer_email', e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                          Phone
+                          <input value={editableOrder.customer_phone || ''} onChange={e => handleOrderFieldChange('customer_phone', e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                          Channel
+                          <input value={editableOrder.channel} onChange={e => handleOrderFieldChange('channel', e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                        </label>
+                        <label style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                          Shipping Address
+                          <textarea value={editableOrder.shipping_address || ''} onChange={e => handleOrderFieldChange('shipping_address', e.target.value)} rows={3} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'vertical', fontFamily: 'inherit' }} />
+                        </label>
+                        <label style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                          Billing Address
+                          <textarea value={editableOrder.billing_address || ''} onChange={e => handleOrderFieldChange('billing_address', e.target.value)} rows={3} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'vertical', fontFamily: 'inherit' }} />
+                        </label>
+                        <label style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                          Notes
+                          <textarea value={editableOrder.notes || ''} onChange={e => handleOrderFieldChange('notes', e.target.value)} rows={3} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'vertical', fontFamily: 'inherit' }} />
+                        </label>
+                      </div>
+                    </div>
+
+                    <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '18px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                        <h3 style={{ margin: 0, fontSize: '15px' }}>Ordered Products</h3>
+                        <button type="button" onClick={() => setEditableOrderItems(prev => [...prev, { name: 'New Product', image_url: '/images/hero_candle.png', quantity: 1, selected_fragrance: '', price: '₹0', total: '₹0' }])} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                          Add Item
+                        </button>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {editableOrderItems.length === 0 ? (
+                          <p style={{ margin: 0, color: '#8c8c8c', fontSize: '13px' }}>No products captured for this order.</p>
+                        ) : editableOrderItems.map((item, index) => (
+                          <div key={`${item.name}-${index}`} style={{ display: 'grid', gridTemplateColumns: '72px 1fr', gap: '12px', border: '1px solid #f0f0f0', borderRadius: '8px', padding: '12px' }}>
+                            <div style={{ position: 'relative', width: '72px', height: '72px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #e3e3e3', backgroundColor: '#f6f6f6' }}>
+                              <Image src={item.image_url || '/images/hero_candle.png'} alt={item.name} fill style={{ objectFit: 'cover' }} />
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 110px 110px', gap: '8px', alignItems: 'end' }}>
+                              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>
+                                Product
+                                <input value={item.name} onChange={e => handleOrderItemChange(index, 'name', e.target.value)} style={{ padding: '7px 9px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                              </label>
+                              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>
+                                Qty
+                                <input type="number" min="1" value={item.quantity} onChange={e => handleOrderItemChange(index, 'quantity', e.target.value)} style={{ padding: '7px 9px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                              </label>
+                              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>
+                                Price
+                                <input value={item.price} onChange={e => handleOrderItemChange(index, 'price', e.target.value)} style={{ padding: '7px 9px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                              </label>
+                              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>
+                                Total
+                                <input value={item.total} onChange={e => handleOrderItemChange(index, 'total', e.target.value)} style={{ padding: '7px 9px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                              </label>
+                              <label style={{ gridColumn: '1 / 4', display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>
+                                Fragrance
+                                <input value={item.selected_fragrance || ''} onChange={e => handleOrderItemChange(index, 'selected_fragrance', e.target.value)} style={{ padding: '7px 9px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                              </label>
+                              <label style={{ gridColumn: '1 / 4', display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>
+                                Product Image URL
+                                <input value={item.image_url} onChange={e => handleOrderItemChange(index, 'image_url', e.target.value)} style={{ padding: '7px 9px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                              </label>
+                              <button type="button" onClick={() => setEditableOrderItems(prev => prev.filter((_, itemIndex) => itemIndex !== index))} style={{ backgroundColor: '#ffebe9', color: '#ff4d4d', border: 'none', borderRadius: '6px', padding: '8px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '18px' }}>
+                      <h3 style={{ margin: '0 0 14px 0', fontSize: '15px' }}>Order Status</h3>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', fontSize: '13px' }}>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                          Order Number
+                          <input value={editableOrder.order_number} onChange={e => handleOrderFieldChange('order_number', e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                          Date
+                          <input value={editableOrder.date_str} onChange={e => handleOrderFieldChange('date_str', e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                          Delivery
+                          <select value={editableOrder.delivery_status || ''} onChange={e => handleOrderFieldChange('delivery_status', e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', backgroundColor: '#ffffff' }}>
+                            <option value="">None</option>
+                            <option>Delivered</option>
+                            <option>Shipped</option>
+                            <option>In transit</option>
+                            <option>Cancelled</option>
+                          </select>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ position: 'sticky', bottom: 0, backgroundColor: '#ffffff', borderTop: '1px solid #e3e3e3', padding: '16px 24px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                    <button type="button" onClick={() => { setEditableOrder({ ...selectedOrder }); setEditableOrderItems(parseOrderItems(selectedOrder)); }} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '9px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                      Reset
+                    </button>
+                    <button type="submit" disabled={savingOrder} style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '9px 16px', fontSize: '13px', fontWeight: '600', cursor: savingOrder ? 'not-allowed' : 'pointer', opacity: savingOrder ? 0.7 : 1 }}>
+                      {savingOrder ? 'Saving...' : 'Save Order Details'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
 
           </div>
         )}
@@ -2443,28 +3085,54 @@ export default function AdminDashboard() {
                 <span style={{ fontSize: '24px' }}>✍️</span>
                 <h1 style={{ fontSize: '20px', fontWeight: '700', margin: 0 }}>Content & Page Management</h1>
               </div>
-              <button 
-                onClick={() => setShowNewPostForm(true)}
-                style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}
-              >
-                Create Blog Post
-              </button>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <a href="/" target="_blank" rel="noreferrer" style={{ backgroundColor: '#ffffff', color: '#1a1a1a', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '500', textDecoration: 'none' }}>
+                  View Home Page
+                </a>
+                <button
+                  type="button"
+                  onClick={() => {
+                    resetBlogForm();
+                    setShowNewPostForm(true);
+                  }}
+                  style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}
+                >
+                  Create Blog Post
+                </button>
+              </div>
             </div>
 
             {/* Quick Post form */}
             {showNewPostForm && (
               <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', marginBottom: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: '700', margin: '0 0 16px 0' }}>Write New Article</h3>
+                <h3 style={{ fontSize: '14px', fontWeight: '700', margin: '0 0 16px 0' }}>{editingPostId ? 'Edit Article' : 'Write New Article'}</h3>
                 <form onSubmit={handleCreateBlogPost} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Article Title</label>
                     <input type="text" value={newPostTitle} onChange={e => setNewPostTitle(e.target.value)} required placeholder="e.g. Scenting Your Living Spaces: Tips & Tricks" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }} />
                   </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px 160px', gap: '12px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Author</label>
+                      <input type="text" value={newPostAuthor} onChange={e => setNewPostAuthor(e.target.value)} required style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Display Date</label>
+                      <input type="text" value={newPostDate} onChange={e => setNewPostDate(e.target.value)} placeholder="Jul 6, 2026" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Status</label>
+                      <select value={newPostStatus} onChange={e => setNewPostStatus(e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px', backgroundColor: '#ffffff' }}>
+                        <option value="Published">Published</option>
+                        <option value="Draft">Draft</option>
+                      </select>
+                    </div>
+                  </div>
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', padding: '10px 20px', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-                      Publish Article
+                      {editingPostId ? 'Update Article' : 'Publish Article'}
                     </button>
-                    <button type="button" onClick={() => setShowNewPostForm(false)} style={{ backgroundColor: 'transparent', border: '1px solid #ccc', padding: '10px 16px', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>
+                    <button type="button" onClick={resetBlogForm} style={{ backgroundColor: 'transparent', border: '1px solid #ccc', padding: '10px 16px', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>
                       Cancel
                     </button>
                   </div>
@@ -2472,42 +3140,186 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            {/* Content Lists */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
-              
-              {/* Blog Posts list */}
+            <form onSubmit={handleSaveHeroContent} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 420px', gap: '32px', alignItems: 'start' }}>
               <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px' }}>
-                <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>Active Blog Articles</h3>
+                <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>Home Hero Content</h3>
+
+                {contentSuccess && (
+                  <div style={{ backgroundColor: '#e2ece9', color: '#2d5c4d', padding: '10px 12px', borderRadius: '6px', fontSize: '12px', marginBottom: '16px' }}>
+                    {contentSuccess}
+                  </div>
+                )}
+                {contentError && (
+                  <div style={{ backgroundColor: '#ffebe9', color: '#b42318', padding: '10px 12px', borderRadius: '6px', fontSize: '12px', marginBottom: '16px' }}>
+                    {contentError}
+                  </div>
+                )}
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', fontSize: '13px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Eyebrow</label>
+                    <input value={heroEyebrow} onChange={e => setHeroEyebrow(e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Floating Tag</label>
+                    <input value={heroFloatingTag} onChange={e => setHeroFloatingTag(e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Title</label>
+                    <input value={heroTitle} onChange={e => setHeroTitle(e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Italic Title</label>
+                    <input value={heroItalicTitle} onChange={e => setHeroItalicTitle(e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                  </div>
+                  <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Description</label>
+                    <textarea value={heroDescription} onChange={e => setHeroDescription(e.target.value)} rows={4} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'vertical', fontFamily: 'inherit' }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Primary Button Text</label>
+                    <input value={heroPrimaryButtonText} onChange={e => setHeroPrimaryButtonText(e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Primary Button Link</label>
+                    <input value={heroPrimaryButtonHref} onChange={e => setHeroPrimaryButtonHref(e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Secondary Button Text</label>
+                    <input value={heroSecondaryButtonText} onChange={e => setHeroSecondaryButtonText(e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Secondary Button Link</label>
+                    <input value={heroSecondaryButtonHref} onChange={e => setHeroSecondaryButtonHref(e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                  </div>
+                </div>
+
+                <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', marginTop: '18px' }}>
+                  Save Page Content
+                </button>
+              </div>
+
+              <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>Hero Image Slider</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {blogPosts.map((post) => (
-                    <div key={post.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f9f9f9', paddingBottom: '8px' }}>
-                      <div>
-                        <strong style={{ fontSize: '13px', display: 'block' }}>{post.title}</strong>
-                        <span style={{ fontSize: '11px', color: '#6d6d6d' }}>{post.date} • {post.author}</span>
+                  {heroSliderImages.map((imageUrl, index) => (
+                    <div key={`${imageUrl}-${index}`} style={{ display: 'grid', gridTemplateColumns: '88px 1fr', gap: '12px', padding: '10px', border: '1px solid #e3e3e3', borderRadius: '8px', alignItems: 'center' }}>
+                      <div style={{ position: 'relative', width: '88px', height: '88px', borderRadius: '6px', overflow: 'hidden', backgroundColor: '#f6f6f6' }}>
+                        <Image src={imageUrl} alt={`Hero slider image ${index + 1}`} fill style={{ objectFit: 'cover' }} />
                       </div>
-                      <span style={{ fontSize: '11px', fontWeight: '600', color: '#2d5c4d', backgroundColor: '#e2ece9', padding: '2px 8px', borderRadius: '10px' }}>{post.status}</span>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: '12px', color: '#6d6d6d', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '8px' }}>{imageUrl}</div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                          <button type="button" onClick={() => { setModalSearchQuery(''); setMediaSelectorMode('hero'); setHeroMediaTargetIndex(index); setShowMediaModal(true); }} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                            Change
+                          </button>
+                          <button type="button" disabled={index === 0} onClick={() => setHeroSliderImages(prev => { const next = [...prev]; [next[index - 1], next[index]] = [next[index], next[index - 1]]; return next; })} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: index === 0 ? 'not-allowed' : 'pointer', opacity: index === 0 ? 0.5 : 1 }}>
+                            Up
+                          </button>
+                          <button type="button" disabled={index === heroSliderImages.length - 1} onClick={() => setHeroSliderImages(prev => { const next = [...prev]; [next[index + 1], next[index]] = [next[index], next[index + 1]]; return next; })} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: index === heroSliderImages.length - 1 ? 'not-allowed' : 'pointer', opacity: index === heroSliderImages.length - 1 ? 0.5 : 1 }}>
+                            Down
+                          </button>
+                          <button type="button" disabled={heroSliderImages.length === 1} onClick={() => setHeroSliderImages(prev => prev.filter((_, imageIndex) => imageIndex !== index))} style={{ backgroundColor: '#ffebe9', color: '#ff4d4d', border: 'none', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: heroSliderImages.length === 1 ? 'not-allowed' : 'pointer', opacity: heroSliderImages.length === 1 ? 0.5 : 1 }}>
+                            Remove
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
+                <button type="button" onClick={() => { setModalSearchQuery(''); setMediaSelectorMode('hero'); setHeroMediaTargetIndex(null); setShowMediaModal(true); }} style={{ width: '100%', marginTop: '14px', backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                  Add Slider Image
+                </button>
               </div>
+            </form>
 
-              {/* Navigation structure links preview */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginTop: '32px' }}>
               <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px' }}>
-                <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>Store Navigation Menus</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
-                  {[
-                    { menu: 'Main Menu', links: 'Home • Shop • Fragrance • Occasions • About Us • Blogs' },
-                    { menu: 'Footer Collection List', links: 'Scented Candles • Soy Wax • Jar Candles • Luxury Collection' },
-                    { menu: 'Footer Scent Categories', links: 'Vanilla • Lavender • Rose • Jasmine • Sandalwood • Coffee' }
-                  ].map((nav, idx) => (
-                    <div key={idx} style={{ padding: '10px', border: '1px solid #f0f0f0', borderRadius: '6px' }}>
-                      <strong style={{ display: 'block', marginBottom: '4px' }}>{nav.menu}</strong>
-                      <span style={{ color: '#6d6d6d', fontSize: '12px' }}>{nav.links}</span>
-                    </div>
-                  ))}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px', marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '15px', fontWeight: '700', margin: 0 }}>Active Blog Articles</h3>
+                  <button type="button" onClick={() => { resetBlogForm(); setShowNewPostForm(true); }} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                    Add Article
+                  </button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {blogPosts.length === 0 ? (
+                    <p style={{ margin: 0, color: '#8c8c8c', fontSize: '13px' }}>No blog articles yet.</p>
+                  ) : (
+                    blogPosts.map((post) => (
+                      <div key={post.id} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '12px', alignItems: 'center', borderBottom: '1px solid #f0f0f0', paddingBottom: '10px' }}>
+                        <div style={{ minWidth: 0 }}>
+                          <strong style={{ fontSize: '13px', display: 'block', marginBottom: '4px' }}>{post.title}</strong>
+                          <span style={{ fontSize: '11px', color: '#6d6d6d' }}>{post.date} - {post.author}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '11px', fontWeight: '600', color: post.status === 'Published' ? '#2d5c4d' : '#6d6d6d', backgroundColor: post.status === 'Published' ? '#e2ece9' : '#f1f1f1', padding: '2px 8px', borderRadius: '10px' }}>{post.status}</span>
+                          <button type="button" onClick={() => handleEditBlogPostClick(post)} style={{ background: 'transparent', border: 'none', color: '#2196f3', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>
+                            Edit
+                          </button>
+                          <button type="button" onClick={() => handleDeleteBlogPost(post.id)} style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 
+              <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px', marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '15px', fontWeight: '700', margin: 0 }}>Store Navigation Menus</h3>
+                  <button type="button" onClick={() => { resetNavMenuForm(); setShowNavMenuForm(true); }} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                    Add Menu
+                  </button>
+                </div>
+
+                {showNavMenuForm && (
+                  <form onSubmit={handleSaveNavigationMenu} style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '12px', border: '1px solid #e3e3e3', borderRadius: '8px', marginBottom: '14px', backgroundColor: '#fafafa' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Menu Name</label>
+                      <input value={navMenuName} onChange={e => setNavMenuName(e.target.value)} required placeholder="Main Menu" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Links</label>
+                      <textarea value={navMenuLinks} onChange={e => setNavMenuLinks(e.target.value)} required rows={3} placeholder="Home - Shop - About Us" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px', fontFamily: 'inherit', resize: 'vertical' }} />
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 12px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                        {editingNavMenuId ? 'Update Menu' : 'Create Menu'}
+                      </button>
+                      <button type="button" onClick={resetNavMenuForm} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 12px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
+                  {navigationMenus.length === 0 ? (
+                    <p style={{ margin: 0, color: '#8c8c8c', fontSize: '13px' }}>No navigation menus yet.</p>
+                  ) : (
+                    navigationMenus.map((nav) => (
+                      <div key={nav.id} style={{ padding: '10px', border: '1px solid #f0f0f0', borderRadius: '6px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'flex-start' }}>
+                          <div style={{ minWidth: 0 }}>
+                            <strong style={{ display: 'block', marginBottom: '4px' }}>{nav.menu}</strong>
+                            <span style={{ color: '#6d6d6d', fontSize: '12px' }}>{nav.links}</span>
+                          </div>
+                          <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                            <button type="button" onClick={() => handleEditNavMenuClick(nav)} style={{ background: 'transparent', border: 'none', color: '#2196f3', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>
+                              Edit
+                            </button>
+                            <button type="button" onClick={() => handleDeleteNavigationMenu(nav.id)} style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -3326,7 +4138,7 @@ export default function AdminDashboard() {
               {/* Product list */}
               <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                 <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>
-                  Catalog Listing
+                  Catalog Listing {catalogView === 'trash' ? 'Trash' : ''}
                 </h3>
 
                 {/* Search & Filter Bar OR Bulk Actions Bar */}
@@ -3356,79 +4168,115 @@ export default function AdminDashboard() {
                     </div>
 
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <button 
-                        type="button"
-                        onClick={() => {
-                          setBulkPrice('');
-                          setBulkCollection('');
-                          setShowBulkEditModal(true);
-                        }}
-                        style={{ 
-                          backgroundColor: '#ffffff', 
-                          border: '1px solid #cccccc', 
-                          borderRadius: '6px', 
-                          padding: '6px 12px', 
-                          fontSize: '12px', 
-                          fontWeight: '600', 
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          transition: 'all 0.2s',
-                          height: '32px'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.borderColor = '#1a1a1a'}
-                        onMouseLeave={(e) => e.currentTarget.style.borderColor = '#cccccc'}
-                      >
-                        ✏️ Bulk Edit
-                      </button>
-                      <button 
-                        type="button"
-                        onClick={handleBulkDelete}
-                        style={{ 
-                          backgroundColor: '#ffebe9', 
-                          color: '#ff4d4d',
-                          border: 'none', 
-                          borderRadius: '6px', 
-                          padding: '6px 12px', 
-                          fontSize: '12px', 
-                          fontWeight: '600', 
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          transition: 'background-color 0.2s',
-                          height: '32px'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ffdcd9'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ffebe9'}
-                      >
-                        🗑️ Delete
-                      </button>
+                      {catalogView === 'active' ? (
+                        <>
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              setBulkPrice('');
+                              setBulkCollection('');
+                              setShowBulkEditModal(true);
+                            }}
+                            style={{ 
+                              backgroundColor: '#ffffff', 
+                              border: '1px solid #cccccc', 
+                              borderRadius: '6px', 
+                              padding: '6px 12px', 
+                              fontSize: '12px', 
+                              fontWeight: '600', 
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              transition: 'all 0.2s',
+                              height: '32px'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.borderColor = '#1a1a1a'}
+                            onMouseLeave={(e) => e.currentTarget.style.borderColor = '#cccccc'}
+                          >
+                            Bulk Edit
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={handleBulkDelete}
+                            style={{ 
+                              backgroundColor: '#ffebe9', 
+                              color: '#ff4d4d',
+                              border: 'none', 
+                              borderRadius: '6px', 
+                              padding: '6px 12px', 
+                              fontSize: '12px', 
+                              fontWeight: '600', 
+                              cursor: 'pointer',
+                              transition: 'background-color 0.2s',
+                              height: '32px'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ffdcd9'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ffebe9'}
+                          >
+                            Move to Trash
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button type="button" onClick={handleBulkRestore} style={{ backgroundColor: '#e2ece9', color: '#2d5c4d', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', height: '32px' }}>
+                            Restore
+                          </button>
+                          <button type="button" onClick={handleBulkPermanentDelete} style={{ backgroundColor: '#ffebe9', color: '#ff4d4d', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', height: '32px' }}>
+                            Delete Forever
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px' }}>
                     <button 
                       type="button"
+                      onClick={() => {
+                        setCatalogView('active');
+                        setSelectedCatalogProductIds([]);
+                      }}
                       style={{ 
                         display: 'flex', 
                         alignItems: 'center', 
                         gap: '8px', 
                         padding: '8px 14px', 
-                        border: '1px solid #cccccc', 
+                        border: catalogView === 'active' ? '1px solid #1a1a1a' : '1px solid #cccccc', 
                         borderRadius: '6px', 
                         fontSize: '13px', 
                         fontWeight: '600', 
-                        backgroundColor: '#ffffff', 
+                        backgroundColor: catalogView === 'active' ? '#f4f6f8' : '#ffffff', 
                         cursor: 'pointer',
                         color: '#1a1a1a',
                         transition: 'all 0.2s',
                         height: '36px'
                       }}
                     >
-                      <span>All</span>
-                      <span style={{ fontSize: '10px', color: '#6d6d6d' }}>↕</span>
+                      <span>Active ({activeProductsCount})</span>
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setCatalogView('trash');
+                        setSelectedCatalogProductIds([]);
+                      }}
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px', 
+                        padding: '8px 14px', 
+                        border: catalogView === 'trash' ? '1px solid #1a1a1a' : '1px solid #cccccc', 
+                        borderRadius: '6px', 
+                        fontSize: '13px', 
+                        fontWeight: '600', 
+                        backgroundColor: catalogView === 'trash' ? '#f4f6f8' : '#ffffff', 
+                        cursor: 'pointer',
+                        color: '#1a1a1a',
+                        height: '36px'
+                      }}
+                    >
+                      Trash ({trashedProductsCount})
                     </button>
 
                     <div style={{ position: 'relative', width: '320px', maxWidth: '100%' }}>
@@ -3456,7 +4304,7 @@ export default function AdminDashboard() {
                 {loadingProducts ? (
                   <p style={{ color: '#9e9e9e', fontSize: '13px' }}>Loading catalog...</p>
                 ) : filteredProducts.length === 0 ? (
-                  <p style={{ color: '#9e9e9e', fontSize: '13px' }}>No products found in store catalog.</p>
+                  <p style={{ color: '#9e9e9e', fontSize: '13px' }}>{catalogView === 'trash' ? 'No products in trash.' : 'No products found in store catalog.'}</p>
                 ) : (
                   <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', overflow: 'hidden' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
@@ -3506,10 +4354,10 @@ export default function AdminDashboard() {
                                   borderRadius: '12px', 
                                   fontSize: '11px', 
                                   fontWeight: '600', 
-                                  backgroundColor: '#e2ece9', 
-                                  color: '#2d5c4d' 
+                                  backgroundColor: prod.deleted_at ? '#f1f1f1' : '#e2ece9', 
+                                  color: prod.deleted_at ? '#6d6d6d' : '#2d5c4d' 
                                 }}>
-                                  Active
+                                  {prod.deleted_at ? 'Trashed' : 'Active'}
                                 </span>
                               </td>
                               <td style={{ padding: '12px 16px' }}>
@@ -3523,6 +4371,14 @@ export default function AdminDashboard() {
                               </td>
                               <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                                  <button
+                                    onClick={() => setSelectedDetailProduct(prod)}
+                                    style={{ background: 'transparent', border: 'none', color: '#1a1a1a', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
+                                  >
+                                    View
+                                  </button>
+                                  {catalogView === 'active' ? (
+                                    <>
                                   <button 
                                     onClick={() => handleEditProductClick(prod)}
                                     style={{ background: 'transparent', border: 'none', color: '#2196f3', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
@@ -3550,6 +4406,23 @@ export default function AdminDashboard() {
                                   >
                                     Delete
                                   </button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <button
+                                        onClick={() => handleRestoreProduct(prod.id)}
+                                        style={{ background: 'transparent', border: 'none', color: '#2d5c4d', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
+                                      >
+                                        Restore
+                                      </button>
+                                      <button
+                                        onClick={() => handlePermanentDeleteProduct(prod.id)}
+                                        style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
+                                      >
+                                        Delete Forever
+                                      </button>
+                                    </>
+                                  )}
                                 </div>
                               </td>
                             </tr>
@@ -3560,6 +4433,80 @@ export default function AdminDashboard() {
                   </div>
                 )}
               </div>
+
+              {selectedDetailProduct && (
+                <div
+                  role="dialog"
+                  aria-modal="true"
+                  style={{
+                    position: 'fixed',
+                    inset: 0,
+                    backgroundColor: 'rgba(0,0,0,0.35)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '24px',
+                    zIndex: 1000
+                  }}
+                  onClick={() => setSelectedDetailProduct(null)}
+                >
+                  <div
+                    style={{ width: 'min(720px, 100%)', maxHeight: '90vh', overflowY: 'auto', backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #e3e3e3', boxShadow: '0 16px 40px rgba(0,0,0,0.18)' }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', padding: '20px 24px', borderBottom: '1px solid #e3e3e3' }}>
+                      <div>
+                        <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', lineHeight: 1.35 }}>{selectedDetailProduct.name}</h3>
+                        <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', backgroundColor: selectedDetailProduct.deleted_at ? '#f1f1f1' : '#e2ece9', color: selectedDetailProduct.deleted_at ? '#6d6d6d' : '#2d5c4d' }}>
+                          {selectedDetailProduct.deleted_at ? 'Trashed' : 'Active'}
+                        </span>
+                      </div>
+                      <button type="button" onClick={() => setSelectedDetailProduct(null)} style={{ width: '32px', height: '32px', border: '1px solid #cccccc', borderRadius: '6px', backgroundColor: '#ffffff', cursor: 'pointer', fontSize: '18px', lineHeight: 1 }}>
+                        x
+                      </button>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '20px', padding: '24px' }}>
+                      <div style={{ position: 'relative', width: '160px', height: '160px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e3e3e3', backgroundColor: '#f6f6f6' }}>
+                        <Image src={selectedDetailProduct.image_url} alt={selectedDetailProduct.name} fill style={{ objectFit: 'cover' }} />
+                      </div>
+                      <div style={{ display: 'grid', gap: '14px', fontSize: '13px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '12px' }}>
+                          <div>
+                            <div style={{ color: '#6d6d6d', marginBottom: '4px' }}>Price</div>
+                            <strong>₹{selectedDetailProduct.price}</strong>
+                          </div>
+                          <div>
+                            <div style={{ color: '#6d6d6d', marginBottom: '4px' }}>Category</div>
+                            <strong>{selectedDetailProduct.collection}</strong>
+                          </div>
+                          <div>
+                            <div style={{ color: '#6d6d6d', marginBottom: '4px' }}>Slug</div>
+                            <strong>{selectedDetailProduct.slug}</strong>
+                          </div>
+                        </div>
+                        <div>
+                          <div style={{ color: '#6d6d6d', marginBottom: '4px' }}>Description</div>
+                          <p style={{ margin: 0, lineHeight: 1.55 }}>{selectedDetailProduct.description}</p>
+                        </div>
+                        <div>
+                          <div style={{ color: '#6d6d6d', marginBottom: '4px' }}>Features</div>
+                          <p style={{ margin: 0, lineHeight: 1.55 }}>{selectedDetailProduct.features}</p>
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', paddingTop: '4px' }}>
+                          {!selectedDetailProduct.deleted_at && (
+                            <a href={`/products/${selectedDetailProduct.slug}`} target="_blank" rel="noreferrer" style={{ color: '#2196f3', fontSize: '13px', fontWeight: '600', textDecoration: 'none' }}>
+                              Open live product page
+                            </a>
+                          )}
+                          <button type="button" onClick={() => handleEditProductClick(selectedDetailProduct)} disabled={!!selectedDetailProduct.deleted_at} style={{ background: 'transparent', border: 'none', color: selectedDetailProduct.deleted_at ? '#a0a0a0' : '#2d5c4d', cursor: selectedDetailProduct.deleted_at ? 'not-allowed' : 'pointer', padding: 0, fontSize: '13px', fontWeight: '600' }}>
+                            Edit product
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
             </div>
 
@@ -3749,9 +4696,12 @@ export default function AdminDashboard() {
             }}>
               {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid #e3e3e3' }}>
-                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#1a1a1a' }}>Select Media Asset</h3>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#1a1a1a' }}>{mediaSelectorMode === 'hero' ? 'Select Hero Slider Image' : 'Select Media Asset'}</h3>
                 <button 
-                  onClick={() => setShowMediaModal(false)}
+                  onClick={() => {
+                    setShowMediaModal(false);
+                    setHeroMediaTargetIndex(null);
+                  }}
                   style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#8c8c8c' }}
                 >
                   ✕
@@ -3799,6 +4749,8 @@ export default function AdminDashboard() {
                           const data = await uploadMediaFile(file);
                           if (mediaSelectorMode === 'product') {
                             setGalleryImages((prev) => [...prev.filter(img => img !== '/images/hero_candle.png'), data.url]);
+                          } else if (mediaSelectorMode === 'hero') {
+                            applyHeroImageSelection(data.url);
                           }
                           await fetchMediaFiles();
                           setShowMediaModal(false);
@@ -3841,6 +4793,8 @@ export default function AdminDashboard() {
                             if (prev.includes(file.url)) return prev;
                             return [...prev.filter(img => img !== '/images/hero_candle.png'), file.url];
                           });
+                        } else if (mediaSelectorMode === 'hero') {
+                          applyHeroImageSelection(file.url);
                         }
                         setShowMediaModal(false);
                       }}

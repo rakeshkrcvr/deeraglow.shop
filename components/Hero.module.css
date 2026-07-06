@@ -156,6 +156,9 @@
 
 .imageWrapper {
   position: relative;
+  width: 600px;
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--shadow-lg);
@@ -168,8 +171,18 @@
 }
 
 .heroImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   display: block;
   object-fit: cover;
+  opacity: 0;
+  transition: opacity 600ms ease;
+}
+
+.heroImgActive {
+  opacity: 1;
 }
 
 .shadowOverlay {
@@ -180,6 +193,64 @@
   height: 100%;
   box-shadow: inset 0 0 100px rgba(27, 59, 43, 0.05);
   pointer-events: none;
+  z-index: 2;
+}
+
+.sliderButton {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  background: rgba(250, 248, 245, 0.9);
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-50%);
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.sliderButton:hover {
+  background: var(--background);
+  transform: translateY(-50%) scale(1.05);
+}
+
+.sliderButtonPrev {
+  left: 16px;
+}
+
+.sliderButtonNext {
+  right: 16px;
+}
+
+.sliderDots {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  z-index: 3;
+  display: flex;
+  gap: 8px;
+  transform: translateX(-50%);
+}
+
+.sliderDot {
+  width: 8px;
+  height: 8px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  padding: 0;
+}
+
+.sliderDotActive {
+  background: var(--accent);
 }
 
 .floatingTag {

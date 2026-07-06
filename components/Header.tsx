@@ -174,17 +174,53 @@ export default function Header() {
     return `checkout-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   };
 
+  const buildCustomerName = () => [deliveryFirstName, deliveryLastName].map(value => value.trim()).filter(Boolean).join(' ');
+  const buildDeliveryAddress = () => [
+    deliveryAddress.trim(),
+    deliveryApartment.trim(),
+    [deliveryCity.trim(), deliveryState.trim()].filter(Boolean).join(', '),
+    deliveryPincode.trim() ? `PIN ${deliveryPincode.trim()}` : ''
+  ].filter(Boolean).join('\n');
+  const normalizedPhone = deliveryPhone.replace(/\D/g, '').slice(-10);
+  const customerPhone = normalizedPhone ? `+91 ${normalizedPhone}` : deliveryPhone.trim();
+
   const saveOrderToDb = async (paymentId: string) => {
+    const customerName = buildCustomerName();
+    const deliveryAddressText = buildDeliveryAddress();
+    const activeCoupon = appliedDiscount?.title || automaticCoupon;
+
     try {
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customer: `${deliveryFirstName} ${deliveryLastName}`,
+          customer: customerName,
           total_price: `₹${estimatedTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
           payment_status: 'Paid',
           items_count: `${cartCount} item${cartCount > 1 ? 's' : ''}`,
-          channel: 'Deeksha<>Razorpay'
+          channel: 'Deeksha<>Razorpay',
+          customer_email: deliveryEmail.trim(),
+          customer_phone: customerPhone,
+          shipping_address: deliveryAddressText,
+          billing_address: deliveryAddressText,
+          notes: [
+            `Razorpay payment ID: ${paymentId}`,
+            `First name: ${deliveryFirstName.trim()}`,
+            `Last name: ${deliveryLastName.trim()}`,
+            `Email: ${deliveryEmail.trim()}`,
+            `Phone: ${customerPhone}`,
+            `Coupon: ${activeCoupon}`,
+            `Save info: ${saveInfo ? 'Yes' : 'No'}`
+          ].join('\n'),
+          order_items: cartItems.map(item => ({
+            product_id: item.product.id,
+            name: item.product.name,
+            image_url: item.product.image_url,
+            quantity: item.quantity,
+            selected_fragrance: item.selectedFragrance,
+            price: `₹${Number(item.product.price).toLocaleString('en-IN')}`,
+            total: `₹${(Number(item.product.price) * item.quantity).toLocaleString('en-IN')}`
+          }))
         })
       });
       if (res.ok) {
@@ -210,6 +246,24 @@ export default function Header() {
   };
 
   const handleProceedToRazorpay = async () => {
+    const isCheckoutFormValid =
+      deliveryEmail.trim().includes('@') &&
+      deliveryFirstName.trim() !== '' &&
+      deliveryLastName.trim() !== '' &&
+      deliveryAddress.trim() !== '' &&
+      deliveryCity.trim() !== '' &&
+      deliveryState.trim() !== '' &&
+      deliveryPincode.trim() !== '' &&
+      normalizedPhone.length === 10;
+
+    if (!isCheckoutFormValid) {
+      alert('Please fill all delivery details before payment.');
+      return;
+    }
+
+    const customerName = buildCustomerName();
+    const deliveryAddressText = buildDeliveryAddress();
+
     setIsProcessingCheckout(true);
     try {
       const settingsRes = await fetch('/api/admin/settings');
@@ -229,19 +283,19 @@ export default function Header() {
         name: "Deeksha Candles",
         description: `Order Payment for ${cartCount} items`,
         image: "/images/hero_candle.png",
-        handler: function (response: RazorpayResponse) {
+        handler: async function (response: RazorpayResponse) {
           setIsProcessingCheckout(false);
+          await markDiscountUsed();
+          await saveOrderToDb(response.razorpay_payment_id);
           setCheckoutSuccess(true);
-          markDiscountUsed();
-          saveOrderToDb(response.razorpay_payment_id);
         },
         prefill: {
-          name: `${deliveryFirstName} ${deliveryLastName}`,
-          email: deliveryEmail,
-          contact: deliveryPhone
+          name: customerName,
+          email: deliveryEmail.trim(),
+          contact: normalizedPhone
         },
         notes: {
-          address: `${deliveryAddress}, ${deliveryApartment}, ${deliveryCity}, ${deliveryState} - ${deliveryPincode}`
+          address: deliveryAddressText
         },
         theme: {
           color: "#0b1a11"
@@ -1284,7 +1338,7 @@ export default function Header() {
                         type="tel" 
                         placeholder="Phone Number (10 digits)" 
                         value={deliveryPhone}
-                        onChange={(e) => setDeliveryPhone(e.target.value)}
+                        onChange={(e) => setDeliveryPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                         style={{ 
                           border: 'none', 
                           outline: 'none', 

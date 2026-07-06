@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { getErrorMessage } from '@/lib/errors';
+import { getProducts } from '@/lib/products';
 
 // Helper to format string into URL-friendly slug
 const generateSlug = (name: string) => {
@@ -11,6 +12,17 @@ const generateSlug = (name: string) => {
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '');
 };
+
+// GET: Fetch products for admin, including trash
+export async function GET() {
+  try {
+    const products = await getProducts({ includeDeleted: true });
+    return NextResponse.json(products);
+  } catch (error: unknown) {
+    console.error('Error fetching admin products:', error);
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
+  }
+}
 
 // POST: Add new product
 export async function POST(request: Request) {
@@ -96,17 +108,44 @@ export async function PUT(request: Request) {
   }
 }
 
-// DELETE: Remove product
+// PATCH: Restore product from trash
+export async function PATCH(request: Request) {
+  try {
+    const body = await request.json();
+    const { id, action } = body;
+
+    if (!id || action !== 'restore') {
+      return NextResponse.json({ error: 'Missing product ID or invalid action' }, { status: 400 });
+    }
+
+    await getProducts({ includeDeleted: true });
+    await sql`UPDATE products SET deleted_at = NULL WHERE id = ${parseInt(id, 10)}`;
+
+    return NextResponse.json({ success: true });
+  } catch (error: unknown) {
+    console.error('Error restoring product:', error);
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
+  }
+}
+
+// DELETE: Move product to trash, or permanently remove with permanent=true
 export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    const permanent = searchParams.get('permanent') === 'true';
 
     if (!id) {
       return NextResponse.json({ error: 'Missing product ID' }, { status: 400 });
     }
 
-    await sql`DELETE FROM products WHERE id = ${parseInt(id, 10)}`;
+    await getProducts({ includeDeleted: true });
+
+    if (permanent) {
+      await sql`DELETE FROM products WHERE id = ${parseInt(id, 10)}`;
+    } else {
+      await sql`UPDATE products SET deleted_at = NOW() WHERE id = ${parseInt(id, 10)}`;
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {

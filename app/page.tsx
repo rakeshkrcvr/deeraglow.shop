@@ -7,13 +7,15 @@ import AuraCollection from '@/components/AuraCollection';
 import Newsletter from '@/components/Newsletter';
 import Footer from '@/components/Footer';
 import { getProducts } from '@/lib/products';
+import { getStoreSettings } from '@/lib/settings';
 import styles from './page.module.css';
 
-export const revalidate = 3600; // Cache page for an hour
+export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   // Fetch products from Neon PostgreSQL
   const products = await getProducts();
+  const settings = await getStoreSettings();
 
   return (
     <div className={styles.page}>
@@ -22,7 +24,18 @@ export default async function Home() {
 
       <main className={styles.main}>
         {/* Hero Section */}
-        <Hero />
+        <Hero
+          eyebrow={settings.heroEyebrow}
+          title={settings.heroTitle}
+          italicTitle={settings.heroItalicTitle}
+          description={settings.heroDescription}
+          primaryButtonText={settings.heroPrimaryButtonText}
+          primaryButtonHref={settings.heroPrimaryButtonHref}
+          secondaryButtonText={settings.heroSecondaryButtonText}
+          secondaryButtonHref={settings.heroSecondaryButtonHref}
+          floatingTag={settings.heroFloatingTag}
+          sliderImages={settings.heroSliderImages}
+        />
 
         {/* Collections Promotional Bar */}
         <Collections />

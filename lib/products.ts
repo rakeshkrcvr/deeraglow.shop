@@ -25,9 +25,10 @@ export interface Product {
   acc_instructions?: string;
   acc_shipping?: string;
   images?: string;
+  deleted_at?: string | null;
 }
 
-export async function getProducts(): Promise<Product[]> {
+export async function getProducts(options: { includeDeleted?: boolean } = {}): Promise<Product[]> {
   try {
     // 1. Ensure table exists
     await sql`
@@ -51,7 +52,8 @@ export async function getProducts(): Promise<Product[]> {
         acc_ingredients TEXT DEFAULT '100% natural soy wax, phthalate-free premium fragrance oils, cotton-core crackling wooden wicks, reusable amber glass jars. No paraffin, no artificial dyes. Every jar is hand-poured and cured for 48 hours before it ships.',
         acc_instructions TEXT DEFAULT 'Trim the wooden wick to 1/4 inch before each burn. Allow the wax to melt to the edges on first burn to avoid tunneling. Never burn for more than 4 hours at a time. Keep away from drafts, children, and pets.',
         acc_shipping TEXT DEFAULT 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the candle is completely unburned and in its original packaging.',
-        images TEXT DEFAULT ''
+        images TEXT DEFAULT '',
+        deleted_at TIMESTAMPTZ DEFAULT NULL
       )
     `;
 
@@ -60,7 +62,7 @@ export async function getProducts(): Promise<Product[]> {
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS slug VARCHAR(255) UNIQUE`;
     } catch {}
 
-    const migrations = ['tagline', 'fragrances', 'dimensions', 'weight', 'burn_hours', 'acc_burn_time', 'acc_ingredients', 'acc_instructions', 'acc_shipping', 'images'];
+    const migrations = ['tagline', 'fragrances', 'dimensions', 'weight', 'burn_hours', 'acc_burn_time', 'acc_ingredients', 'acc_instructions', 'acc_shipping', 'images', 'deleted_at'];
     for (const m of migrations) {
       try {
         if (m === 'tagline') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS tagline VARCHAR(500) DEFAULT '100% natural soy wax — wooden wick — 30-40 hours burn time'`;
@@ -73,13 +75,14 @@ export async function getProducts(): Promise<Product[]> {
         if (m === 'acc_instructions') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS acc_instructions TEXT DEFAULT 'Trim the wooden wick to 1/4 inch before each burn. Allow the wax to melt to the edges on first burn to avoid tunneling. Never burn for more than 4 hours at a time. Keep away from drafts, children, and pets.'`;
         if (m === 'acc_shipping') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS acc_shipping TEXT DEFAULT 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the candle is completely unburned and in its original packaging.'`;
         if (m === 'images') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS images TEXT DEFAULT ''`;
+        if (m === 'deleted_at') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ DEFAULT NULL`;
       } catch (e) {
         console.error('Migration error for ' + m + ':', e);
       }
     }
 
-    // 3. Query products
-    let products = await sql`SELECT * FROM products ORDER BY id ASC` as unknown as Product[];
+    // 3. Query all products so deleted seeded items are not recreated.
+    let allProducts = await sql`SELECT * FROM products ORDER BY id ASC` as unknown as Product[];
 
     // 4. Define all standard products with their unique SEO slugs
     const initialProducts = [
@@ -253,8 +256,8 @@ export async function getProducts(): Promise<Product[]> {
     // Seed missing products or update missing slugs
     let needsRequery = false;
     for (const prod of initialProducts) {
-      const dbProdByName = products.find(p => p.name === prod.name);
-      const dbProdBySlug = products.find(p => p.slug === prod.slug);
+      const dbProdByName = allProducts.find(p => p.name === prod.name);
+      const dbProdBySlug = allProducts.find(p => p.slug === prod.slug);
 
       if (!dbProdByName && !dbProdBySlug) {
         console.log(`Seeding missing product: ${prod.name}`);
@@ -289,10 +292,14 @@ export async function getProducts(): Promise<Product[]> {
     }
 
     if (needsRequery) {
-      products = await sql`SELECT * FROM products ORDER BY id ASC` as unknown as Product[];
+      allProducts = await sql`SELECT * FROM products ORDER BY id ASC` as unknown as Product[];
     }
 
-    return products;
+    if (options.includeDeleted) {
+      return allProducts;
+    }
+
+    return allProducts.filter(product => !product.deleted_at);
   } catch (error) {
     console.error("Error in getProducts db transaction:", error);
     return [];

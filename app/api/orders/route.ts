@@ -1,27 +1,93 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { getErrorMessage } from '@/lib/errors';
+import { getProducts } from '@/lib/products';
 
 type CountRow = { count: string };
 type MaxOrderRow = { max: number | null };
+type OrderRow = {
+  id: number;
+  order_number: string;
+  date_str: string;
+  customer: string;
+  channel: string;
+  total_price: string;
+  payment_status: string;
+  fulfillment_status: string;
+  items_count: string;
+  delivery_status: string | null;
+  customer_email?: string | null;
+  customer_phone?: string | null;
+  shipping_address?: string | null;
+  billing_address?: string | null;
+  notes?: string | null;
+  order_items?: string | null;
+};
+
+const ensureOrdersTable = async () => {
+  await sql`
+    CREATE TABLE IF NOT EXISTS orders (
+      id SERIAL PRIMARY KEY,
+      order_number VARCHAR(50) NOT NULL,
+      date_str VARCHAR(100) NOT NULL,
+      customer VARCHAR(255) NOT NULL,
+      channel VARCHAR(255) NOT NULL,
+      total_price VARCHAR(50) NOT NULL,
+      payment_status VARCHAR(50) NOT NULL,
+      fulfillment_status VARCHAR(50) NOT NULL,
+      items_count VARCHAR(50) NOT NULL,
+      delivery_status VARCHAR(50),
+      customer_email VARCHAR(255),
+      customer_phone VARCHAR(50),
+      shipping_address TEXT,
+      billing_address TEXT,
+      notes TEXT,
+      order_items TEXT
+    )
+  `;
+
+  const migrations = ['customer_email', 'customer_phone', 'shipping_address', 'billing_address', 'notes', 'order_items'];
+  for (const migration of migrations) {
+    try {
+      if (migration === 'customer_email') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_email VARCHAR(255)`;
+      if (migration === 'customer_phone') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_phone VARCHAR(50)`;
+      if (migration === 'shipping_address') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipping_address TEXT`;
+      if (migration === 'billing_address') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS billing_address TEXT`;
+      if (migration === 'notes') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS notes TEXT`;
+      if (migration === 'order_items') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_items TEXT`;
+    } catch (error) {
+      console.error('Order migration error for ' + migration + ':', error);
+    }
+  }
+};
+
+const buildFallbackItems = async (order: OrderRow, index: number) => {
+  if ((parseInt(order.items_count, 10) || 0) <= 0) {
+    return [];
+  }
+
+  const products = await getProducts();
+  const product = products[index % Math.max(products.length, 1)];
+  const itemTotal = order.total_price && order.total_price !== '₹0.00' ? order.total_price : product ? `₹${product.price}` : '₹0';
+
+  if (!product) {
+    return [];
+  }
+
+  return [{
+    product_id: product.id,
+    name: product.name,
+    image_url: product.image_url,
+    quantity: Math.max(parseInt(order.items_count, 10) || 1, 1),
+    selected_fragrance: product.fragrances || product.features || 'Default',
+    price: `₹${product.price}`,
+    total: itemTotal
+  }];
+};
 
 export async function GET() {
   try {
-    // 1. Create table if not exists
-    await sql`
-      CREATE TABLE IF NOT EXISTS orders (
-        id SERIAL PRIMARY KEY,
-        order_number VARCHAR(50) NOT NULL,
-        date_str VARCHAR(100) NOT NULL,
-        customer VARCHAR(255) NOT NULL,
-        channel VARCHAR(255) NOT NULL,
-        total_price VARCHAR(50) NOT NULL,
-        payment_status VARCHAR(50) NOT NULL,
-        fulfillment_status VARCHAR(50) NOT NULL,
-        items_count VARCHAR(50) NOT NULL,
-        delivery_status VARCHAR(50)
-      )
-    `;
+    await ensureOrdersTable();
 
     // 2. Check if table is empty
     const checkCount = await sql`SELECT COUNT(*) FROM orders` as unknown as CountRow[];
@@ -57,7 +123,35 @@ export async function GET() {
       console.log('Seeded orders table successfully.');
     }
 
-    const orders = await sql`SELECT * FROM orders ORDER BY id DESC`;
+    let orders = await sql`SELECT * FROM orders ORDER BY id DESC` as unknown as OrderRow[];
+    const zeroItemOrders = orders.filter(order => (parseInt(order.items_count, 10) || 0) <= 0 && order.order_items !== '[]');
+    for (const order of zeroItemOrders) {
+      await sql`UPDATE orders SET order_items = '[]' WHERE id = ${order.id}`;
+    }
+    if (zeroItemOrders.length > 0) {
+      orders = await sql`SELECT * FROM orders ORDER BY id DESC` as unknown as OrderRow[];
+    }
+
+    const ordersNeedingItems = orders.filter(order => !order.order_items);
+    for (let i = 0; i < ordersNeedingItems.length; i++) {
+      const order = ordersNeedingItems[i];
+      const fallbackItems = await buildFallbackItems(order, i);
+      await sql`
+        UPDATE orders
+        SET order_items = ${JSON.stringify(fallbackItems)},
+            customer_email = COALESCE(customer_email, ${`${order.customer.toLowerCase().replace(/\s+/g, '.')}@example.com`}),
+            customer_phone = COALESCE(customer_phone, ''),
+            shipping_address = COALESCE(shipping_address, 'Address not captured'),
+            billing_address = COALESCE(billing_address, 'Same as shipping address'),
+            notes = COALESCE(notes, '')
+        WHERE id = ${order.id}
+      `;
+    }
+
+    if (ordersNeedingItems.length > 0) {
+      orders = await sql`SELECT * FROM orders ORDER BY id DESC` as unknown as OrderRow[];
+    }
+
     return NextResponse.json(orders);
   } catch (error: unknown) {
     console.error('Error in orders API:', error);
@@ -68,7 +162,11 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { customer, total_price, payment_status, items_count, channel } = body;
+    await ensureOrdersTable();
+    const {
+      customer, total_price, payment_status, items_count, channel,
+      customer_email, customer_phone, shipping_address, billing_address, notes, order_items
+    } = body;
     
     // Generate order number
     const rows = await sql`SELECT MAX(id) FROM orders` as unknown as MaxOrderRow[];
@@ -87,7 +185,10 @@ export async function POST(request: Request) {
     }).replace(',', ' at').toLowerCase();
 
     await sql`
-      INSERT INTO orders (order_number, date_str, customer, channel, total_price, payment_status, fulfillment_status, items_count, delivery_status)
+      INSERT INTO orders (
+        order_number, date_str, customer, channel, total_price, payment_status, fulfillment_status, items_count, delivery_status,
+        customer_email, customer_phone, shipping_address, billing_address, notes, order_items
+      )
       VALUES (
         ${order_number}, 
         ${formattedDate}, 
@@ -97,13 +198,61 @@ export async function POST(request: Request) {
         ${payment_status || 'Paid'}, 
         'In progress', 
         ${items_count}, 
-        'Shipped'
+        'Shipped',
+        ${customer_email || ''},
+        ${customer_phone || ''},
+        ${shipping_address || ''},
+        ${billing_address || shipping_address || ''},
+        ${notes || ''},
+        ${JSON.stringify(Array.isArray(order_items) ? order_items : [])}
       )
     `;
 
     return NextResponse.json({ success: true, order_number });
   } catch (error: unknown) {
     console.error('Error creating order:', error);
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    await ensureOrdersTable();
+
+    const {
+      id, order_number, date_str, customer, channel, total_price,
+      payment_status, fulfillment_status, items_count, delivery_status,
+      customer_email, customer_phone, shipping_address, billing_address, notes, order_items
+    } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: 'Missing order ID' }, { status: 400 });
+    }
+
+    await sql`
+      UPDATE orders
+      SET order_number = ${order_number},
+          date_str = ${date_str},
+          customer = ${customer},
+          channel = ${channel},
+          total_price = ${total_price},
+          payment_status = ${payment_status},
+          fulfillment_status = ${fulfillment_status},
+          items_count = ${items_count},
+          delivery_status = ${delivery_status || ''},
+          customer_email = ${customer_email || ''},
+          customer_phone = ${customer_phone || ''},
+          shipping_address = ${shipping_address || ''},
+          billing_address = ${billing_address || ''},
+          notes = ${notes || ''},
+          order_items = ${JSON.stringify(Array.isArray(order_items) ? order_items : [])}
+      WHERE id = ${parseInt(id, 10)}
+    `;
+
+    return NextResponse.json({ success: true });
+  } catch (error: unknown) {
+    console.error('Error updating order:', error);
     return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }
