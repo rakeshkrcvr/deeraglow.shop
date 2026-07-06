@@ -39,6 +39,7 @@ export default function Header() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
+  const [abandonedCheckoutReference, setAbandonedCheckoutReference] = useState('');
   
   // Delivery address fields
   const [deliveryEmail, setDeliveryEmail] = useState('');
@@ -132,6 +133,14 @@ export default function Header() {
   };
 
   const normalizedHeaderLogoUrl = normalizeAssetUrl(headerLogoUrl);
+
+  const createCheckoutReference = () => {
+    if (typeof window !== 'undefined' && window.crypto?.randomUUID) {
+      return window.crypto.randomUUID();
+    }
+
+    return `checkout-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  };
 
   const saveOrderToDb = async (paymentId: string) => {
     try {
@@ -253,6 +262,72 @@ export default function Header() {
   const crossSellPages = Math.max(1, Math.ceil(availableCrossSells.length / 3));
   const boundedSlideIndex = Math.min(slideIndex, crossSellPages - 1);
   const displayedCrossSells = availableCrossSells.slice(boundedSlideIndex * 3, boundedSlideIndex * 3 + 3);
+
+  React.useEffect(() => {
+    if (!isCheckoutOpen || checkoutSuccess || cartCount === 0 || !abandonedCheckoutReference) return;
+
+    const hasCheckoutDetails = [
+      deliveryEmail,
+      deliveryFirstName,
+      deliveryLastName,
+      deliveryAddress,
+      deliveryCity,
+      deliveryState,
+      deliveryPincode,
+      deliveryPhone
+    ].some((value) => value.trim() !== '');
+
+    if (!hasCheckoutDetails) return;
+
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        await fetch('/api/admin/abandoned', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            client_reference: abandonedCheckoutReference,
+            email: deliveryEmail,
+            first_name: deliveryFirstName,
+            last_name: deliveryLastName,
+            address: deliveryAddress,
+            apartment: deliveryApartment,
+            city: deliveryCity,
+            state: deliveryState,
+            pincode: deliveryPincode,
+            phone: deliveryPhone,
+            total_price: `₹${estimatedTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+            items_count: `${cartCount} item${cartCount > 1 ? 's' : ''}`
+          }),
+          signal: controller.signal
+        });
+      } catch (err) {
+        if ((err as DOMException).name !== 'AbortError') {
+          console.error('Error saving abandoned checkout:', err);
+        }
+      }
+    }, 800);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, [
+    isCheckoutOpen,
+    checkoutSuccess,
+    cartCount,
+    estimatedTotal,
+    abandonedCheckoutReference,
+    deliveryEmail,
+    deliveryFirstName,
+    deliveryLastName,
+    deliveryAddress,
+    deliveryApartment,
+    deliveryCity,
+    deliveryState,
+    deliveryPincode,
+    deliveryPhone
+  ]);
 
   return (
     <>
@@ -639,6 +714,7 @@ export default function Header() {
                     className={styles.checkoutBtnPill} 
                     onClick={() => {
                       setCheckoutSuccess(false);
+                      setAbandonedCheckoutReference(createCheckoutReference());
                       setIsCheckoutOpen(true);
                     }}
                   >
@@ -650,7 +726,13 @@ export default function Header() {
                     </div>
                   </button>
                   
-                  <button className={styles.clearBtn} onClick={clearCart}>
+                  <button
+                    className={styles.clearBtn}
+                    onClick={() => {
+                      setAbandonedCheckoutReference('');
+                      clearCart();
+                    }}
+                  >
                     Clear Cart
                   </button>
                 </div>
