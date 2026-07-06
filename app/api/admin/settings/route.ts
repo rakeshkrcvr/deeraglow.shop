@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { sql } from '@/lib/db';
 import { getErrorMessage } from '@/lib/errors';
 import { defaultStoreSettings, ensureStoreSettingsTable, getStoreSettings } from '@/lib/settings';
 
 export async function GET() {
   try {
-    return NextResponse.json(await getStoreSettings());
+    return NextResponse.json(await getStoreSettings(), {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
+      }
+    });
   } catch (error: unknown) {
     console.error('Error fetching settings:', error);
     return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
@@ -29,9 +34,13 @@ export async function POST(request: Request) {
       }
     }
 
+    revalidatePath('/');
+
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     console.error('Error saving settings:', error);
     return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }
+
+export const dynamic = 'force-dynamic';

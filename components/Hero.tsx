@@ -17,6 +17,21 @@ interface HeroProps {
   sliderImages?: string;
 }
 
+type HeroSettings = Required<HeroProps>;
+
+const defaultHeroSettings: HeroSettings = {
+  eyebrow: 'DEEKSHA RITUALS',
+  title: 'The Art of',
+  italicTitle: 'Slow Burning',
+  description: 'Ancestral scents mindfully crafted in small batches. Poured with 100% organic soy wax, pure botanical extracts, and wood wicks to ground your soul and illuminate your sanctuary.',
+  primaryButtonText: 'Discover Our Rituals',
+  primaryButtonHref: '#products',
+  secondaryButtonText: 'Our Philosophy',
+  secondaryButtonHref: '#story',
+  floatingTag: 'Batch No. 042 / Sandalwood',
+  sliderImages: '["/images/hero_candle.png"]'
+};
+
 const getHeroImages = (sliderImages?: string) => {
   if (!sliderImages) return ['/images/hero_candle.png'];
   try {
@@ -34,21 +49,69 @@ const getHeroImages = (sliderImages?: string) => {
 };
 
 export default function Hero({
-  eyebrow = 'DEEKSHA RITUALS',
-  title = 'The Art of',
-  italicTitle = 'Slow Burning',
-  description = 'Ancestral scents mindfully crafted in small batches. Poured with 100% organic soy wax, pure botanical extracts, and wood wicks to ground your soul and illuminate your sanctuary.',
-  primaryButtonText = 'Discover Our Rituals',
-  primaryButtonHref = '#products',
-  secondaryButtonText = 'Our Philosophy',
-  secondaryButtonHref = '#story',
-  floatingTag = 'Batch No. 042 / Sandalwood',
-  sliderImages
+  eyebrow = defaultHeroSettings.eyebrow,
+  title = defaultHeroSettings.title,
+  italicTitle = defaultHeroSettings.italicTitle,
+  description = defaultHeroSettings.description,
+  primaryButtonText = defaultHeroSettings.primaryButtonText,
+  primaryButtonHref = defaultHeroSettings.primaryButtonHref,
+  secondaryButtonText = defaultHeroSettings.secondaryButtonText,
+  secondaryButtonHref = defaultHeroSettings.secondaryButtonHref,
+  floatingTag = defaultHeroSettings.floatingTag,
+  sliderImages = defaultHeroSettings.sliderImages
 }: HeroProps) {
+  const [heroSettings, setHeroSettings] = useState<HeroSettings>({
+    eyebrow,
+    title,
+    italicTitle,
+    description,
+    primaryButtonText,
+    primaryButtonHref,
+    secondaryButtonText,
+    secondaryButtonHref,
+    floatingTag,
+    sliderImages
+  });
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const fetchLatestHeroSettings = async () => {
+      try {
+        const res = await fetch('/api/admin/settings', { cache: 'no-store' });
+        if (!res.ok) return;
+
+        const settings = await res.json() as Partial<Record<string, string>>;
+        if (isCancelled) return;
+
+        setHeroSettings((current) => ({
+          eyebrow: settings.heroEyebrow || current.eyebrow,
+          title: settings.heroTitle || current.title,
+          italicTitle: settings.heroItalicTitle || current.italicTitle,
+          description: settings.heroDescription || current.description,
+          primaryButtonText: settings.heroPrimaryButtonText || current.primaryButtonText,
+          primaryButtonHref: settings.heroPrimaryButtonHref || current.primaryButtonHref,
+          secondaryButtonText: settings.heroSecondaryButtonText || current.secondaryButtonText,
+          secondaryButtonHref: settings.heroSecondaryButtonHref || current.secondaryButtonHref,
+          floatingTag: settings.heroFloatingTag || current.floatingTag,
+          sliderImages: settings.heroSliderImages || current.sliderImages
+        }));
+      } catch (err) {
+        console.error('Error loading live hero settings:', err);
+      }
+    };
+
+    fetchLatestHeroSettings();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
   const heroImages = useMemo(() => {
-    const images = getHeroImages(sliderImages);
+    const images = getHeroImages(heroSettings.sliderImages);
     return images.length > 0 ? images : ['/images/hero_candle.png'];
-  }, [sliderImages]);
+  }, [heroSettings.sliderImages]);
   const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
@@ -77,21 +140,21 @@ export default function Hero({
         
         {/* Left Column: Text & CTA */}
         <div className={styles.textContent}>
-          <span className={styles.tagline}>{eyebrow}</span>
+          <span className={styles.tagline}>{heroSettings.eyebrow}</span>
           <h1 className={styles.title}>
-            {title} <br />
-            <span className={styles.italicTitle}>{italicTitle}</span>
+            {heroSettings.title} <br />
+            <span className={styles.italicTitle}>{heroSettings.italicTitle}</span>
           </h1>
           <p className={styles.description}>
-            {description}
+            {heroSettings.description}
           </p>
           
           <div className={styles.ctaGroup}>
-            <a href={primaryButtonHref} className={styles.primaryBtn}>
-              {primaryButtonText}
+            <a href={heroSettings.primaryButtonHref} className={styles.primaryBtn}>
+              {heroSettings.primaryButtonText}
             </a>
-            <a href={secondaryButtonHref} className={styles.secondaryBtn}>
-              {secondaryButtonText}
+            <a href={heroSettings.secondaryButtonHref} className={styles.secondaryBtn}>
+              {heroSettings.secondaryButtonText}
             </a>
           </div>
 
@@ -175,7 +238,7 @@ export default function Hero({
           {/* Subtle overlay elements */}
           <div className={styles.floatingTag}>
             <span className={styles.goldDot}></span>
-            <span>{floatingTag}</span>
+            <span>{heroSettings.floatingTag}</span>
           </div>
         </div>
 
