@@ -128,17 +128,18 @@ interface MediaFile {
   created_at: string;
 }
 
+type AdminTab = 'orders' | 'drafts' | 'abandoned' | 'products' | 'collections' | 'files' | 'discounts' | 'customers' | 'growth' | 'content' | 'analytics' | 'settings';
+
 export default function AdminDashboard() {
-  const [authorized] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return localStorage.getItem('deeksha_admin_logged_in') === 'true';
-  });
-  const [activeTab, setActiveTab] = useState<'orders' | 'drafts' | 'abandoned' | 'products' | 'collections' | 'files' | 'discounts' | 'customers' | 'growth' | 'content' | 'analytics' | 'settings'>('orders');
+  const [authorized, setAuthorized] = useState(false);
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
+  const [activeTab, setActiveTab] = useState<AdminTab>('orders');
   
   // Collapsible Dropdown States
   const [isOrdersExpanded, setIsOrdersExpanded] = useState(true);
   const [isProductsExpanded, setIsProductsExpanded] = useState(true);
   const [isCustomersExpanded, setIsCustomersExpanded] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Data Lists
   const [products, setProducts] = useState<Product[]>([]);
@@ -312,6 +313,13 @@ export default function AdminDashboard() {
     { day: 'Sat', sales: 42000 },
     { day: 'Sun', sales: 38000 }
   ];
+
+  const selectAdminTab = (tab: AdminTab) => {
+    setActiveTab(tab);
+    if (typeof window !== 'undefined' && window.innerWidth < 900) {
+      setIsSidebarOpen(false);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -717,8 +725,11 @@ export default function AdminDashboard() {
   useEffect(() => {
     const isLoggedIn = localStorage.getItem('deeksha_admin_logged_in') === 'true';
     if (!isLoggedIn) {
+      setHasCheckedAuth(true);
       router.push('/admin');
     } else {
+      setAuthorized(true);
+      setHasCheckedAuth(true);
       void Promise.resolve().then(() => {
         fetchProducts();
         fetchOrders();
@@ -730,6 +741,17 @@ export default function AdminDashboard() {
         fetchSettings();
       });
     }
+  }, []);
+
+  useEffect(() => {
+    const closeSidebarOnDesktop = () => {
+      if (window.innerWidth >= 900) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', closeSidebarOnDesktop);
+    return () => window.removeEventListener('resize', closeSidebarOnDesktop);
   }, []);
 
   const handleLogout = () => {
@@ -1359,7 +1381,7 @@ export default function AdminDashboard() {
     }
   };
 
-  if (!authorized) {
+  if (!hasCheckedAuth || !authorized) {
     return (
       <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f6f6f6', alignItems: 'center', justifyContent: 'center', color: '#1a1a1a', fontFamily: 'sans-serif' }}>
         <p>Verifying admin session...</p>
@@ -1379,10 +1401,32 @@ export default function AdminDashboard() {
   });
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f6f6f6', color: '#1a1a1a', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
+    <div className="admin-shell" style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f6f6f6', color: '#1a1a1a', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
+      <div className="admin-mobile-topbar">
+        <button
+          type="button"
+          className="admin-menu-button"
+          aria-label="Open dashboard menu"
+          aria-expanded={isSidebarOpen}
+          onClick={() => setIsSidebarOpen(true)}
+        >
+          ☰
+        </button>
+        <div>
+          <strong>Deeksha Candles</strong>
+          <span>Store Admin</span>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        aria-label="Close dashboard menu"
+        className={`admin-sidebar-scrim ${isSidebarOpen ? 'is-open' : ''}`}
+        onClick={() => setIsSidebarOpen(false)}
+      />
       
       {/* 1. Left Shopify Sidebar */}
-      <aside style={{ width: '240px', backgroundColor: '#ebebeb', borderRight: '1px solid #dcdcdc', display: 'flex', flexDirection: 'column', padding: '16px 0', flexShrink: 0 }}>
+      <aside className={`admin-sidebar ${isSidebarOpen ? 'is-open' : ''}`} style={{ width: '240px', backgroundColor: '#ebebeb', borderRight: '1px solid #dcdcdc', display: 'flex', flexDirection: 'column', padding: '16px 0', flexShrink: 0 }}>
         
         {/* Brand/Store Indicator */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 16px 20px 16px', borderBottom: '1px solid #dcdcdc', marginBottom: '16px' }}>
@@ -1402,7 +1446,7 @@ export default function AdminDashboard() {
           <button
             onClick={() => {
               setIsOrdersExpanded(!isOrdersExpanded);
-              setActiveTab('orders');
+              selectAdminTab('orders');
             }}
             style={{
               display: 'flex',
@@ -1432,7 +1476,7 @@ export default function AdminDashboard() {
           {isOrdersExpanded && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '2px', marginBottom: '4px' }}>
               <button
-                onClick={() => setActiveTab('drafts')}
+                onClick={() => selectAdminTab('drafts')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -1453,7 +1497,7 @@ export default function AdminDashboard() {
               </button>
 
               <button
-                onClick={() => setActiveTab('abandoned')}
+                onClick={() => selectAdminTab('abandoned')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -1479,7 +1523,7 @@ export default function AdminDashboard() {
           <button
             onClick={() => {
               setIsProductsExpanded(!isProductsExpanded);
-              setActiveTab('products');
+              selectAdminTab('products');
             }}
             style={{
               display: 'flex',
@@ -1509,7 +1553,7 @@ export default function AdminDashboard() {
           {isProductsExpanded && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '2px', marginBottom: '4px' }}>
               <button
-                onClick={() => setActiveTab('collections')}
+                onClick={() => selectAdminTab('collections')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -1529,7 +1573,7 @@ export default function AdminDashboard() {
               </button>
 
               <button
-                onClick={() => setActiveTab('products')}
+                onClick={() => selectAdminTab('products')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -1566,7 +1610,7 @@ export default function AdminDashboard() {
               {/* Active Files Tab */}
               <button
                 type="button"
-                onClick={() => setActiveTab('files')}
+                onClick={() => selectAdminTab('files')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -1591,7 +1635,7 @@ export default function AdminDashboard() {
           <button
             onClick={() => {
               setIsCustomersExpanded(!isCustomersExpanded);
-              setActiveTab('customers');
+              selectAdminTab('customers');
             }}
             style={{
               display: 'flex',
@@ -1643,7 +1687,7 @@ export default function AdminDashboard() {
 
           {/* Growth Tab */}
           <button
-            onClick={() => setActiveTab('growth')}
+            onClick={() => selectAdminTab('growth')}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -1667,7 +1711,7 @@ export default function AdminDashboard() {
 
           {/* Discounts Tab Link */}
           <button
-            onClick={() => setActiveTab('discounts')}
+            onClick={() => selectAdminTab('discounts')}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -1691,7 +1735,7 @@ export default function AdminDashboard() {
 
           {/* Content Tab */}
           <button
-            onClick={() => setActiveTab('content')}
+            onClick={() => selectAdminTab('content')}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -1715,7 +1759,7 @@ export default function AdminDashboard() {
 
           {/* Analytics Tab */}
           <button
-            onClick={() => setActiveTab('analytics')}
+            onClick={() => selectAdminTab('analytics')}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -1739,7 +1783,7 @@ export default function AdminDashboard() {
 
           {/* Settings Tab */}
           <button
-            onClick={() => setActiveTab('settings')}
+            onClick={() => selectAdminTab('settings')}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -1785,7 +1829,7 @@ export default function AdminDashboard() {
       </aside>
 
       {/* 2. Main Area */}
-      <main style={{ flexGrow: 1, padding: '32px 40px', overflowY: 'auto' }}>
+      <main className="admin-main" style={{ flexGrow: 1, padding: '32px 40px', overflowY: 'auto' }}>
         
         {/* TAB 1: ORDERS DASHBOARD */}
         {activeTab === 'orders' && (
