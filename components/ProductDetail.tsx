@@ -5,11 +5,32 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { Product } from '@/lib/products';
+import {
+  CUSTOMER_REVIEWS_STORAGE_KEY,
+  CustomerReview,
+  defaultCustomerReviews,
+  normalizeCustomerReviews
+} from '@/lib/customerReviews';
+import {
+  CUSTOMER_MOMENTS_STORAGE_KEY,
+  CustomerMoment,
+  defaultCustomerMoments,
+  normalizeCustomerMoments
+} from '@/lib/customerMoments';
 import styles from './ProductDetail.module.css';
 
 interface ProductDetailProps {
   product: Product;
   allProducts: Product[];
+}
+
+interface ReviewFormData {
+  name: string;
+  city: string;
+  rating: string;
+  quote: string;
+  avatar: string;
+  verified: boolean;
 }
 
 export default function ProductDetail({ product, allProducts }: ProductDetailProps) {
@@ -20,6 +41,20 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
   const [adding, setAdding] = useState<boolean>(false);
   const [addingRelatedId, setAddingRelatedId] = useState<number | null>(null);
   const [showStickyActions, setShowStickyActions] = useState<boolean>(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState<boolean>(false);
+  const [isPhotoGalleryOpen, setIsPhotoGalleryOpen] = useState<boolean>(false);
+  const [activeReviewIndex, setActiveReviewIndex] = useState<number>(0);
+  const [activeMomentIndex, setActiveMomentIndex] = useState<number>(0);
+  const [reviewCards, setReviewCards] = useState<CustomerReview[]>(defaultCustomerReviews);
+  const [customerMoments, setCustomerMoments] = useState<CustomerMoment[]>(defaultCustomerMoments);
+  const [reviewForm, setReviewForm] = useState<ReviewFormData>({
+    name: '',
+    city: '',
+    rating: '5',
+    quote: '',
+    avatar: '',
+    verified: true
+  });
   
   const fragrancesList = useMemo(() => (
     (product.fragrances || 'Oud, Jasmin, Rose, Vanilla')
@@ -55,6 +90,53 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const loadReviews = () => {
+      try {
+        const savedReviews = localStorage.getItem(CUSTOMER_REVIEWS_STORAGE_KEY);
+        if (savedReviews) {
+          setReviewCards(normalizeCustomerReviews(JSON.parse(savedReviews)));
+        } else {
+          localStorage.setItem(CUSTOMER_REVIEWS_STORAGE_KEY, JSON.stringify(defaultCustomerReviews));
+        }
+      } catch {
+        setReviewCards(defaultCustomerReviews);
+      }
+    };
+
+    loadReviews();
+    window.addEventListener('storage', loadReviews);
+    window.addEventListener('deeksha-reviews-updated', loadReviews);
+    return () => {
+      window.removeEventListener('storage', loadReviews);
+      window.removeEventListener('deeksha-reviews-updated', loadReviews);
+    };
+  }, []);
+
+  useEffect(() => {
+    const loadMoments = () => {
+      try {
+        const savedMoments = localStorage.getItem(CUSTOMER_MOMENTS_STORAGE_KEY);
+        if (savedMoments) {
+          setCustomerMoments(normalizeCustomerMoments(JSON.parse(savedMoments)));
+        } else {
+          localStorage.setItem(CUSTOMER_MOMENTS_STORAGE_KEY, JSON.stringify(defaultCustomerMoments));
+          setCustomerMoments(defaultCustomerMoments);
+        }
+      } catch {
+        setCustomerMoments(defaultCustomerMoments);
+      }
+    };
+
+    loadMoments();
+    window.addEventListener('storage', loadMoments);
+    window.addEventListener('deeksha-moments-updated', loadMoments);
+    return () => {
+      window.removeEventListener('storage', loadMoments);
+      window.removeEventListener('deeksha-moments-updated', loadMoments);
+    };
   }, []);
 
   const currentPrice = product.price;
@@ -102,6 +184,42 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
     .filter(p => p.id !== product.id)
     .slice(0, 3);
 
+  const totalReviewCount = 1284 + Math.max(0, reviewCards.length - defaultCustomerReviews.length);
+  const visibleReviewCards = [0, 1, 2]
+    .map(offset => reviewCards[(activeReviewIndex + offset) % reviewCards.length])
+    .filter(Boolean);
+  const activeMoment = customerMoments[activeMomentIndex] || customerMoments[0] || defaultCustomerMoments[0];
+
+  const customerVideos = [
+    {
+      title: 'Unboxing Experience',
+      author: 'Neha S.',
+      duration: '0:18',
+      image: '/images/cozy_room_glow.png'
+    },
+    {
+      title: 'Burn Test - 40+ Hours',
+      author: 'Rahul M.',
+      duration: '0:24',
+      image: '/images/hero_candle.png'
+    },
+    {
+      title: 'My Evening Routine',
+      author: 'Ananya P.',
+      duration: '0:31',
+      image: '/images/rose_candle.png'
+    }
+  ];
+
+  const reviewStats = [
+    { icon: '👥', value: '5,000+', label: 'Happy Customers' },
+    { icon: '☆', value: '4.9/5', label: 'Average Rating' },
+    { icon: '◒', value: '100%', label: 'Natural Soy Wax' },
+    { icon: '◷', value: '40+', label: 'Hours Burn Time' },
+    { icon: '□', value: 'Premium', label: 'Gift Packaging' },
+    { icon: '▱', value: 'Pan India', label: 'Free Shipping' }
+  ];
+
   // Get product gallery images
   const pool = [
     '/images/hero_candle.png',
@@ -119,6 +237,61 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
   } else {
     images = [product.image_url, otherImages[0], otherImages[1], otherImages[2]];
   }
+
+  const handleReviewFormChange = (field: keyof ReviewFormData, value: string | boolean) => {
+    setReviewForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleReviewSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const submittedReview: CustomerReview = {
+      id: `review-${Date.now()}`,
+      name: reviewForm.name.trim() || 'Happy Customer',
+      city: reviewForm.city.trim() || 'India',
+      time: 'Just now',
+      helpful: 0,
+      avatar: reviewForm.avatar.trim().startsWith('/') ? reviewForm.avatar.trim() : product.image_url,
+      quote: reviewForm.quote.trim(),
+      rating: Number(reviewForm.rating),
+      verified: reviewForm.verified,
+      productId: product.id,
+      productName: product.name,
+      productImage: product.image_url
+    };
+
+    if (!submittedReview.quote) return;
+
+    setReviewCards(prev => {
+      const nextReviews = [submittedReview, ...prev];
+      localStorage.setItem(CUSTOMER_REVIEWS_STORAGE_KEY, JSON.stringify(nextReviews));
+      window.dispatchEvent(new Event('deeksha-reviews-updated'));
+      return nextReviews;
+    });
+    setActiveReviewIndex(0);
+    setReviewForm({
+      name: '',
+      city: '',
+      rating: '5',
+      quote: '',
+      avatar: '',
+      verified: true
+    });
+    setIsReviewModalOpen(false);
+  };
+
+  const showPreviousReviews = () => {
+    setActiveReviewIndex(prev => (prev === 0 ? reviewCards.length - 1 : prev - 1));
+  };
+
+  const showNextReviews = () => {
+    setActiveReviewIndex(prev => (prev + 1) % reviewCards.length);
+  };
+
+  const openPhotoGallery = (index = 0) => {
+    setActiveMomentIndex(index);
+    setIsPhotoGalleryOpen(true);
+  };
 
   return (
     <div className={styles.productDetailContainer}>
@@ -437,45 +610,252 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
 
         {/* Section: What Customers Are Saying */}
         <section className={styles.testimonialsSection}>
-          <div className={styles.storyHeader}>
-            <span className={styles.storySubtitle}>LOVED BY 1,284 PEOPLE</span>
-            <h2 className={styles.storyTitle}>What customers are saying</h2>
-            <div className={styles.storyLine}></div>
+          <div className={styles.customerLoveHeader}>
+            <div className={styles.customerLoveScore}>
+              <span>★★★★★</span>
+              <strong>4.9/5</strong>
+            </div>
+            <h2>What Our Customers Love</h2>
+            <p>Based on {totalReviewCount.toLocaleString('en-IN')} verified reviews from happy customers</p>
           </div>
-          <div className={styles.storyGrid}>
-            <div className={styles.storyCard}>
-              <div className={styles.cardStars}>★★★★★</div>
-              <p className={styles.feedbackText}>&quot;The whole flat smells like a five-star hotel lobby now. Burns evenly, no tunnelling even on the first light.&quot;</p>
-              <div className={styles.buyerInfo}>
-                <div className={styles.buyerAvatar}>P</div>
-                <div className={styles.buyerDetails}>
-                  <strong>Priya M.</strong>
-                  <span>Verified buyer</span>
+
+          <div className={styles.customerLoveGrid}>
+            <div className={styles.reviewSlider}>
+              <div className={styles.reviewSliderTop}>
+                <span>{activeReviewIndex + 1} / {reviewCards.length}</span>
+                <div className={styles.reviewSliderControls}>
+                  <button type="button" onClick={showPreviousReviews} aria-label="Previous reviews">‹</button>
+                  <button type="button" onClick={showNextReviews} aria-label="Next reviews">›</button>
+                </div>
+              </div>
+
+              <div className={styles.reviewSlideTrack}>
+                {visibleReviewCards.map((review) => (
+                  <article key={`${review.name}-${review.time}-${review.quote}`} className={styles.reviewCard}>
+                    <div className={styles.reviewTop}>
+                      <Image src={review.avatar} alt={review.name} width={64} height={64} className={styles.reviewAvatar} />
+                      <div className={styles.reviewIdentity}>
+                        <strong>{review.name}</strong>
+                        <span>⌖ {review.city}</span>
+                        {review.verified && <em>✓ Verified Purchase</em>}
+                      </div>
+                      <time>{review.time}</time>
+                    </div>
+                    <div className={styles.reviewStars}>{'★'.repeat(review.rating)}</div>
+                    <p className={styles.reviewQuote}>{review.quote}</p>
+                    <div className={styles.reviewProduct}>
+                      <div>
+                        <span>Bought:</span>
+                        <strong>{review.productName}</strong>
+                      </div>
+                      <Image src={review.productImage} alt={review.productName} width={88} height={88} className={styles.reviewProductImage} />
+                    </div>
+                    <div className={styles.helpfulRow}>♥ Helpful ({review.helpful})</div>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <aside className={styles.ratingPanel}>
+              <h3>Customer Rating</h3>
+              <strong className={styles.ratingNumber}>4.9/5</strong>
+              <div className={styles.ratingStars}>★★★★★</div>
+              <p>Based on {totalReviewCount.toLocaleString('en-IN')}<br />verified reviews</p>
+              {[
+                ['5', '95%', '95%'],
+                ['4', '4%', '4%'],
+                ['3', '1%', '1%'],
+                ['2', '0%', '0%'],
+                ['1', '0%', '0%']
+              ].map(([star, width, percent]) => (
+                <div key={star} className={styles.ratingBarRow}>
+                  <span>{star} ★</span>
+                  <div className={styles.ratingTrack}>
+                    <div style={{ width }}></div>
+                  </div>
+                  <strong>{percent}</strong>
+                </div>
+              ))}
+              <button type="button" className={styles.reviewButton}>See all reviews →</button>
+              <button type="button" className={styles.writeReviewButton} onClick={() => setIsReviewModalOpen(true)}>Write a review</button>
+            </aside>
+          </div>
+
+          {isReviewModalOpen && (
+            <div className={styles.reviewModalBackdrop} role="presentation" onClick={() => setIsReviewModalOpen(false)}>
+              <div className={styles.reviewModal} role="dialog" aria-modal="true" aria-labelledby="review-modal-title" onClick={(event) => event.stopPropagation()}>
+                <div className={styles.reviewModalHeader}>
+                  <div>
+                    <span>Share your experience</span>
+                    <h3 id="review-modal-title">Write a review</h3>
+                  </div>
+                  <button type="button" onClick={() => setIsReviewModalOpen(false)} aria-label="Close review form">×</button>
+                </div>
+
+                <form className={styles.reviewForm} onSubmit={handleReviewSubmit}>
+                  <div className={styles.reviewFormGrid}>
+                    <label>
+                      Name
+                      <input
+                        value={reviewForm.name}
+                        onChange={(event) => handleReviewFormChange('name', event.target.value)}
+                        placeholder="Priya Mehra"
+                      />
+                    </label>
+                    <label>
+                      City
+                      <input
+                        value={reviewForm.city}
+                        onChange={(event) => handleReviewFormChange('city', event.target.value)}
+                        placeholder="Delhi"
+                      />
+                    </label>
+                  </div>
+
+                  <label>
+                    Rating
+                    <select value={reviewForm.rating} onChange={(event) => handleReviewFormChange('rating', event.target.value)}>
+                      <option value="5">5 stars</option>
+                      <option value="4">4 stars</option>
+                      <option value="3">3 stars</option>
+                      <option value="2">2 stars</option>
+                      <option value="1">1 star</option>
+                    </select>
+                  </label>
+
+                  <label>
+                    Review
+                    <textarea
+                      value={reviewForm.quote}
+                      onChange={(event) => handleReviewFormChange('quote', event.target.value)}
+                      placeholder="Tell us what you loved about the candle..."
+                      required
+                      rows={5}
+                    />
+                  </label>
+
+                  <label>
+                    Photo path
+                    <input
+                      value={reviewForm.avatar}
+                      onChange={(event) => handleReviewFormChange('avatar', event.target.value)}
+                      placeholder="/images/cozy_room_glow.png"
+                    />
+                  </label>
+
+                  <label className={styles.reviewCheckbox}>
+                    <input
+                      type="checkbox"
+                      checked={reviewForm.verified}
+                      onChange={(event) => handleReviewFormChange('verified', event.target.checked)}
+                    />
+                    Verified purchase
+                  </label>
+
+                  <div className={styles.reviewFormActions}>
+                    <button type="button" onClick={() => setIsReviewModalOpen(false)}>Cancel</button>
+                    <button type="submit">Add review</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {isPhotoGalleryOpen && (
+            <div className={styles.photoModalBackdrop} role="presentation" onClick={() => setIsPhotoGalleryOpen(false)}>
+              <div className={styles.photoModal} role="dialog" aria-modal="true" aria-labelledby="photo-modal-title" onClick={(event) => event.stopPropagation()}>
+                <div className={styles.photoModalHeader}>
+                  <div>
+                    <span>Customer Photos</span>
+                    <h3 id="photo-modal-title">Real Moments, Real Homes</h3>
+                  </div>
+                  <button type="button" onClick={() => setIsPhotoGalleryOpen(false)} aria-label="Close photo gallery">×</button>
+                </div>
+
+                <div className={styles.photoModalBody}>
+                  <div className={styles.photoModalPreview}>
+                    <Image
+                      src={activeMoment.image}
+                      alt={activeMoment.alt}
+                      width={980}
+                      height={640}
+                      className={styles.photoModalImage}
+                    />
+                  </div>
+
+                  <div className={styles.photoModalGrid}>
+                    {customerMoments.map((moment, index) => (
+                      <button
+                        key={moment.id}
+                        type="button"
+                        className={`${styles.photoModalThumb} ${index === activeMomentIndex ? styles.photoModalThumbActive : ''}`}
+                        onClick={() => setActiveMomentIndex(index)}
+                        aria-label={`Show photo ${index + 1}`}
+                      >
+                        <Image src={moment.image} alt={moment.alt} width={160} height={110} />
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-            <div className={styles.storyCard}>
-              <div className={styles.cardStars}>★★★★★</div>
-              <p className={styles.feedbackText}>&quot;Bought this as a gift and ended up ordering three more for myself. The wooden wick crackle is so calming.&quot;</p>
-              <div className={styles.buyerInfo}>
-                <div className={styles.buyerAvatar}>A</div>
-                <div className={styles.buyerDetails}>
-                  <strong>Aditya R.</strong>
-                  <span>Verified buyer</span>
+          )}
+
+          <div className={styles.customerMediaBlock}>
+            <div className={styles.customerMediaHeading}>
+              <div>
+                <h3>Real Moments, Real Homes</h3>
+                <p>Loved by 1,000+ customers</p>
+              </div>
+              <button type="button" onClick={() => openPhotoGallery(0)}>View all photos →</button>
+            </div>
+            <div className={styles.customerPhotoGrid}>
+              {customerMoments.slice(0, 8).map((moment, index) => (
+                <button
+                  key={moment.id}
+                  type="button"
+                  className={styles.customerPhotoButton}
+                  onClick={() => openPhotoGallery(index)}
+                >
+                  <Image src={moment.image} alt={moment.alt} width={180} height={120} className={styles.customerPhoto} />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.customerMediaBlock}>
+            <div className={styles.customerMediaHeading}>
+              <h3>Watch What Our Customers Say</h3>
+              <a href="#instagram">View all videos →</a>
+            </div>
+            <div className={styles.customerVideoGrid}>
+              {customerVideos.map((video) => (
+                <article key={video.title} className={styles.customerVideoCard}>
+                  <div className={styles.videoThumb}>
+                    <Image src={video.image} alt={video.title} width={260} height={150} />
+                    <span className={styles.playButton}>▶</span>
+                    <time>{video.duration}</time>
+                  </div>
+                  <div className={styles.videoInfo}>
+                    <h4>{video.title}</h4>
+                    <p>by {video.author}</p>
+                    <span>✓ Verified Purchase</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.reviewStatsStrip}>
+            {reviewStats.map((stat) => (
+              <div key={stat.label} className={styles.reviewStat}>
+                <span>{stat.icon}</span>
+                <div>
+                  <strong>{stat.value}</strong>
+                  <p>{stat.label}</p>
                 </div>
               </div>
-            </div>
-            <div className={styles.storyCard}>
-              <div className={styles.cardStars}>★★★★★</div>
-              <p className={styles.feedbackText}>&quot;Genuinely lasted the full 40 hours they promised. Rare for a candle at this price. Reordering already.&quot;</p>
-              <div className={styles.buyerInfo}>
-                <div className={styles.buyerAvatar}>S</div>
-                <div className={styles.buyerDetails}>
-                  <strong>Sneha K.</strong>
-                  <span>Verified buyer</span>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </section>
 

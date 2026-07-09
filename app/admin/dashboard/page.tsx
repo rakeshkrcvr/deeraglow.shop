@@ -3,6 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import {
+  CUSTOMER_REVIEWS_STORAGE_KEY,
+  CustomerReview,
+  defaultCustomerReviews,
+  normalizeCustomerReviews
+} from '@/lib/customerReviews';
+import {
+  CUSTOMER_MOMENTS_STORAGE_KEY,
+  CustomerMoment,
+  defaultCustomerMoments,
+  normalizeCustomerMoments
+} from '@/lib/customerMoments';
 
 interface Product {
   id: number;
@@ -136,8 +148,8 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<AdminTab>('orders');
   
   // Collapsible Dropdown States
-  const [isOrdersExpanded, setIsOrdersExpanded] = useState(true);
-  const [isProductsExpanded, setIsProductsExpanded] = useState(true);
+  const [isOrdersExpanded, setIsOrdersExpanded] = useState(false);
+  const [isProductsExpanded, setIsProductsExpanded] = useState(false);
   const [isCustomersExpanded, setIsCustomersExpanded] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -153,6 +165,22 @@ export default function AdminDashboard() {
   const [abandoned, setAbandoned] = useState<AbandonedCheckout[]>([]);
   const [discounts, setDiscounts] = useState<Discount[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
+  const [customerReviews, setCustomerReviews] = useState<CustomerReview[]>(defaultCustomerReviews);
+  const [customerMoments, setCustomerMoments] = useState<CustomerMoment[]>(defaultCustomerMoments);
+  const [uploadingMomentPhotos, setUploadingMomentPhotos] = useState(false);
+  const [reviewSearchQuery, setReviewSearchQuery] = useState('');
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
+  const [reviewForm, setReviewForm] = useState({
+    name: '',
+    city: '',
+    rating: '5',
+    quote: '',
+    avatar: '',
+    helpful: '0',
+    productId: '',
+    verified: true
+  });
   
   const [searchQuery, setSearchQuery] = useState('');
   const [loadingProducts, setLoadingProducts] = useState(true);
@@ -319,6 +347,143 @@ export default function AdminDashboard() {
     if (typeof window !== 'undefined' && window.innerWidth < 900) {
       setIsSidebarOpen(false);
     }
+  };
+
+  const saveCustomerReviews = (nextReviews: CustomerReview[]) => {
+    setCustomerReviews(nextReviews);
+    localStorage.setItem(CUSTOMER_REVIEWS_STORAGE_KEY, JSON.stringify(nextReviews));
+    window.dispatchEvent(new Event('deeksha-reviews-updated'));
+  };
+
+  const saveCustomerMoments = (nextMoments: CustomerMoment[]) => {
+    setCustomerMoments(nextMoments);
+    localStorage.setItem(CUSTOMER_MOMENTS_STORAGE_KEY, JSON.stringify(nextMoments));
+    window.dispatchEvent(new Event('deeksha-moments-updated'));
+  };
+
+  const loadCustomerReviews = () => {
+    try {
+      const savedReviews = localStorage.getItem(CUSTOMER_REVIEWS_STORAGE_KEY);
+      if (savedReviews) {
+        setCustomerReviews(normalizeCustomerReviews(JSON.parse(savedReviews)));
+      } else {
+        localStorage.setItem(CUSTOMER_REVIEWS_STORAGE_KEY, JSON.stringify(defaultCustomerReviews));
+        setCustomerReviews(defaultCustomerReviews);
+      }
+    } catch {
+      setCustomerReviews(defaultCustomerReviews);
+    }
+  };
+
+  const loadCustomerMoments = () => {
+    try {
+      const savedMoments = localStorage.getItem(CUSTOMER_MOMENTS_STORAGE_KEY);
+      if (savedMoments) {
+        setCustomerMoments(normalizeCustomerMoments(JSON.parse(savedMoments)));
+      } else {
+        localStorage.setItem(CUSTOMER_MOMENTS_STORAGE_KEY, JSON.stringify(defaultCustomerMoments));
+        setCustomerMoments(defaultCustomerMoments);
+      }
+    } catch {
+      setCustomerMoments(defaultCustomerMoments);
+    }
+  };
+
+  const resetReviewForm = () => {
+    setEditingReviewId(null);
+    setReviewForm({
+      name: '',
+      city: '',
+      rating: '5',
+      quote: '',
+      avatar: '',
+      helpful: '0',
+      productId: products[0]?.id ? String(products[0].id) : '',
+      verified: true
+    });
+  };
+
+  const handleEditReview = (review: CustomerReview) => {
+    setEditingReviewId(review.id);
+    setReviewForm({
+      name: review.name,
+      city: review.city,
+      rating: String(review.rating),
+      quote: review.quote,
+      avatar: review.avatar,
+      helpful: String(review.helpful),
+      productId: review.productId ? String(review.productId) : '',
+      verified: review.verified
+    });
+    setShowReviewForm(true);
+  };
+
+  const handleSaveReview = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const selectedProduct = products.find(product => String(product.id) === reviewForm.productId);
+    const fallbackReview = editingReviewId ? customerReviews.find(review => review.id === editingReviewId) : null;
+    const nextReview: CustomerReview = {
+      id: editingReviewId || `review-${Date.now()}`,
+      name: reviewForm.name.trim() || 'Happy Customer',
+      city: reviewForm.city.trim() || 'India',
+      time: editingReviewId ? fallbackReview?.time || 'Just now' : 'Just now',
+      helpful: Number(reviewForm.helpful) || 0,
+      avatar: reviewForm.avatar.trim() || selectedProduct?.image_url || fallbackReview?.avatar || '/images/hero_candle.png',
+      quote: reviewForm.quote.trim(),
+      rating: Number(reviewForm.rating) || 5,
+      verified: reviewForm.verified,
+      productId: selectedProduct?.id || fallbackReview?.productId,
+      productName: selectedProduct?.name || fallbackReview?.productName || 'Deeksha Candle',
+      productImage: selectedProduct?.image_url || fallbackReview?.productImage || '/images/hero_candle.png'
+    };
+
+    if (!nextReview.quote) return;
+
+    const nextReviews = editingReviewId
+      ? customerReviews.map(review => review.id === editingReviewId ? nextReview : review)
+      : [nextReview, ...customerReviews];
+
+    saveCustomerReviews(nextReviews);
+    resetReviewForm();
+    setShowReviewForm(false);
+  };
+
+  const handleDeleteReview = (id: string) => {
+    if (!confirm('Delete this review?')) return;
+    saveCustomerReviews(customerReviews.filter(review => review.id !== id));
+  };
+
+  const handleUploadMomentPhotos = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    setUploadingMomentPhotos(true);
+    try {
+      const uploadedMoments: CustomerMoment[] = [];
+      for (const file of Array.from(files)) {
+        const data = await uploadMediaFile(file);
+        const imageSlug = `${data.filename}-${data.url}-${uploadedMoments.length}`
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '');
+        uploadedMoments.push({
+          id: `moment-${imageSlug || uploadedMoments.length}`,
+          image: data.url,
+          alt: data.filename.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ') || 'Customer candle moment'
+        });
+      }
+      saveCustomerMoments([...uploadedMoments, ...customerMoments]);
+      await fetchMediaFiles();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Error uploading customer photos.');
+    } finally {
+      setUploadingMomentPhotos(false);
+    }
+  };
+
+  const handleDeleteMomentPhoto = (id: string) => {
+    if (!confirm('Remove this customer photo from the product gallery?')) return;
+    saveCustomerMoments(customerMoments.filter(moment => moment.id !== id));
   };
 
   const fetchProducts = async () => {
@@ -739,8 +904,27 @@ export default function AdminDashboard() {
         fetchCollections();
         fetchMediaFiles();
         fetchSettings();
+        loadCustomerReviews();
+        loadCustomerMoments();
       });
     }
+  }, []);
+
+  useEffect(() => {
+    loadCustomerReviews();
+    loadCustomerMoments();
+    const refreshReviews = () => loadCustomerReviews();
+    const refreshMoments = () => loadCustomerMoments();
+    window.addEventListener('storage', refreshReviews);
+    window.addEventListener('storage', refreshMoments);
+    window.addEventListener('deeksha-reviews-updated', refreshReviews);
+    window.addEventListener('deeksha-moments-updated', refreshMoments);
+    return () => {
+      window.removeEventListener('storage', refreshReviews);
+      window.removeEventListener('storage', refreshMoments);
+      window.removeEventListener('deeksha-reviews-updated', refreshReviews);
+      window.removeEventListener('deeksha-moments-updated', refreshMoments);
+    };
   }, []);
 
   useEffect(() => {
@@ -1399,6 +1583,15 @@ export default function AdminDashboard() {
       prod.collection.toLowerCase().includes(query)
     );
   });
+  const filteredCustomerReviews = customerReviews.filter(review => {
+    const query = reviewSearchQuery.toLowerCase();
+    return (
+      review.name.toLowerCase().includes(query) ||
+      review.city.toLowerCase().includes(query) ||
+      review.quote.toLowerCase().includes(query) ||
+      review.productName.toLowerCase().includes(query)
+    );
+  });
 
   return (
     <div className="admin-shell" style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f6f6f6', color: '#1a1a1a', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
@@ -1635,7 +1828,7 @@ export default function AdminDashboard() {
           <button
             onClick={() => {
               setIsCustomersExpanded(!isCustomersExpanded);
-              selectAdminTab('customers');
+              setActiveTab('customers');
             }}
             style={{
               display: 'flex',
@@ -1664,20 +1857,37 @@ export default function AdminDashboard() {
           {/* Nested Sub-links under Customers */}
           {isCustomersExpanded && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '2px', marginBottom: '4px' }}>
+              <button
+                type="button"
+                onClick={() => selectAdminTab('customers')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '8px 12px 8px 36px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: activeTab === 'customers' ? '#ffffff' : 'transparent',
+                  color: activeTab === 'customers' ? '#1a1a1a' : '#6d6d6d',
+                  fontSize: '13px',
+                  fontWeight: activeTab === 'customers' ? '600' : '400',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  width: '100%'
+                }}
+              >
+                Reviews
+              </button>
               {['Segments', 'Companies'].map((item, idx) => (
                 <div
                   key={idx}
                   style={{
                     padding: '8px 12px 8px 36px',
-                    color: '#6d6d6d',
+                    color: '#9c9c9c',
                     fontSize: '13px',
-                    cursor: 'pointer',
+                    cursor: 'not-allowed',
                     borderRadius: '8px',
                     transition: 'background 0.1s ease'
                   }}
-                  onClick={() => alert(`${item} segment loading is coming soon.`)}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ffffff'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                   {item}
                 </div>
@@ -3000,46 +3210,201 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* TAB 1.9: CUSTOMERS MANAGER */}
+        {/* TAB 1.9: CUSTOMER REVIEWS MANAGER */}
         {activeTab === 'customers' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '24px' }}>👥</span>
-                <h1 style={{ fontSize: '20px', fontWeight: '700', margin: 0 }}>Customers</h1>
+                <div>
+                  <h1 style={{ fontSize: '20px', fontWeight: '700', margin: 0 }}>Customer Reviews</h1>
+                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6d6d6d' }}>Manage all product-page reviews from one place.</p>
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  resetReviewForm();
+                  setShowReviewForm(!showReviewForm);
+                }}
+                style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+              >
+                {showReviewForm ? 'Close Form' : 'Add Review'}
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '16px', marginBottom: '20px' }}>
+              {[
+                { label: 'Total reviews', value: customerReviews.length },
+                { label: 'Verified', value: customerReviews.filter(review => review.verified).length },
+                { label: '5 star', value: customerReviews.filter(review => review.rating === 5).length },
+                { label: 'Helpful votes', value: customerReviews.reduce((sum, review) => sum + review.helpful, 0) }
+              ].map(card => (
+                <div key={card.label} style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '16px' }}>
+                  <p style={{ margin: '0 0 6px', color: '#6d6d6d', fontSize: '12px' }}>{card.label}</p>
+                  <strong style={{ display: 'block', fontSize: '24px', lineHeight: 1 }}>{card.value}</strong>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '18px', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '14px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700' }}>Real Moments Photos</h3>
+                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6d6d6d' }}>These photos appear in the product page gallery and popup.</p>
+                </div>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={() => saveCustomerMoments(defaultCustomerMoments)}
+                    style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 12px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                  >
+                    Reset defaults
+                  </button>
+                  <label style={{ backgroundColor: '#1a1a1a', color: '#ffffff', borderRadius: '6px', padding: '8px 14px', fontSize: '13px', fontWeight: '600', cursor: uploadingMomentPhotos ? 'wait' : 'pointer', opacity: uploadingMomentPhotos ? 0.7 : 1 }}>
+                    {uploadingMomentPhotos ? 'Uploading...' : 'Upload photos'}
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      disabled={uploadingMomentPhotos}
+                      onChange={async (e) => {
+                        await handleUploadMomentPhotos(e.target.files);
+                        e.target.value = '';
+                      }}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+                {customerMoments.map((moment, index) => (
+                  <div key={moment.id} style={{ border: '1px solid #e3e3e3', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#fafafa' }}>
+                    <img src={moment.image} alt={moment.alt} style={{ width: '100%', aspectRatio: '1.35 / 1', objectFit: 'cover', display: 'block' }} />
+                    <div style={{ padding: '9px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '12px', color: '#6d6d6d' }}>Photo {index + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteMomentPhoto(moment.id)}
+                        style={{ backgroundColor: '#ffebe9', color: '#d72c0d', border: '1px solid #ffd0cc', borderRadius: '5px', padding: '5px 8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {showReviewForm && (
+              <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '20px', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '700' }}>{editingReviewId ? 'Edit Review' : 'Add Customer Review'}</h3>
+                <form onSubmit={handleSaveReview} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '14px', fontSize: '13px' }}>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                    Customer name
+                    <input value={reviewForm.name} onChange={e => setReviewForm(prev => ({ ...prev, name: e.target.value }))} placeholder="sunny" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                  </label>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                    City
+                    <input value={reviewForm.city} onChange={e => setReviewForm(prev => ({ ...prev, city: e.target.value }))} placeholder="delhi" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                  </label>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                    Product
+                    <select value={reviewForm.productId} onChange={e => setReviewForm(prev => ({ ...prev, productId: e.target.value }))} style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px', backgroundColor: '#ffffff' }}>
+                      <option value="">Generic Deeksha Candle</option>
+                      {products.filter(product => !product.deleted_at).map(product => (
+                        <option key={product.id} value={product.id}>{product.name}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                    Rating
+                    <select value={reviewForm.rating} onChange={e => setReviewForm(prev => ({ ...prev, rating: e.target.value }))} style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px', backgroundColor: '#ffffff' }}>
+                      <option value="5">5 stars</option>
+                      <option value="4">4 stars</option>
+                      <option value="3">3 stars</option>
+                      <option value="2">2 stars</option>
+                      <option value="1">1 star</option>
+                    </select>
+                  </label>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                    Customer photo path
+                    <input value={reviewForm.avatar} onChange={e => setReviewForm(prev => ({ ...prev, avatar: e.target.value }))} placeholder="/images/cozy_room_glow.png" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                  </label>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                    Helpful count
+                    <input type="number" min="0" value={reviewForm.helpful} onChange={e => setReviewForm(prev => ({ ...prev, helpful: e.target.value }))} style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                  </label>
+                  <label style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                    Review text
+                    <textarea value={reviewForm.quote} onChange={e => setReviewForm(prev => ({ ...prev, quote: e.target.value }))} required rows={4} placeholder="mujhe bahut jada pasand aayi h ye candle..." style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px', resize: 'vertical', fontFamily: 'inherit' }} />
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
+                    <input type="checkbox" checked={reviewForm.verified} onChange={e => setReviewForm(prev => ({ ...prev, verified: e.target.checked }))} />
+                    Verified purchase
+                  </label>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                    <button type="button" onClick={() => { resetReviewForm(); setShowReviewForm(false); }} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '9px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>Cancel</button>
+                    <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '9px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>{editingReviewId ? 'Save Review' : 'Create Review'}</button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '12px', marginBottom: '16px' }}>
+              <input
+                value={reviewSearchQuery}
+                onChange={e => setReviewSearchQuery(e.target.value)}
+                placeholder="Search reviews by customer, city, product, or text"
+                style={{ width: '100%', padding: '10px 12px', border: '1px solid #cccccc', borderRadius: '6px', fontSize: '13px' }}
+              />
             </div>
 
             <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', overflow: 'hidden' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
                 <thead>
                   <tr style={{ backgroundColor: '#f9f9f9', borderBottom: '1px solid #e3e3e3', color: '#6d6d6d' }}>
-                    <th style={{ padding: '12px 16px' }}>Name</th>
-                    <th style={{ padding: '12px 16px' }}>Email Address</th>
-                    <th style={{ padding: '12px 16px' }}>Orders placed</th>
-                    <th style={{ padding: '12px 16px' }}>Status</th>
-                    <th style={{ padding: '12px 16px' }}>Spent</th>
+                    <th style={{ padding: '12px 16px' }}>Customer</th>
+                    <th style={{ padding: '12px 16px' }}>Product</th>
+                    <th style={{ padding: '12px 16px' }}>Review</th>
+                    <th style={{ padding: '12px 16px' }}>Rating</th>
+                    <th style={{ padding: '12px 16px' }}>Helpful</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {[
-                    { name: 'Jyoti Soni', email: 'jyoti.soni@gmail.com', orders: 4, spent: '₹5,865.05', status: 'Active' },
-                    { name: 'Akshay Agrawal', email: 'akshay.agrawal@gmail.com', orders: 5, spent: '₹0.00', status: 'In progress' },
-                    { name: 'Shan Mohd', email: 'shan.mohd@gmail.com', orders: 1, spent: '₹399.00', status: 'Active' },
-                    { name: 'Shantanu Ghosh', email: 'shantanu.g@gmail.com', orders: 1, spent: '₹0.00', status: 'Inactive' }
-                  ].map((cust, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid #e3e3e3' }}>
-                      <td style={{ padding: '12px 16px', fontWeight: '600' }}>{cust.name}</td>
-                      <td style={{ padding: '12px 16px', color: '#6d6d6d' }}>{cust.email}</td>
-                      <td style={{ padding: '12px 16px' }}>{cust.orders} orders</td>
+                  {filteredCustomerReviews.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: '#8c8c8c' }}>No reviews found.</td>
+                    </tr>
+                  ) : filteredCustomerReviews.map((review) => (
+                    <tr key={review.id} style={{ borderBottom: '1px solid #e3e3e3', verticalAlign: 'top' }}>
                       <td style={{ padding: '12px 16px' }}>
-                        <span style={{ 
-                          fontSize: '11px', fontWeight: '600', padding: '4px 8px', borderRadius: '12px',
-                          backgroundColor: cust.status === 'Active' ? '#e2ece9' : '#ffe8d6',
-                          color: cust.status === 'Active' ? '#2d5c4d' : '#a65d00'
-                        }}>{cust.status}</span>
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                          <img src={review.avatar} alt={review.name} style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', backgroundColor: '#f1f1f1' }} />
+                          <div>
+                            <div style={{ fontWeight: '700' }}>{review.name}</div>
+                            <div style={{ color: '#6d6d6d', fontSize: '12px' }}>{review.city} • {review.time}</div>
+                            {review.verified && <span style={{ display: 'inline-block', marginTop: '4px', color: '#2d7d46', fontSize: '11px', fontWeight: '700' }}>Verified</span>}
+                          </div>
+                        </div>
                       </td>
-                      <td style={{ padding: '12px 16px', fontWeight: '600' }}>{cust.spent}</td>
+                      <td style={{ padding: '12px 16px' }}>
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', minWidth: '220px' }}>
+                          <img src={review.productImage} alt={review.productName} style={{ width: '46px', height: '46px', borderRadius: '6px', objectFit: 'cover', backgroundColor: '#f1f1f1' }} />
+                          <span style={{ fontWeight: '600' }}>{review.productName}</span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '12px 16px', color: '#3d3d3d', maxWidth: '360px', lineHeight: 1.5 }}>{review.quote}</td>
+                      <td style={{ padding: '12px 16px', color: '#d59a3d', whiteSpace: 'nowrap' }}>{'★'.repeat(review.rating)}</td>
+                      <td style={{ padding: '12px 16px' }}>{review.helpful}</td>
+                      <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                          <button type="button" onClick={() => handleEditReview(review)} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '7px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>Edit</button>
+                          <button type="button" onClick={() => handleDeleteReview(review.id)} style={{ backgroundColor: '#ffebe9', color: '#d72c0d', border: '1px solid #ffd0cc', borderRadius: '6px', padding: '7px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>Delete</button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
