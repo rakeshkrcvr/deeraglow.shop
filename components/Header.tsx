@@ -469,7 +469,16 @@ export default function Header() {
             pincode: deliveryPincode,
             phone: deliveryPhone,
             total_price: `₹${estimatedTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-            items_count: `${cartCount} item${cartCount > 1 ? 's' : ''}`
+            items_count: `${cartCount} item${cartCount > 1 ? 's' : ''}`,
+            checkout_items: cartItems.map(item => ({
+              product_id: item.product.id,
+              name: item.product.name,
+              image_url: item.product.image_url,
+              quantity: item.quantity,
+              selected_fragrance: item.selectedFragrance,
+              price: `₹${Number(item.product.price).toLocaleString('en-IN')}`,
+              total: `₹${(Number(item.product.price) * item.quantity).toLocaleString('en-IN')}`
+            }))
           }),
           signal: controller.signal
         });
@@ -498,7 +507,8 @@ export default function Header() {
     deliveryCity,
     deliveryState,
     deliveryPincode,
-    deliveryPhone
+    deliveryPhone,
+    cartItems
   ]);
 
   return (

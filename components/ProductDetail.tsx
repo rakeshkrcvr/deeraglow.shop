@@ -17,6 +17,12 @@ import {
   defaultCustomerMoments,
   normalizeCustomerMoments
 } from '@/lib/customerMoments';
+import {
+  CUSTOMER_VIDEOS_STORAGE_KEY,
+  CustomerVideo,
+  defaultCustomerVideos,
+  normalizeCustomerVideos
+} from '@/lib/customerVideos';
 import styles from './ProductDetail.module.css';
 
 interface ProductDetailProps {
@@ -47,6 +53,8 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
   const [activeMomentIndex, setActiveMomentIndex] = useState<number>(0);
   const [reviewCards, setReviewCards] = useState<CustomerReview[]>(defaultCustomerReviews);
   const [customerMoments, setCustomerMoments] = useState<CustomerMoment[]>(defaultCustomerMoments);
+  const [customerVideos, setCustomerVideos] = useState<CustomerVideo[]>(defaultCustomerVideos);
+  const [unmutedVideoIds, setUnmutedVideoIds] = useState<Record<string, boolean>>({});
   const [reviewForm, setReviewForm] = useState<ReviewFormData>({
     name: '',
     city: '',
@@ -139,6 +147,30 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
     };
   }, []);
 
+  useEffect(() => {
+    const loadVideos = () => {
+      try {
+        const savedVideos = localStorage.getItem(CUSTOMER_VIDEOS_STORAGE_KEY);
+        if (savedVideos) {
+          setCustomerVideos(normalizeCustomerVideos(JSON.parse(savedVideos)));
+        } else {
+          localStorage.setItem(CUSTOMER_VIDEOS_STORAGE_KEY, JSON.stringify(defaultCustomerVideos));
+          setCustomerVideos(defaultCustomerVideos);
+        }
+      } catch {
+        setCustomerVideos(defaultCustomerVideos);
+      }
+    };
+
+    loadVideos();
+    window.addEventListener('storage', loadVideos);
+    window.addEventListener('deeksha-videos-updated', loadVideos);
+    return () => {
+      window.removeEventListener('storage', loadVideos);
+      window.removeEventListener('deeksha-videos-updated', loadVideos);
+    };
+  }, []);
+
   const currentPrice = product.price;
   const originalPrice = Math.round(currentPrice * 1.4); // 30% mark-up for discount look
   const discountPercent = 30;
@@ -190,26 +222,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
     .filter(Boolean);
   const activeMoment = customerMoments[activeMomentIndex] || customerMoments[0] || defaultCustomerMoments[0];
 
-  const customerVideos = [
-    {
-      title: 'Unboxing Experience',
-      author: 'Neha S.',
-      duration: '0:18',
-      image: '/images/cozy_room_glow.png'
-    },
-    {
-      title: 'Burn Test - 40+ Hours',
-      author: 'Rahul M.',
-      duration: '0:24',
-      image: '/images/hero_candle.png'
-    },
-    {
-      title: 'My Evening Routine',
-      author: 'Ananya P.',
-      duration: '0:31',
-      image: '/images/rose_candle.png'
-    }
-  ];
+  const previewCustomerVideos = customerVideos.slice(0, 3);
 
   const reviewStats = [
     { icon: '👥', value: '5,000+', label: 'Happy Customers' },
@@ -291,6 +304,10 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
   const openPhotoGallery = (index = 0) => {
     setActiveMomentIndex(index);
     setIsPhotoGalleryOpen(true);
+  };
+
+  const toggleVideoSound = (videoId: string) => {
+    setUnmutedVideoIds(prev => ({ ...prev, [videoId]: !prev[videoId] }));
   };
 
   return (
@@ -829,17 +846,32 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
               <a href="#instagram">View all videos →</a>
             </div>
             <div className={styles.customerVideoGrid}>
-              {customerVideos.map((video) => (
-                <article key={video.title} className={styles.customerVideoCard}>
+              {previewCustomerVideos.map((video) => (
+                <article key={video.id} className={styles.customerVideoCard}>
                   <div className={styles.videoThumb}>
-                    <Image src={video.image} alt={video.title} width={260} height={150} />
+                    <video
+                      src={video.videoUrl}
+                      poster={video.thumbnail}
+                      loop
+                      muted={!unmutedVideoIds[video.id]}
+                      autoPlay
+                      playsInline
+                    />
                     <span className={styles.playButton}>▶</span>
+                    <button
+                      type="button"
+                      className={styles.videoMuteButton}
+                      onClick={() => toggleVideoSound(video.id)}
+                      aria-label={unmutedVideoIds[video.id] ? 'Mute video' : 'Unmute video'}
+                    >
+                      {unmutedVideoIds[video.id] ? '🔊' : '🔇'}
+                    </button>
                     <time>{video.duration}</time>
                   </div>
                   <div className={styles.videoInfo}>
                     <h4>{video.title}</h4>
                     <p>by {video.author}</p>
-                    <span>✓ Verified Purchase</span>
+                    {video.verified && <span>✓ Verified Purchase</span>}
                   </div>
                 </article>
               ))}
@@ -1061,7 +1093,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
         </section>
 
         {/* Section: Instagram Video Slider */}
-        <section className={styles.instagramSection}>
+        <section id="instagram" className={styles.instagramSection}>
           <div className={styles.storyHeader}>
             <span className={styles.storySubtitle}>#DEEKSHACANDLES ON INSTAGRAM</span>
             <h2 className={styles.storyTitle}>Capture the Glow</h2>
@@ -1069,37 +1101,25 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
           </div>
           
           <div className={styles.instagramGrid}>
-            {[
-              {
-                videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-lighted-candle-in-a-glass-jar-42340-large.mp4',
-                handle: '@deekshacandles',
-                link: 'https://instagram.com'
-              },
-              {
-                videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-burning-candle-flame-in-close-up-42296-large.mp4',
-                handle: '@deekshacandles',
-                link: 'https://instagram.com'
-              },
-              {
-                videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hands-holding-a-lit-candle-42316-large.mp4',
-                handle: '@deekshacandles',
-                link: 'https://instagram.com'
-              },
-              {
-                videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-candle-flame-flickering-in-dark-room-42315-large.mp4',
-                handle: '@deekshacandles',
-                link: 'https://instagram.com'
-              }
-            ].map((video, idx) => (
-              <div key={idx} className={styles.instagramCard}>
+            {customerVideos.map((video) => (
+              <div key={video.id} className={styles.instagramCard}>
                 <video 
                   src={video.videoUrl}
+                  poster={video.thumbnail}
                   loop 
-                  muted 
+                  muted={!unmutedVideoIds[`instagram-${video.id}`]}
                   autoPlay
                   playsInline 
                   className={styles.instagramVideo}
                 />
+                <button
+                  type="button"
+                  className={styles.instagramMuteButton}
+                  onClick={() => toggleVideoSound(`instagram-${video.id}`)}
+                  aria-label={unmutedVideoIds[`instagram-${video.id}`] ? 'Mute video' : 'Unmute video'}
+                >
+                  {unmutedVideoIds[`instagram-${video.id}`] ? '🔊' : '🔇'}
+                </button>
                 <a href={video.link} target="_blank" rel="noopener noreferrer" className={styles.instagramOverlay}>
                   <div className={styles.instagramHoverContent}>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.instagramSvg}>
@@ -1107,7 +1127,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
                       <path d="M16 11.37A4.75 4.75 0 1 1 12.63 8 4.75 4.75 0 0 1 16 11.37z"></path>
                       <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
                     </svg>
-                    <span className={styles.instagramHandle}>{video.handle}</span>
+                    <span className={styles.instagramHandle}>{video.title}</span>
                   </div>
                 </a>
               </div>

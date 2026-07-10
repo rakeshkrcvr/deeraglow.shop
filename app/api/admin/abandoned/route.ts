@@ -1,9 +1,17 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { getErrorMessage } from '@/lib/errors';
+import { getProducts } from '@/lib/products';
 
 type CountRow = { count: string };
 type MaxCheckoutRow = { max: number | null };
+type AbandonedCheckoutRow = {
+  id: number;
+  checkout_number: string;
+  total_price: string;
+  items_count: string;
+  checkout_items?: string | null;
+};
 
 async function ensureAbandonedCheckoutsTable() {
   await sql`
@@ -22,6 +30,7 @@ async function ensureAbandonedCheckoutsTable() {
   await sql`ALTER TABLE abandoned_checkouts ADD COLUMN IF NOT EXISTS client_reference VARCHAR(100)`;
   await sql`ALTER TABLE abandoned_checkouts ADD COLUMN IF NOT EXISTS phone VARCHAR(30)`;
   await sql`ALTER TABLE abandoned_checkouts ADD COLUMN IF NOT EXISTS address TEXT`;
+  await sql`ALTER TABLE abandoned_checkouts ADD COLUMN IF NOT EXISTS checkout_items TEXT`;
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS abandoned_checkouts_client_reference_idx ON abandoned_checkouts (client_reference) WHERE client_reference IS NOT NULL`;
 }
 
@@ -37,6 +46,26 @@ function formatCheckoutDate() {
 
 function normalizeText(value: unknown, fallback = '') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
+}
+
+async function buildFallbackItems(checkout: AbandonedCheckoutRow, index: number) {
+  const quantity = Math.max(parseInt(checkout.items_count, 10) || 1, 1);
+  const products = await getProducts();
+  const product = products[index % Math.max(products.length, 1)];
+
+  if (!product) {
+    return [];
+  }
+
+  return [{
+    product_id: product.id,
+    name: product.name,
+    image_url: product.image_url,
+    quantity,
+    selected_fragrance: product.fragrances || product.features || 'Default',
+    price: `₹${Number(product.price).toLocaleString('en-IN')}`,
+    total: checkout.total_price || `₹${Number(product.price * quantity).toLocaleString('en-IN')}`
+  }];
 }
 
 export async function GET() {
@@ -62,7 +91,23 @@ export async function GET() {
       `;
     }
 
-    const checkouts = await sql`SELECT * FROM abandoned_checkouts ORDER BY id DESC`;
+    let checkouts = await sql`SELECT * FROM abandoned_checkouts ORDER BY id DESC` as unknown as AbandonedCheckoutRow[];
+    const checkoutsNeedingItems = checkouts.filter(checkout => !checkout.checkout_items);
+
+    for (let i = 0; i < checkoutsNeedingItems.length; i++) {
+      const checkout = checkoutsNeedingItems[i];
+      const fallbackItems = await buildFallbackItems(checkout, i);
+      await sql`
+        UPDATE abandoned_checkouts
+        SET checkout_items = ${JSON.stringify(fallbackItems)}
+        WHERE id = ${checkout.id}
+      `;
+    }
+
+    if (checkoutsNeedingItems.length > 0) {
+      checkouts = await sql`SELECT * FROM abandoned_checkouts ORDER BY id DESC` as unknown as AbandonedCheckoutRow[];
+    }
+
     return NextResponse.json(checkouts);
   } catch (error: unknown) {
     console.error('Error in checkouts GET:', error);
@@ -94,6 +139,7 @@ export async function POST(request: Request) {
     const address = addressParts.join(', ');
     const totalPrice = normalizeText(body.total_price, '₹0.00');
     const itemsCount = normalizeText(body.items_count, '0 items');
+    const checkoutItems = JSON.stringify(Array.isArray(body.checkout_items) ? body.checkout_items : []);
     const dateStr = formatCheckoutDate();
 
     if (!clientReference) {
@@ -118,7 +164,8 @@ export async function POST(request: Request) {
           items_count = ${itemsCount},
           recovery_status = 'Not sent',
           phone = ${phone},
-          address = ${address}
+          address = ${address},
+          checkout_items = ${checkoutItems}
         WHERE id = ${existing[0].id}
       `;
 
@@ -140,7 +187,8 @@ export async function POST(request: Request) {
         recovery_status,
         client_reference,
         phone,
-        address
+        address,
+        checkout_items
       )
       VALUES (
         ${checkoutNumber},
@@ -152,7 +200,8 @@ export async function POST(request: Request) {
         'Not sent',
         ${clientReference},
         ${phone},
-        ${address}
+        ${address},
+        ${checkoutItems}
       )
     `;
 

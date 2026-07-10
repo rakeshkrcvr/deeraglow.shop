@@ -15,6 +15,12 @@ import {
   defaultCustomerMoments,
   normalizeCustomerMoments
 } from '@/lib/customerMoments';
+import {
+  CUSTOMER_VIDEOS_STORAGE_KEY,
+  CustomerVideo,
+  defaultCustomerVideos,
+  normalizeCustomerVideos
+} from '@/lib/customerVideos';
 
 interface Product {
   id: number;
@@ -88,6 +94,10 @@ interface AbandonedCheckout {
   total_price: string;
   items_count: string;
   recovery_status: string;
+  client_reference?: string;
+  phone?: string;
+  address?: string;
+  checkout_items?: string;
 }
 
 interface Discount {
@@ -163,14 +173,18 @@ export default function AdminDashboard() {
   const [orderDetailError, setOrderDetailError] = useState('');
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [abandoned, setAbandoned] = useState<AbandonedCheckout[]>([]);
+  const [selectedAbandonedCheckout, setSelectedAbandonedCheckout] = useState<AbandonedCheckout | null>(null);
   const [discounts, setDiscounts] = useState<Discount[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [customerReviews, setCustomerReviews] = useState<CustomerReview[]>(defaultCustomerReviews);
   const [customerMoments, setCustomerMoments] = useState<CustomerMoment[]>(defaultCustomerMoments);
+  const [customerVideos, setCustomerVideos] = useState<CustomerVideo[]>(defaultCustomerVideos);
   const [uploadingMomentPhotos, setUploadingMomentPhotos] = useState(false);
   const [reviewSearchQuery, setReviewSearchQuery] = useState('');
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
+  const [showVideoForm, setShowVideoForm] = useState(false);
+  const [editingVideoId, setEditingVideoId] = useState<string | null>(null);
   const [reviewForm, setReviewForm] = useState({
     name: '',
     city: '',
@@ -179,6 +193,15 @@ export default function AdminDashboard() {
     avatar: '',
     helpful: '0',
     productId: '',
+    verified: true
+  });
+  const [videoForm, setVideoForm] = useState({
+    title: '',
+    author: '',
+    duration: '',
+    videoUrl: '',
+    thumbnail: '',
+    link: '',
     verified: true
   });
   
@@ -361,6 +384,12 @@ export default function AdminDashboard() {
     window.dispatchEvent(new Event('deeksha-moments-updated'));
   };
 
+  const saveCustomerVideos = (nextVideos: CustomerVideo[]) => {
+    setCustomerVideos(nextVideos);
+    localStorage.setItem(CUSTOMER_VIDEOS_STORAGE_KEY, JSON.stringify(nextVideos));
+    window.dispatchEvent(new Event('deeksha-videos-updated'));
+  };
+
   const loadCustomerReviews = () => {
     try {
       const savedReviews = localStorage.getItem(CUSTOMER_REVIEWS_STORAGE_KEY);
@@ -386,6 +415,20 @@ export default function AdminDashboard() {
       }
     } catch {
       setCustomerMoments(defaultCustomerMoments);
+    }
+  };
+
+  const loadCustomerVideos = () => {
+    try {
+      const savedVideos = localStorage.getItem(CUSTOMER_VIDEOS_STORAGE_KEY);
+      if (savedVideos) {
+        setCustomerVideos(normalizeCustomerVideos(JSON.parse(savedVideos)));
+      } else {
+        localStorage.setItem(CUSTOMER_VIDEOS_STORAGE_KEY, JSON.stringify(defaultCustomerVideos));
+        setCustomerVideos(defaultCustomerVideos);
+      }
+    } catch {
+      setCustomerVideos(defaultCustomerVideos);
     }
   };
 
@@ -486,6 +529,65 @@ export default function AdminDashboard() {
     saveCustomerMoments(customerMoments.filter(moment => moment.id !== id));
   };
 
+  const resetVideoForm = () => {
+    setEditingVideoId(null);
+    setVideoForm({
+      title: '',
+      author: '',
+      duration: '',
+      videoUrl: '',
+      thumbnail: '',
+      link: '',
+      verified: true
+    });
+  };
+
+  const handleEditCustomerVideo = (video: CustomerVideo) => {
+    setEditingVideoId(video.id);
+    setVideoForm({
+      title: video.title,
+      author: video.author,
+      duration: video.duration,
+      videoUrl: video.videoUrl,
+      thumbnail: video.thumbnail,
+      link: video.link,
+      verified: video.verified
+    });
+    setShowVideoForm(true);
+  };
+
+  const handleSaveCustomerVideo = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const fallbackVideo = editingVideoId ? customerVideos.find(video => video.id === editingVideoId) : null;
+    const videoUrl = videoForm.videoUrl.trim();
+
+    if (!videoUrl) return;
+
+    const nextVideo: CustomerVideo = {
+      id: editingVideoId || `video-${Date.now()}`,
+      title: videoForm.title.trim() || fallbackVideo?.title || 'Customer Video',
+      author: videoForm.author.trim() || fallbackVideo?.author || 'Customer',
+      duration: videoForm.duration.trim() || fallbackVideo?.duration || '0:20',
+      videoUrl,
+      thumbnail: videoForm.thumbnail.trim() || fallbackVideo?.thumbnail || '/images/hero_candle.png',
+      link: videoForm.link.trim() || videoUrl,
+      verified: videoForm.verified
+    };
+
+    const nextVideos = editingVideoId
+      ? customerVideos.map(video => video.id === editingVideoId ? nextVideo : video)
+      : [nextVideo, ...customerVideos];
+
+    saveCustomerVideos(nextVideos);
+    resetVideoForm();
+    setShowVideoForm(false);
+  };
+
+  const handleDeleteCustomerVideo = (id: string) => {
+    if (!confirm('Delete this customer video?')) return;
+    saveCustomerVideos(customerVideos.filter(video => video.id !== id));
+  };
+
   const fetchProducts = async () => {
     try {
       setLoadingProducts(true);
@@ -532,6 +634,27 @@ export default function AdminDashboard() {
         typeof item.image_url === 'string'
       )).map(item => ({
         ...item,
+        quantity: Number(item.quantity) || 1,
+        price: item.price || '₹0',
+        total: item.total || item.price || '₹0'
+      }));
+    } catch {
+      return [];
+    }
+  };
+
+  const parseAbandonedCheckoutItems = (checkout?: AbandonedCheckout | null): OrderItem[] => {
+    if (!checkout?.checkout_items) return [];
+    try {
+      const parsed = JSON.parse(checkout.checkout_items);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter((item): item is OrderItem => (
+        typeof item === 'object' &&
+        item !== null &&
+        typeof item.name === 'string'
+      )).map(item => ({
+        ...item,
+        image_url: item.image_url || '/images/hero_candle.png',
         quantity: Number(item.quantity) || 1,
         price: item.price || '₹0',
         total: item.total || item.price || '₹0'
@@ -626,6 +749,10 @@ export default function AdminDashboard() {
       if (res.ok) {
         const data = await res.json();
         setAbandoned(data);
+        setSelectedAbandonedCheckout((current) => {
+          if (!current) return null;
+          return data.find((checkout: AbandonedCheckout) => checkout.id === current.id) || current;
+        });
       }
     } catch (err) {
       console.error('Error loading abandoned checkouts:', err);
@@ -906,6 +1033,7 @@ export default function AdminDashboard() {
         fetchSettings();
         loadCustomerReviews();
         loadCustomerMoments();
+        loadCustomerVideos();
       });
     }
   }, []);
@@ -913,17 +1041,23 @@ export default function AdminDashboard() {
   useEffect(() => {
     loadCustomerReviews();
     loadCustomerMoments();
+    loadCustomerVideos();
     const refreshReviews = () => loadCustomerReviews();
     const refreshMoments = () => loadCustomerMoments();
+    const refreshVideos = () => loadCustomerVideos();
     window.addEventListener('storage', refreshReviews);
     window.addEventListener('storage', refreshMoments);
+    window.addEventListener('storage', refreshVideos);
     window.addEventListener('deeksha-reviews-updated', refreshReviews);
     window.addEventListener('deeksha-moments-updated', refreshMoments);
+    window.addEventListener('deeksha-videos-updated', refreshVideos);
     return () => {
       window.removeEventListener('storage', refreshReviews);
       window.removeEventListener('storage', refreshMoments);
+      window.removeEventListener('storage', refreshVideos);
       window.removeEventListener('deeksha-reviews-updated', refreshReviews);
       window.removeEventListener('deeksha-moments-updated', refreshMoments);
+      window.removeEventListener('deeksha-videos-updated', refreshVideos);
     };
   }, []);
 
@@ -2553,9 +2687,15 @@ export default function AdminDashboard() {
                       </tr>
                     ) : (
                       abandoned.map((checkout) => (
-                        <tr key={checkout.id} style={{ borderBottom: '1px solid #e3e3e3' }}>
-                          <td style={{ padding: '12px 16px' }}><input type="checkbox" /></td>
-                          <td style={{ padding: '12px 16px', fontWeight: '600' }}>{checkout.checkout_number}</td>
+                        <tr
+                          key={checkout.id}
+                          onClick={() => setSelectedAbandonedCheckout(checkout)}
+                          style={{ borderBottom: '1px solid #e3e3e3', cursor: 'pointer', transition: 'background-color 0.15s' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fafafa'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          <td style={{ padding: '12px 16px' }}><input type="checkbox" onClick={(e) => e.stopPropagation()} /></td>
+                          <td style={{ padding: '12px 16px', fontWeight: '600', color: '#1f4d3a', textDecoration: 'underline' }}>{checkout.checkout_number}</td>
                           <td style={{ padding: '12px 16px', color: '#6d6d6d' }}>{checkout.date_str}</td>
                           <td style={{ padding: '12px 16px' }}>{checkout.customer}</td>
                           <td style={{ padding: '12px 16px', color: '#6d6d6d' }}>{checkout.email}</td>
@@ -2578,7 +2718,10 @@ export default function AdminDashboard() {
 
                           <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                             <button 
-                              onClick={() => handleSendRecoveryEmail(checkout.id, checkout.email)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSendRecoveryEmail(checkout.id, checkout.email);
+                              }}
                               style={{ 
                                 backgroundColor: checkout.recovery_status === 'Sent' ? '#e3e3e3' : '#1a1a1a', 
                                 color: checkout.recovery_status === 'Sent' ? '#6d6d6d' : '#ffffff', 
@@ -3291,6 +3434,98 @@ export default function AdminDashboard() {
                       >
                         Delete
                       </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '18px', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '14px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700' }}>Real Moments Videos</h3>
+                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6d6d6d' }}>These videos appear in customer video cards and the product page Instagram section.</p>
+                </div>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={() => saveCustomerVideos(defaultCustomerVideos)}
+                    style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 12px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                  >
+                    Reset defaults
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      resetVideoForm();
+                      setShowVideoForm(!showVideoForm);
+                    }}
+                    style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                  >
+                    {showVideoForm ? 'Close form' : 'Add video'}
+                  </button>
+                </div>
+              </div>
+
+              {showVideoForm && (
+                <form onSubmit={handleSaveCustomerVideo} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px', marginBottom: '16px', padding: '14px', border: '1px solid #e3e3e3', borderRadius: '8px', backgroundColor: '#fafafa', fontSize: '13px' }}>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                    Video title
+                    <input value={videoForm.title} onChange={e => setVideoForm(prev => ({ ...prev, title: e.target.value }))} placeholder="Unboxing Experience" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                  </label>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                    Customer name
+                    <input value={videoForm.author} onChange={e => setVideoForm(prev => ({ ...prev, author: e.target.value }))} placeholder="Neha S." style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                  </label>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                    Duration
+                    <input value={videoForm.duration} onChange={e => setVideoForm(prev => ({ ...prev, duration: e.target.value }))} placeholder="0:24" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                  </label>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                    Thumbnail URL
+                    <input value={videoForm.thumbnail} onChange={e => setVideoForm(prev => ({ ...prev, thumbnail: e.target.value }))} placeholder="/images/hero_candle.png" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                  </label>
+                  <label style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                    Video URL
+                    <input value={videoForm.videoUrl} onChange={e => setVideoForm(prev => ({ ...prev, videoUrl: e.target.value }))} required placeholder="https://example.com/customer-video.mp4" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                  </label>
+                  <label style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                    Link on video
+                    <input value={videoForm.link} onChange={e => setVideoForm(prev => ({ ...prev, link: e.target.value }))} placeholder="https://instagram.com/reel/..." style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
+                    <input type="checkbox" checked={videoForm.verified} onChange={e => setVideoForm(prev => ({ ...prev, verified: e.target.checked }))} />
+                    Verified purchase
+                  </label>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                    <button type="button" onClick={() => { resetVideoForm(); setShowVideoForm(false); }} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 12px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>Cancel</button>
+                    <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                      {editingVideoId ? 'Save video' : 'Add video'}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' }}>
+                {customerVideos.map((video, index) => (
+                  <div key={video.id} style={{ border: '1px solid #e3e3e3', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#fafafa' }}>
+                    <video src={video.videoUrl} poster={video.thumbnail} muted playsInline controls style={{ width: '100%', aspectRatio: '1.55 / 1', objectFit: 'cover', display: 'block', backgroundColor: '#111111' }} />
+                    <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div>
+                        <strong style={{ display: 'block', fontSize: '13px' }}>Video {index + 1}: {video.title}</strong>
+                        <span style={{ display: 'block', marginTop: '3px', fontSize: '12px', color: '#6d6d6d' }}>by {video.author} • {video.duration}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '11px', color: video.verified ? '#2d5c4d' : '#8c8c8c' }}>{video.verified ? 'Verified Purchase' : 'Not verified'}</span>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button type="button" onClick={() => handleEditCustomerVideo(video)} style={{ backgroundColor: '#ffffff', color: '#1a1a1a', border: '1px solid #cccccc', borderRadius: '5px', padding: '5px 8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                            Edit
+                          </button>
+                          <button type="button" onClick={() => handleDeleteCustomerVideo(video.id)} style={{ backgroundColor: '#ffebe9', color: '#d72c0d', border: '1px solid #ffd0cc', borderRadius: '5px', padding: '5px 8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                            Delete
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -5243,6 +5478,122 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
+
+        {selectedAbandonedCheckout && (() => {
+          const checkoutItems = parseAbandonedCheckoutItems(selectedAbandonedCheckout);
+
+          return (
+            <div
+              role="dialog"
+              aria-modal="true"
+              style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.35)', zIndex: 3000, display: 'flex', justifyContent: 'flex-end' }}
+              onClick={() => setSelectedAbandonedCheckout(null)}
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                style={{ width: 'min(720px, 100%)', height: '100vh', overflowY: 'auto', backgroundColor: '#ffffff', boxShadow: '-12px 0 30px rgba(0,0,0,0.18)', display: 'flex', flexDirection: 'column' }}
+              >
+                <div style={{ position: 'sticky', top: 0, zIndex: 2, backgroundColor: '#ffffff', borderBottom: '1px solid #e3e3e3', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+                  <div>
+                    <h2 style={{ margin: '0 0 6px 0', fontSize: '20px', fontWeight: '700' }}>Checkout {selectedAbandonedCheckout.checkout_number}</h2>
+                    <p style={{ margin: 0, color: '#6d6d6d', fontSize: '13px' }}>{selectedAbandonedCheckout.date_str} - {selectedAbandonedCheckout.customer}</p>
+                  </div>
+                  <button type="button" onClick={() => setSelectedAbandonedCheckout(null)} style={{ width: '34px', height: '34px', border: '1px solid #cccccc', borderRadius: '6px', backgroundColor: '#ffffff', cursor: 'pointer', fontSize: '18px' }}>
+                    x
+                  </button>
+                </div>
+
+                <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '12px' }}>
+                    <div style={{ backgroundColor: '#f8faf9', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '12px' }}>
+                      <div style={{ color: '#6d6d6d', fontSize: '11px', marginBottom: '4px' }}>Total Cart Value</div>
+                      <div style={{ fontWeight: '700', fontSize: '16px' }}>{selectedAbandonedCheckout.total_price}</div>
+                    </div>
+                    <div style={{ backgroundColor: '#f8faf9', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '12px' }}>
+                      <div style={{ color: '#6d6d6d', fontSize: '11px', marginBottom: '4px' }}>Items</div>
+                      <div style={{ fontWeight: '700', fontSize: '16px' }}>{selectedAbandonedCheckout.items_count}</div>
+                    </div>
+                    <div style={{ backgroundColor: '#f8faf9', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '12px' }}>
+                      <div style={{ color: '#6d6d6d', fontSize: '11px', marginBottom: '4px' }}>Recovery</div>
+                      <span style={{ display: 'inline-block', fontSize: '11px', fontWeight: '600', padding: '4px 8px', borderRadius: '12px', backgroundColor: selectedAbandonedCheckout.recovery_status === 'Sent' ? '#e2ece9' : '#ffe8d6', color: selectedAbandonedCheckout.recovery_status === 'Sent' ? '#2d5c4d' : '#a65d00' }}>
+                        {selectedAbandonedCheckout.recovery_status}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '18px' }}>
+                    <h3 style={{ margin: '0 0 14px 0', fontSize: '15px' }}>Customer Details</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
+                      <div>
+                        <div style={{ color: '#6d6d6d', fontSize: '11px', fontWeight: '600', marginBottom: '4px' }}>Name</div>
+                        <div>{selectedAbandonedCheckout.customer || 'Not provided'}</div>
+                      </div>
+                      <div>
+                        <div style={{ color: '#6d6d6d', fontSize: '11px', fontWeight: '600', marginBottom: '4px' }}>Email</div>
+                        <div>{selectedAbandonedCheckout.email || 'Not provided'}</div>
+                      </div>
+                      <div>
+                        <div style={{ color: '#6d6d6d', fontSize: '11px', fontWeight: '600', marginBottom: '4px' }}>Phone</div>
+                        <div>{selectedAbandonedCheckout.phone || 'Not provided'}</div>
+                      </div>
+                      <div>
+                        <div style={{ color: '#6d6d6d', fontSize: '11px', fontWeight: '600', marginBottom: '4px' }}>Client Reference</div>
+                        <div style={{ wordBreak: 'break-word' }}>{selectedAbandonedCheckout.client_reference || 'Not captured'}</div>
+                      </div>
+                      <div style={{ gridColumn: '1 / -1' }}>
+                        <div style={{ color: '#6d6d6d', fontSize: '11px', fontWeight: '600', marginBottom: '4px' }}>Address</div>
+                        <div style={{ whiteSpace: 'pre-wrap' }}>{selectedAbandonedCheckout.address || 'Not provided'}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '18px' }}>
+                    <h3 style={{ margin: '0 0 14px 0', fontSize: '15px' }}>Abandoned Products</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {checkoutItems.length === 0 ? (
+                        <p style={{ margin: 0, color: '#8c8c8c', fontSize: '13px' }}>No products captured for this checkout.</p>
+                      ) : checkoutItems.map((item, index) => (
+                        <div key={`${item.name}-${index}`} style={{ display: 'grid', gridTemplateColumns: '72px 1fr', gap: '12px', border: '1px solid #f0f0f0', borderRadius: '8px', padding: '12px' }}>
+                          <div style={{ position: 'relative', width: '72px', height: '72px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #e3e3e3', backgroundColor: '#f6f6f6' }}>
+                            <Image src={item.image_url || '/images/hero_candle.png'} alt={item.name} fill style={{ objectFit: 'cover' }} />
+                          </div>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'flex-start' }}>
+                              <div>
+                                <div style={{ fontWeight: '700', fontSize: '14px' }}>{item.name}</div>
+                                <div style={{ color: '#6d6d6d', fontSize: '12px', marginTop: '4px' }}>
+                                  {item.selected_fragrance ? `Fragrance: ${item.selected_fragrance}` : 'Fragrance not selected'}
+                                </div>
+                              </div>
+                              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                <div style={{ fontWeight: '700', fontSize: '14px' }}>{item.total}</div>
+                                <div style={{ color: '#6d6d6d', fontSize: '12px', marginTop: '4px' }}>{item.quantity} x {item.price}</div>
+                              </div>
+                            </div>
+                            {item.product_id && (
+                              <div style={{ color: '#8c8c8c', fontSize: '11px', marginTop: '10px' }}>Product ID: {item.product_id}</div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ position: 'sticky', bottom: 0, backgroundColor: '#ffffff', borderTop: '1px solid #e3e3e3', padding: '16px 24px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => handleSendRecoveryEmail(selectedAbandonedCheckout.id, selectedAbandonedCheckout.email)}
+                    disabled={selectedAbandonedCheckout.recovery_status === 'Sent'}
+                    style={{ backgroundColor: selectedAbandonedCheckout.recovery_status === 'Sent' ? '#e3e3e3' : '#1a1a1a', color: selectedAbandonedCheckout.recovery_status === 'Sent' ? '#6d6d6d' : '#ffffff', border: 'none', borderRadius: '6px', padding: '9px 16px', fontSize: '13px', fontWeight: '600', cursor: selectedAbandonedCheckout.recovery_status === 'Sent' ? 'not-allowed' : 'pointer' }}
+                  >
+                    {selectedAbandonedCheckout.recovery_status === 'Sent' ? 'Recovery Sent' : 'Send Recovery Email'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Bulk Edit Modal popup */}
         {showBulkEditModal && (
