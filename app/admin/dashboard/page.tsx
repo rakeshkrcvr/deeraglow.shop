@@ -303,6 +303,20 @@ export default function AdminDashboard() {
   const [settingsSuccess, setSettingsSuccess] = useState('');
   const [settingsError, setSettingsError] = useState('');
 
+  // Marketing Tracking Pixels & Tags
+  const [googleTagId, setGoogleTagId] = useState('');
+  const [googleTagCode, setGoogleTagCode] = useState('');
+  const [facebookPixelId, setFacebookPixelId] = useState('');
+  const [facebookPixelCode, setFacebookPixelCode] = useState('');
+
+  // Simulated Google & Facebook OAuth Modal states
+  const [googleConnectedEmail, setGoogleConnectedEmail] = useState('');
+  const [facebookConnectedUser, setFacebookConnectedUser] = useState('');
+  const [showGooglePopup, setShowGooglePopup] = useState(false);
+  const [showFacebookPopup, setShowFacebookPopup] = useState(false);
+  const [googleSelectedAccount, setGoogleSelectedAccount] = useState('');
+  const [facebookSelectedPixel, setFacebookSelectedPixel] = useState('');
+
   // Logos & Socials configurations
   const [logoHeaderUrl, setLogoHeaderUrl] = useState('');
   const [logoFooterUrl, setLogoFooterUrl] = useState('');
@@ -854,6 +868,24 @@ export default function AdminDashboard() {
         setShiprocketEmail(data.shiprocketEmail || '');
         setShiprocketPassword(data.shiprocketPassword || '');
         setShiprocketToken(data.shiprocketToken || '');
+        setGoogleTagId(data.googleTagId || '');
+        setGoogleTagCode(data.googleTagCode || '');
+        setFacebookPixelId(data.facebookPixelId || '');
+        setFacebookPixelCode(data.facebookPixelCode || '');
+        if (data.googleTagId) {
+          setGoogleConnectedEmail('deeksha.candles.ads@gmail.com');
+          setGoogleSelectedAccount('Deeksha Candles - Ads Account (481-229-4820)');
+        } else {
+          setGoogleConnectedEmail('');
+          setGoogleSelectedAccount('');
+        }
+        if (data.facebookPixelId) {
+          setFacebookConnectedUser('Deeksha Sharma');
+          setFacebookSelectedPixel('Deeksha Candles Pixel (ID: 928374928374829)');
+        } else {
+          setFacebookConnectedUser('');
+          setFacebookSelectedPixel('');
+        }
         setLogoHeaderUrl(data.logoHeaderUrl || '');
         setLogoFooterUrl(data.logoFooterUrl || '');
         setInstagramUrl(data.instagramUrl || '');
@@ -4349,6 +4381,176 @@ export default function AdminDashboard() {
                       Save Social Links
                     </button>
                   </form>
+                </div>
+
+                {/* Marketing & Pixels Integration */}
+                <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                  <div style={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px', marginBottom: '16px' }}>
+                    <h3 style={{ fontSize: '15px', fontWeight: '700', margin: 0 }}>Marketing & Pixels Integration</h3>
+                    <span style={{ backgroundColor: '#2d5c4d', color: '#ffffff', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '12px', textTransform: 'uppercase' }}>Analytics</span>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', fontSize: '13px' }}>
+                    
+                    {/* Google Tag Configuration */}
+                    <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '16px', backgroundColor: '#fafafa' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '18px' }}>🔍</span>
+                          <strong style={{ fontSize: '14px', color: '#1a1a1a' }}>Google Ads & Tag Manager</strong>
+                        </div>
+                        {googleConnectedEmail ? (
+                          <span style={{ fontSize: '11px', color: '#2d5c4d', backgroundColor: '#e2ece9', padding: '2px 8px', borderRadius: '10px', fontWeight: '600' }}>
+                            Connected
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: '11px', color: '#6d6d6d', backgroundColor: '#f1f1f1', padding: '2px 8px', borderRadius: '10px', fontWeight: '600' }}>
+                            Disconnected
+                          </span>
+                        )}
+                      </div>
+
+                      {googleConnectedEmail && (
+                        <div style={{ backgroundColor: '#f0f4f2', border: '1px solid #d4e2da', padding: '10px', borderRadius: '6px', fontSize: '12px', color: '#2d5c4d', marginBottom: '12px' }}>
+                          <strong>Account:</strong> {googleConnectedEmail} <br />
+                          <strong>Selected property:</strong> {googleSelectedAccount}
+                        </div>
+                      )}
+
+                      <div style={{ display: 'flex', gap: '10px', marginBottom: '14px' }}>
+                        {googleConnectedEmail ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setGoogleConnectedEmail('');
+                              setGoogleSelectedAccount('');
+                              setGoogleTagId('');
+                              handleSaveSettings({ googleTagId: '' });
+                            }}
+                            style={{ backgroundColor: '#ffffff', border: '1px solid #ff4d4d', color: '#ff4d4d', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                          >
+                            Disconnect Google Account
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setShowGooglePopup(true)}
+                            style={{ backgroundColor: '#4285F4', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                          >
+                            Login with Google Account
+                          </button>
+                        )}
+                      </div>
+
+                      <form onSubmit={e => { e.preventDefault(); handleSaveSettings({ googleTagId, googleTagCode }); }} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <label style={{ fontWeight: '600', color: '#6d6d6d', fontSize: '11px' }}>Google Tag ID (Measurement ID / Conversion ID)</label>
+                          <input 
+                            type="text" 
+                            value={googleTagId} 
+                            onChange={e => setGoogleTagId(e.target.value)} 
+                            placeholder="e.g. G-XXXXXXXXXX or AW-XXXXXXXXXX" 
+                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <label style={{ fontWeight: '600', color: '#6d6d6d', fontSize: '11px' }}>Custom Google Tag Code script (optional)</label>
+                          <textarea 
+                            value={googleTagCode} 
+                            onChange={e => setGoogleTagCode(e.target.value)} 
+                            placeholder="<!-- Paste Google Tag script here -->" 
+                            rows={3}
+                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontFamily: 'monospace', fontSize: '11px', resize: 'vertical' }} 
+                          />
+                        </div>
+
+                        <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', alignSelf: 'flex-start' }}>
+                          Save Google Tag Configuration
+                        </button>
+                      </form>
+                    </div>
+
+                    {/* Facebook Pixel Configuration */}
+                    <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '16px', backgroundColor: '#fafafa' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '18px' }}>👥</span>
+                          <strong style={{ fontSize: '14px', color: '#1a1a1a' }}>Meta (Facebook) Pixel</strong>
+                        </div>
+                        {facebookConnectedUser ? (
+                          <span style={{ fontSize: '11px', color: '#2d5c4d', backgroundColor: '#e2ece9', padding: '2px 8px', borderRadius: '10px', fontWeight: '600' }}>
+                            Connected
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: '11px', color: '#6d6d6d', backgroundColor: '#f1f1f1', padding: '2px 8px', borderRadius: '10px', fontWeight: '600' }}>
+                            Disconnected
+                          </span>
+                        )}
+                      </div>
+
+                      {facebookConnectedUser && (
+                        <div style={{ backgroundColor: '#f0f4f2', border: '1px solid #d4e2da', padding: '10px', borderRadius: '6px', fontSize: '12px', color: '#2d5c4d', marginBottom: '12px' }}>
+                          <strong>Account:</strong> {facebookConnectedUser} <br />
+                          <strong>Selected pixel:</strong> {facebookSelectedPixel}
+                        </div>
+                      )}
+
+                      <div style={{ display: 'flex', gap: '10px', marginBottom: '14px' }}>
+                        {facebookConnectedUser ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFacebookConnectedUser('');
+                              setFacebookSelectedPixel('');
+                              setFacebookPixelId('');
+                              handleSaveSettings({ facebookPixelId: '' });
+                            }}
+                            style={{ backgroundColor: '#ffffff', border: '1px solid #ff4d4d', color: '#ff4d4d', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                          >
+                            Disconnect Facebook Account
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setShowFacebookPopup(true)}
+                            style={{ backgroundColor: '#1877F2', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                          >
+                            Login with Facebook Account
+                          </button>
+                        )}
+                      </div>
+
+                      <form onSubmit={e => { e.preventDefault(); handleSaveSettings({ facebookPixelId, facebookPixelCode }); }} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <label style={{ fontWeight: '600', color: '#6d6d6d', fontSize: '11px' }}>Meta Pixel ID</label>
+                          <input 
+                            type="text" 
+                            value={facebookPixelId} 
+                            onChange={e => setFacebookPixelId(e.target.value)} 
+                            placeholder="e.g. 928374928374829" 
+                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <label style={{ fontWeight: '600', color: '#6d6d6d', fontSize: '11px' }}>Custom Meta Pixel Code script (optional)</label>
+                          <textarea 
+                            value={facebookPixelCode} 
+                            onChange={e => setFacebookPixelCode(e.target.value)} 
+                            placeholder="<!-- Paste Meta Pixel script here -->" 
+                            rows={3}
+                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontFamily: 'monospace', fontSize: '11px', resize: 'vertical' }} 
+                          />
+                        </div>
+
+                        <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', alignSelf: 'flex-start' }}>
+                          Save Meta Pixel Configuration
+                        </button>
+                      </form>
+                    </div>
+
+                  </div>
                 </div>
 
               </div>

@@ -2,8 +2,9 @@ import React from 'react';
 import Image from 'next/image';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
-import Collections from '@/components/Collections';
+import ShopByCollection from '@/components/ShopByCollection';
 import AuraCollection from '@/components/AuraCollection';
+import CustomerExperience from '@/components/CustomerExperience';
 import Newsletter from '@/components/Newsletter';
 import Footer from '@/components/Footer';
 import { getProducts } from '@/lib/products';
@@ -39,11 +40,14 @@ export default async function Home() {
           sliderImages={settings.heroSliderImages}
         />
 
-        {/* Collections Promotional Bar */}
-        <Collections />
+        {/* Shop By Collection Grid */}
+        <ShopByCollection />
 
         {/* Aura Collection (Pedestal Glassmorphic cards) */}
         <AuraCollection products={products} />
+
+        {/* Customer Reviews, Galleries, Slider and Badges */}
+        <CustomerExperience />
 
         {/* Brand Philosophy / Story Section */}
         <section id="story" className={styles.storySection}>
