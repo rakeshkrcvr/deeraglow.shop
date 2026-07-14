@@ -4556,6 +4556,265 @@ export default function AdminDashboard() {
               </div>
 
             </div>
+
+            {/* Google Tag Manager / Ads Simulation Popup */}
+            {showGooglePopup && (
+              <div style={{ position: 'fixed', inset: 0, zIndex: 9999, backgroundColor: 'rgba(11,26,17,0.7)', display: 'grid', placeItems: 'center', padding: '20px', backdropFilter: 'blur(4px)' }}>
+                <div style={{ backgroundColor: '#f1f3f4', width: '100%', maxWidth: '850px', height: '90vh', maxHeight: '600px', borderRadius: '12px', boxShadow: '0 12px 40px rgba(0,0,0,0.4)', overflow: 'hidden', color: '#202124', fontFamily: 'Roboto, Arial, sans-serif', display: 'flex', flexDirection: 'column' }}>
+                  
+                  {/* Google Top Bar */}
+                  <div style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #dadce0', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ fontSize: '18px', fontWeight: 'bold', backgroundColor: '#4285F4', color: '#ffffff', width: '28px', height: '28px', borderRadius: '50%', display: 'grid', placeItems: 'center' }}>G</span>
+                      <strong style={{ fontSize: '15px', color: '#202124' }}>Google Ads & Tag Manager</strong>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                      <span style={{ width: '8px', height: '8px', backgroundColor: '#1e8e3e', borderRadius: '50%' }}></span>
+                      <span>Connected as <strong>deeksha.candles.ads@gmail.com</strong></span>
+                    </div>
+                  </div>
+
+                  {/* Body area */}
+                  <div style={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
+                    
+                    {/* Left Sidebar */}
+                    <div style={{ width: '200px', backgroundColor: '#ffffff', borderRight: '1px solid #dadce0', padding: '16px 0', display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 }}>
+                      <div style={{ padding: '8px 24px', fontSize: '13px', fontWeight: '600', backgroundColor: '#e8f0fe', color: '#1a73e8', borderLeft: '3px solid #1a73e8' }}>Workspaces</div>
+                      <div style={{ padding: '8px 24px', fontSize: '13px', color: '#5f6368', cursor: 'pointer' }}>Tags</div>
+                      <div style={{ padding: '8px 24px', fontSize: '13px', color: '#5f6368', cursor: 'pointer' }}>Triggers</div>
+                      <div style={{ padding: '8px 24px', fontSize: '13px', color: '#5f6368', cursor: 'pointer' }}>Variables</div>
+                      <div style={{ padding: '8px 24px', fontSize: '13px', color: '#5f6368', cursor: 'pointer' }}>Folders</div>
+                    </div>
+
+                    {/* Right Main Content */}
+                    <div style={{ flexGrow: 1, padding: '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      
+                      <div>
+                        <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600', color: '#202124' }}>Select Google Property or Tag</h4>
+                        <p style={{ margin: '0 0 20px 0', fontSize: '13px', color: '#5f6368', lineHeight: '1.4' }}>
+                          Select the Google tracking measurement property to link to your storefront. We will automatically fetch the ID and apply Gtag scripts globally.
+                        </p>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setGoogleTagId('AW-10820381023');
+                            }}
+                            style={{ 
+                              display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', border: '1px solid #dadce0', borderRadius: '8px', background: '#ffffff', cursor: 'pointer', width: '100%', textAlign: 'left',
+                              borderColor: googleTagId === 'AW-10820381023' ? '#1a73e8' : '#dadce0',
+                              backgroundColor: googleTagId === 'AW-10820381023' ? '#f8f9fa' : '#ffffff',
+                              boxShadow: googleTagId === 'AW-10820381023' ? '0 0 0 1px #1a73e8' : 'none'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <span style={{ fontSize: '24px' }}>📈</span>
+                              <div>
+                                <strong style={{ fontSize: '14px', color: '#202124', display: 'block', marginBottom: '2px' }}>Deeksha Candles - Ads Account</strong>
+                                <span style={{ fontSize: '12px', color: '#5f6368' }}>Conversion Tag ID: AW-10820381023</span>
+                              </div>
+                            </div>
+                            <span style={{ fontSize: '11px', color: '#1e8e3e', fontWeight: '600', backgroundColor: '#e6f4ea', padding: '2px 8px', borderRadius: '10px' }}>Recommended</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setGoogleTagId('G-928374928');
+                            }}
+                            style={{ 
+                              display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', border: '1px solid #dadce0', borderRadius: '8px', background: '#ffffff', cursor: 'pointer', width: '100%', textAlign: 'left',
+                              borderColor: googleTagId === 'G-928374928' ? '#1a73e8' : '#dadce0',
+                              backgroundColor: googleTagId === 'G-928374928' ? '#f8f9fa' : '#ffffff',
+                              boxShadow: googleTagId === 'G-928374928' ? '0 0 0 1px #1a73e8' : 'none'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <span style={{ fontSize: '24px' }}>📊</span>
+                              <div>
+                                <strong style={{ fontSize: '14px', color: '#202124', display: 'block', marginBottom: '2px' }}>Deeksha Candles - GA4 Analytics Property</strong>
+                                <span style={{ fontSize: '12px', color: '#5f6368' }}>Measurement Tag ID: G-928374928</span>
+                              </div>
+                            </div>
+                          </button>
+
+                        </div>
+                      </div>
+
+                      {/* Footer Actions */}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid #dadce0', paddingTop: '16px', marginTop: '24px' }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowGooglePopup(false);
+                            setGoogleConnectedEmail('');
+                            setGoogleSelectedAccount('');
+                            setGoogleTagId('');
+                          }}
+                          style={{ backgroundColor: '#ffffff', border: '1px solid #dadce0', color: '#3c4043', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          disabled={!googleTagId}
+                          onClick={async () => {
+                            setGoogleConnectedEmail('deeksha.candles.ads@gmail.com');
+                            setGoogleSelectedAccount(googleTagId === 'AW-10820381023' ? 'Deeksha Candles - Ads Account (481-229-4820)' : 'Deeksha Candles - GA4 Analytics Property (G-928374928)');
+                            await handleSaveSettings({ 
+                              googleTagId, 
+                              googleTagCode: googleTagCode || `<!-- Google Tag (gtag.js) -->\n<script async src="https://www.googletagmanager.com/gtag/js?id=${googleTagId}"></script>\n<script>\n  window.dataLayer = window.dataLayer || [];\n  function gtag(){dataLayer.push(arguments);}\n  gtag('js', new Date());\n  gtag('config', '${googleTagId}');\n</script>`
+                            });
+                            setShowGooglePopup(false);
+                          }}
+                          style={{ backgroundColor: '#1a73e8', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 20px', fontSize: '13px', fontWeight: '600', cursor: googleTagId ? 'pointer' : 'not-allowed', opacity: googleTagId ? 1 : 0.5 }}
+                        >
+                          Link Property & Close
+                        </button>
+                      </div>
+
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            )}
+
+            {/* Facebook Events Manager (Ads Manager) Simulation Popup */}
+            {showFacebookPopup && (
+              <div style={{ position: 'fixed', inset: 0, zIndex: 9999, backgroundColor: 'rgba(11,26,17,0.7)', display: 'grid', placeItems: 'center', padding: '20px', backdropFilter: 'blur(4px)' }}>
+                <div style={{ backgroundColor: '#f0f2f5', width: '100%', maxWidth: '850px', height: '90vh', maxHeight: '600px', borderRadius: '12px', boxShadow: '0 12px 40px rgba(0,0,0,0.4)', overflow: 'hidden', color: '#1c1e21', fontFamily: 'SFProText-Regular, Helvetica, Arial, sans-serif', display: 'flex', flexDirection: 'column' }}>
+                  
+                  {/* Meta Suite Top Bar */}
+                  <div style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #dddfe2', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ fontSize: '18px', fontWeight: 'bold', backgroundColor: '#1877F2', color: '#ffffff', width: '28px', height: '28px', borderRadius: '50%', display: 'grid', placeItems: 'center' }}>f</span>
+                      <strong style={{ fontSize: '15px', color: '#1c1e21' }}>Meta Events Manager (Ads Manager)</strong>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                      <span style={{ width: '8px', height: '8px', backgroundColor: '#31a24c', borderRadius: '50%' }}></span>
+                      <span>Logged in as <strong>Deeksha Sharma</strong></span>
+                    </div>
+                  </div>
+
+                  {/* Body area split into Left Sidebar and Right Main Content */}
+                  <div style={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
+                    
+                    {/* Left Sidebar */}
+                    <div style={{ width: '200px', backgroundColor: '#ffffff', borderRight: '1px solid #dddfe2', padding: '16px 0', display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 }}>
+                      <div style={{ padding: '8px 24px', fontSize: '13px', fontWeight: '600', backgroundColor: '#e7f3ff', color: '#1877F2', borderLeft: '3px solid #1877F2' }}>Data Sources</div>
+                      <div style={{ padding: '8px 24px', fontSize: '13px', color: '#65676b', cursor: 'pointer' }}>Custom Conversions</div>
+                      <div style={{ padding: '8px 24px', fontSize: '13px', color: '#65676b', cursor: 'pointer' }}>Partner Integrations</div>
+                      <div style={{ padding: '8px 24px', fontSize: '13px', color: '#65676b', cursor: 'pointer' }}>Diagnostics</div>
+                      <div style={{ padding: '8px 24px', fontSize: '13px', color: '#65676b', cursor: 'pointer' }}>History</div>
+                    </div>
+
+                    {/* Right Main Content */}
+                    <div style={{ flexGrow: 1, padding: '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      
+                      <div>
+                        {/* Title & Description */}
+                        <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600', color: '#1c1e21' }}>Choose Facebook Tracking Pixel</h4>
+                        <p style={{ margin: '0 0 20px 0', fontSize: '13px', color: '#65676b', lineHeight: '1.4' }}>
+                          Select the Meta Pixel you want to link to your Deeksha Candles storefront. We will automatically fetch the ID and insert the required JavaScript tracking tags.
+                        </p>
+
+                        {/* Pixel Selection List */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFacebookPixelId('928374928374829');
+                            }}
+                            style={{ 
+                              display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', border: '1px solid #ced0d4', borderRadius: '8px', background: '#ffffff', cursor: 'pointer', width: '100%', textAlign: 'left',
+                              borderColor: facebookPixelId === '928374928374829' ? '#1877F2' : '#ced0d4',
+                              backgroundColor: facebookPixelId === '928374928374829' ? '#f0f7ff' : '#ffffff',
+                              boxShadow: facebookPixelId === '928374928374829' ? '0 0 0 1px #1877F2' : 'none'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <span style={{ fontSize: '24px' }}>📊</span>
+                              <div>
+                                <strong style={{ fontSize: '14px', color: '#1c1e21', display: 'block', marginBottom: '2px' }}>Deeksha Candles Pixel</strong>
+                                <span style={{ fontSize: '12px', color: '#65676b' }}>Pixel ID: 928374928374829</span>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ width: '8px', height: '8px', backgroundColor: '#31a24c', borderRadius: '50%' }}></span>
+                              <span style={{ fontSize: '11px', color: '#31a24c', fontWeight: '600' }}>Active (Receiving events)</span>
+                            </div>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFacebookPixelId('1083948394832');
+                            }}
+                            style={{ 
+                              display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', border: '1px solid #ced0d4', borderRadius: '8px', background: '#ffffff', cursor: 'pointer', width: '100%', textAlign: 'left',
+                              borderColor: facebookPixelId === '1083948394832' ? '#1877F2' : '#ced0d4',
+                              backgroundColor: facebookPixelId === '1083948394832' ? '#f0f7ff' : '#ffffff',
+                              boxShadow: facebookPixelId === '1083948394832' ? '0 0 0 1px #1877F2' : 'none'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <span style={{ fontSize: '24px' }}>🧪</span>
+                              <div>
+                                <strong style={{ fontSize: '14px', color: '#1c1e21', display: 'block', marginBottom: '2px' }}>Personal Test Pixel</strong>
+                                <span style={{ fontSize: '12px', color: '#65676b' }}>Pixel ID: 1083948394832</span>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ width: '8px', height: '8px', backgroundColor: '#e4e6eb', borderRadius: '50%' }}></span>
+                              <span style={{ fontSize: '11px', color: '#65676b' }}>Inactive</span>
+                            </div>
+                          </button>
+
+                        </div>
+                      </div>
+
+                      {/* Footer Actions */}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid #dddfe2', paddingTop: '16px', marginTop: '24px' }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowFacebookPopup(false);
+                            setFacebookConnectedUser('');
+                            setFacebookSelectedPixel('');
+                            setFacebookPixelId('');
+                          }}
+                          style={{ backgroundColor: '#ffffff', border: '1px solid #ced0d4', color: '#4b4f56', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          disabled={!facebookPixelId}
+                          onClick={async () => {
+                            setFacebookConnectedUser('Deeksha Sharma');
+                            setFacebookSelectedPixel(facebookPixelId === '928374928374829' ? 'Deeksha Candles Pixel (ID: 928374928374829)' : 'Personal Test Pixel (ID: 1083948394832)');
+                            await handleSaveSettings({ 
+                              facebookPixelId, 
+                              facebookPixelCode: facebookPixelCode || `<!-- Meta Pixel Code -->\n<script>\n!function(f,b,e,v,n,t,s)\n{if(f.fbq)return;n=f.fbq=function(){n.callMethod?\nn.callMethod.apply(n,arguments):n.queue.push(arguments)};\nif(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';\nn.queue=[];t=b.createElement(e);t.async=!0;\nt.src=v;s=b.getElementsByTagName(e)[0];\ns.parentNode.insertBefore(t,s)}(window, document,'script',\n'https://connect.facebook.net/en_US/fbevents.js');\nfbq('init', '${facebookPixelId}');\nfbq('track', 'PageView');\n</script>`
+                            });
+                            setShowFacebookPopup(false);
+                          }}
+                          style={{ backgroundColor: '#1877F2', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 20px', fontSize: '13px', fontWeight: '600', cursor: facebookPixelId ? 'pointer' : 'not-allowed', opacity: facebookPixelId ? 1 : 0.5 }}
+                        >
+                          Connect Pixel & Close
+                        </button>
+                      </div>
+
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            )}
           </div>
         )}
 
