@@ -42,7 +42,7 @@ export default function ContactPage() {
                 <h3 style={{ color: 'var(--accent)', fontSize: '16px', fontWeight: '600', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>
                   📞 Customer Care
                 </h3>
-                <p style={{ color: '#ffffff', margin: 0 }}>+91 98765 43210</p>
+                <p style={{ color: '#ffffff', margin: 0 }}>+91 99714 59984</p>
                 <p style={{ margin: 0 }}>Mon – Sat, 10:00 AM – 7:00 PM</p>
               </div>
 
@@ -50,7 +50,7 @@ export default function ContactPage() {
                 <h3 style={{ color: 'var(--accent)', fontSize: '16px', fontWeight: '600', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>
                   ✉️ Email Us
                 </h3>
-                <p style={{ color: '#ffffff', margin: 0 }}>care@deekshacandles.in</p>
+                <p style={{ color: '#ffffff', margin: 0 }}>deekshachauhancandles@gmail.com</p>
                 <p style={{ margin: 0 }}>General & Wholesale Inquiries</p>
               </div>
             </div>
