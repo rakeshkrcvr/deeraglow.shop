@@ -1789,7 +1789,7 @@ export default function AdminDashboard() {
         
         {/* Brand/Store Indicator */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 16px 20px 16px', borderBottom: '1px solid #dcdcdc', marginBottom: '16px' }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '4px', backgroundColor: '#0b1a11', color: '#c5a880', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '14px' }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '4px', backgroundColor: '#3E0030', color: '#c5a880', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '14px' }}>
             D
           </div>
           <div>
@@ -3123,7 +3123,7 @@ export default function AdminDashboard() {
                   <div key={coll.id} style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '12px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                        <h3 style={{ fontSize: '16px', fontWeight: '600', margin: 0, color: '#0b1a11' }}>{coll.name}</h3>
+                        <h3 style={{ fontSize: '16px', fontWeight: '600', margin: 0, color: '#3E0030' }}>{coll.name}</h3>
                         <div style={{ display: 'flex', gap: '10px' }}>
                           <button 
                             onClick={() => handleEditCollectionClick(coll)}
@@ -3261,7 +3261,7 @@ export default function AdminDashboard() {
                         <tr key={disc.id} style={{ borderBottom: '1px solid #e3e3e3' }}>
                           <td style={{ padding: '12px 16px' }}><input type="checkbox" /></td>
                           <td style={{ padding: '12px 16px' }}>
-                            <strong style={{ display: 'block', color: '#0b1a11' }}>{disc.title}</strong>
+                            <strong style={{ display: 'block', color: '#3E0030' }}>{disc.title}</strong>
                             <span style={{ fontSize: '11px', color: '#6d6d6d' }}>{disc.summary}</span>
                           </td>
                           <td style={{ padding: '12px 16px' }}>
@@ -3700,7 +3700,7 @@ export default function AdminDashboard() {
                   {campaigns.map((camp, idx) => (
                     <div key={idx} style={{ border: '1px solid #f0f0f0', borderRadius: '8px', padding: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <strong style={{ fontSize: '14px', color: '#0b1a11' }}>{camp.name}</strong>
+                        <strong style={{ fontSize: '14px', color: '#3E0030' }}>{camp.name}</strong>
                         <span style={{ fontSize: '12px', color: '#2d5c4d', fontWeight: '700', backgroundColor: '#e2ece9', padding: '2px 8px', borderRadius: '10px' }}>ROI: {camp.roi}</span>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', fontSize: '12px', color: '#6d6d6d' }}>

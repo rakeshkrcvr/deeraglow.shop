@@ -298,7 +298,7 @@ export default function Header() {
           address: deliveryAddressText
         },
         theme: {
-          color: "#0b1a11"
+          color: "#3E0030"
         },
         modal: {
           ondismiss: function () {
@@ -524,8 +524,8 @@ export default function Header() {
             <span>100% Secure Checkout</span>
           </div>
           <div className={styles.promoItem}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            <span>Hand-Poured Natural Soy Wax</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            <span>Premium Handcrafted Jewelry</span>
           </div>
         </div>
       </div>
@@ -553,8 +553,8 @@ export default function Header() {
               <img src={normalizedHeaderLogoUrl} alt="Deera Glow" className={styles.logoImage} />
             ) : (
               <>
-                <span className={styles.logoTitle}>D E E K S H A</span>
-                <span className={styles.logoSubtitle}>ARTISANAL ILLUMINATION</span>
+                <span className={styles.logoTitle}>D E E R A  G L O W</span>
+                <span className={styles.logoSubtitle}>PREMIUM ARTIFICIAL JEWELRY</span>
               </>
             )}
           </Link>
@@ -570,28 +570,27 @@ export default function Header() {
                 <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M1 1l4 4 4-4"/></svg>
               </span>
               <div className={styles.dropdownMenu}>
-                <Link href="/category/all-candles" onClick={() => setMobileMenuOpen(false)}>All Candles</Link>
+                <Link href="/category/all-jewelry" onClick={() => setMobileMenuOpen(false)}>All Jewelry</Link>
                 <Link href="/category/best-sellers" onClick={() => setMobileMenuOpen(false)}>Best Sellers</Link>
                 <Link href="/category/new-arrivals" onClick={() => setMobileMenuOpen(false)}>New Arrivals</Link>
-                <Link href="/category/luxury-collection" onClick={() => setMobileMenuOpen(false)}>Luxury Collection</Link>
-                <Link href="/category/gift-sets" onClick={() => setMobileMenuOpen(false)}>Gift Sets</Link>
-                <Link href="/category/combo-packs" onClick={() => setMobileMenuOpen(false)}>Combo Packs</Link>
+                <Link href="/category/rings" onClick={() => setMobileMenuOpen(false)}>Rings</Link>
+                <Link href="/category/necklaces" onClick={() => setMobileMenuOpen(false)}>Necklaces</Link>
+                <Link href="/category/earrings" onClick={() => setMobileMenuOpen(false)}>Earrings</Link>
               </div>
             </div>
 
-            {/* Fragrance Dropdown */}
+            {/* Material Dropdown */}
             <div className={styles.dropdown}>
               <span className={styles.navLink}>
-                Fragrance
+                Material
                 <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M1 1l4 4 4-4"/></svg>
               </span>
               <div className={styles.dropdownMenu}>
-                <Link href="/category/vanilla" onClick={() => setMobileMenuOpen(false)}>Vanilla</Link>
-                <Link href="/category/lavender" onClick={() => setMobileMenuOpen(false)}>Lavender</Link>
-                <Link href="/category/rose" onClick={() => setMobileMenuOpen(false)}>Rose</Link>
-                <Link href="/category/jasmine" onClick={() => setMobileMenuOpen(false)}>Jasmine</Link>
-                <Link href="/category/sandalwood" onClick={() => setMobileMenuOpen(false)}>Sandalwood</Link>
-                <Link href="/category/coffee" onClick={() => setMobileMenuOpen(false)}>Coffee</Link>
+                <Link href="/category/sterling-silver" onClick={() => setMobileMenuOpen(false)}>Sterling Silver</Link>
+                <Link href="/category/gold-plated" onClick={() => setMobileMenuOpen(false)}>Gold Plated</Link>
+                <Link href="/category/rose-gold" onClick={() => setMobileMenuOpen(false)}>Rose Gold</Link>
+                <Link href="/category/cubic-zirconia" onClick={() => setMobileMenuOpen(false)}>Cubic Zirconia</Link>
+                <Link href="/category/pearls" onClick={() => setMobileMenuOpen(false)}>Pearls</Link>
               </div>
             </div>
 
@@ -602,11 +601,11 @@ export default function Header() {
                 <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M1 1l4 4 4-4"/></svg>
               </span>
               <div className={styles.dropdownMenu}>
-                <Link href="/category/birthday" onClick={() => setMobileMenuOpen(false)}>Birthday</Link>
-                <Link href="/category/anniversary" onClick={() => setMobileMenuOpen(false)}>Anniversary</Link>
-                <Link href="/category/housewarming" onClick={() => setMobileMenuOpen(false)}>Housewarming</Link>
-                <Link href="/category/diwali" onClick={() => setMobileMenuOpen(false)}>Diwali</Link>
-                <Link href="/category/valentines" onClick={() => setMobileMenuOpen(false)}>Valentine&apos;s</Link>
+                <Link href="/category/daily-wear" onClick={() => setMobileMenuOpen(false)}>Daily Wear</Link>
+                <Link href="/category/office-wear" onClick={() => setMobileMenuOpen(false)}>Office Wear</Link>
+                <Link href="/category/party-wear" onClick={() => setMobileMenuOpen(false)}>Party Wear</Link>
+                <Link href="/category/festive-wear" onClick={() => setMobileMenuOpen(false)}>Festive Wear</Link>
+                <Link href="/category/anniversary-gifts" onClick={() => setMobileMenuOpen(false)}>Anniversary Gifts</Link>
               </div>
             </div>
 
@@ -722,9 +721,9 @@ export default function Header() {
                     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                   </svg>
                   <p>Your cart is empty.</p>
-                  <p className={styles.emptySub}>Fill it with the soothing essence of hand-crafted wicks.</p>
+                  <p className={styles.emptySub}>Fill it with premium, handcrafted jewelry designed for you.</p>
                   <button className={styles.shopBtn} onClick={() => setIsCartOpen(false)}>
-                    Browse Candles
+                    Browse Jewelry
                   </button>
                 </div>
               ) : (
@@ -753,7 +752,7 @@ export default function Header() {
                             
                             {/* Row 2: Fragrance selection (subtle) and Compare Price */}
                             <div className={styles.itemRowAlignTop}>
-                              <span className={styles.itemMeta}>Fragrance: {item.selectedFragrance}</span>
+                              <span className={styles.itemMeta}>Option: {item.selectedFragrance}</span>
                               {itemGiftValue > 0 && (
                                 <div className={styles.itemComparePrice}>
                                   ₹ {itemSubtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -841,7 +840,7 @@ export default function Header() {
                           <button 
                             type="button"
                             className={styles.crossSellAddBtn}
-                            onClick={() => addToCart(prod, 1, 'Vanilla')}
+                            onClick={() => addToCart(prod, 1, 'Standard')}
                           >
                             + Add
                           </button>
@@ -1016,8 +1015,8 @@ export default function Header() {
                 textAlign: 'center',
                 animation: 'fadeIn 0.3s ease-out'
               }}>
-                <div style={{ width: '72px', height: '72px', borderRadius: '50%', backgroundColor: '#e2ece9', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
-                  <span style={{ fontSize: '36px', color: '#2d5c4d' }}>✓</span>
+                <div style={{ width: '72px', height: '72px', borderRadius: '50%', backgroundColor: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
+                  <span style={{ fontSize: '36px', color: 'var(--accent)' }}>✓</span>
                 </div>
                 <h2 style={{ fontSize: '22px', fontWeight: '700', margin: '0 0 12px 0', color: '#1a1a1a' }}>Order Placed! 🎉</h2>
                 <p style={{ fontSize: '14px', color: '#6d6d6d', margin: '0 0 24px 0', lineHeight: '1.5' }}>
@@ -1142,8 +1141,8 @@ export default function Header() {
                     <div style={{ 
                       fontSize: '10px', 
                       fontWeight: '700', 
-                      color: '#2d5c4d', 
-                      backgroundColor: '#e2ece9', 
+                      color: 'var(--primary)', 
+                      backgroundColor: 'var(--accent-light)', 
                       borderRadius: '4px', 
                       padding: '2px 6px',
                       marginBottom: '2px'
@@ -1166,16 +1165,16 @@ export default function Header() {
                 {/* Scrollable Container */}
                 <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   
-                  {/* Green Savings Message */}
+                  {/* Champagne/Gold Savings Message */}
                   <div style={{
-                    backgroundColor: '#e2ece9',
-                    color: '#2d5c4d',
+                    backgroundColor: 'var(--accent-light)',
+                    color: 'var(--primary)',
                     borderRadius: '8px',
                     padding: '10px 16px',
                     fontSize: '13px',
                     fontWeight: '600',
                     textAlign: 'center',
-                    border: '1px solid rgba(45, 92, 77, 0.1)'
+                    border: '1px solid rgba(212, 175, 55, 0.2)'
                   }}>
                     You saved ₹{totalSaved.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                   </div>

@@ -180,7 +180,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
 
   const handleAddToCart = () => {
     setAdding(true);
-    addToCart(product, quantity, selectedFragrance || 'Vanilla');
+    addToCart(product, quantity, selectedFragrance || 'Standard');
     setTimeout(() => {
       setAdding(false);
     }, 1500);
@@ -190,7 +190,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
     const relatedProd = allProducts.find(p => p.id === id);
     if (relatedProd) {
       setAddingRelatedId(id);
-      addToCart(relatedProd, 1, 'Vanilla');
+      addToCart(relatedProd, 1, 'Standard');
       setTimeout(() => {
         setAddingRelatedId(null);
       }, 1500);
@@ -198,9 +198,9 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
   };
 
   const handleBuyNow = () => {
-    addToCart(product, quantity, selectedFragrance || 'Vanilla');
+    addToCart(product, quantity, selectedFragrance || 'Standard');
     setTimeout(() => {
-      alert(`Proceeding to checkout with ${quantity} × ${product.name} (${selectedFragrance || 'Vanilla'} Fragrance) for ₹${currentPrice * quantity}!`);
+      alert(`Proceeding to checkout with ${quantity} × ${product.name} (${selectedFragrance || 'Standard'} Option) for ₹${currentPrice * quantity}!`);
     }, 500);
   };
 
@@ -227,20 +227,20 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
   const reviewStats = [
     { icon: '👥', value: '5,000+', label: 'Happy Customers' },
     { icon: '☆', value: '4.9/5', label: 'Average Rating' },
-    { icon: '◒', value: '100%', label: 'Natural Soy Wax' },
-    { icon: '◷', value: '40+', label: 'Hours Burn Time' },
+    { icon: '✨', value: '925', label: 'Sterling Silver' },
+    { icon: '💎', value: 'Premium', label: 'Cubic Zirconia' },
     { icon: '□', value: 'Premium', label: 'Gift Packaging' },
     { icon: '▱', value: 'Pan India', label: 'Free Shipping' }
   ];
 
   // Get product gallery images
   const pool = [
-    '/images/hero_candle.png',
-    '/images/lavender_candle.png',
-    '/images/jasmine_candle.png',
-    '/images/eucalyptus_candle.png',
-    '/images/vanilla_candle.png',
-    '/images/rose_candle.png'
+    '/images/rings_category.png',
+    '/images/bracelets_category.png',
+    '/images/necklaces_category.png',
+    '/images/earrings_category.png',
+    '/images/charm_category.png',
+    '/images/rings_category.png'
   ];
   const otherImages = pool.filter(img => img !== product.image_url);
   
@@ -318,7 +318,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
         <nav className={styles.breadcrumb} aria-label="Breadcrumb">
           <Link href="/" className={styles.breadcrumbLink}>Home</Link>
           <span className={styles.separator}>/</span>
-          <span className={styles.breadcrumbLink}>Candles</span>
+          <span className={styles.breadcrumbLink}>Jewelry</span>
           <span className={styles.separator}>/</span>
           <span className={styles.activeBreadcrumb}>{product.name}</span>
         </nav>
@@ -379,7 +379,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             </div>
 
             <div className={styles.batchBadgeContainer}>
-              <span>Hand-poured in small batches of 40</span>
+              <span>Handcrafted in small batches</span>
             </div>
           </div>
 
@@ -389,7 +389,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             {/* Top Badges & Titles */}
             <span className={styles.editorialBadge}>BEST SELLER • LIMITED WINTER BATCH</span>
             <h1 className={styles.title}>{product.name}</h1>
-            <p className={styles.tagline}>{product.tagline || '100% natural soy wax — wooden wick — 30-40 hours burn time'}</p>
+            <p className={styles.tagline}>{product.tagline || '925 sterling silver — anti-tarnish — premium cubic zirconia'}</p>
 
             {/* Ratings Summary */}
             <div className={styles.ratingRow}>
@@ -415,12 +415,12 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             {/* Alert Banner */}
             <div className={styles.alertBanner}>
               <span className={styles.redDot}></span>
-              <p>Only <strong>7 jars</strong> left in this batch — next pour isn&apos;t for 3 weeks.</p>
+              <p>Only <strong>7 pieces</strong> left in this batch — next handcrafted run isn&apos;t for 3 weeks.</p>
             </div>
 
             {/* Scent Notes Section */}
             <div className={styles.notesSection}>
-              <h3 className={styles.sectionLabel}>Scent notes</h3>
+              <h3 className={styles.sectionLabel}>Style & Features</h3>
               <div className={styles.notesList}>
                 {scentNotes.map((note, index) => (
                   <span key={index} className={styles.notePill}>{note}</span>
@@ -433,27 +433,18 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
               <h3 className={styles.sectionLabel}>Specifications</h3>
               <div className={styles.specsList}>
                 <div className={styles.specItem}>
-                  <span className={styles.specLabel}>Fragrance:</span>
-                  <span className={styles.specValue}>{product.fragrances || 'Oud, Jasmin, Rose, Vanilla'}</span>
+                  <span className={styles.specLabel}>Material:</span>
+                  <span className={styles.specValue}>{product.fragrances || '925 Sterling Silver, Gold Plated, Cubic Zirconia'}</span>
                 </div>
                 <div className={styles.specItem}>
-                  <span className={styles.specLabel}>Dimensions:</span>
-                  <span className={styles.specValue}>{product.dimensions || 'W: 2.5 inch × H: 3 inch'}</span>
-                </div>
-                <div className={styles.specItem}>
-                  <span className={styles.specLabel}>Wax Weight:</span>
-                  <span className={styles.specValue}>{product.weight || '350 gms'}</span>
-                </div>
-                <div className={styles.specItem}>
-                  <span className={styles.specLabel}>Burning Hours:</span>
-                  <span className={styles.specValue}>{product.burn_hours || '32 Hrs'}</span>
+                  <span className={styles.specValue}>Available Options</span>
                 </div>
               </div>
             </div>
 
-            {/* Fragrance Selector Option */}
+            {/* Option Selector Option */}
             <div className={styles.fragranceSection}>
-              <h3 className={styles.sectionLabel}>Select Fragrance</h3>
+              <h3 className={styles.sectionLabel}>Select Option / Size</h3>
               <div className={styles.fragranceGrid}>
                 {fragrancesList.map((frag) => (
                   <button 
@@ -497,24 +488,24 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             {/* Core Trust Grid (As requested by the user) */}
             <div className={styles.trustGrid}>
               <div className={styles.trustItem}>
-                <span className={styles.trustIcon}>🕯️</span>
+                <span className={styles.trustIcon}>💍</span>
                 <div className={styles.trustText}>
                   <h4>Handcrafted with Love</h4>
-                  <p>Premium quality handmade candles</p>
+                  <p>Premium quality artificial jewelry</p>
                 </div>
               </div>
               <div className={styles.trustItem}>
-                <span className={styles.trustIcon}>🌿</span>
+                <span className={styles.trustIcon}>✨</span>
                 <div className={styles.trustText}>
-                  <h4>Premium Fragrance Oils</h4>
-                  <p>Long-lasting luxurious aroma</p>
+                  <h4>Tarnish Free Polish</h4>
+                  <p>Long-lasting luxurious shine</p>
                 </div>
               </div>
               <div className={styles.trustItem}>
-                <span className={styles.trustIcon}>⏳</span>
+                <span className={styles.trustIcon}>🍃</span>
                 <div className={styles.trustText}>
-                  <h4>30–40 Hours Burn Time</h4>
-                  <p>Clean & even burning</p>
+                  <h4>Skin Friendly</h4>
+                  <p>Nickel-free & hypoallergenic</p>
                 </div>
               </div>
               <div className={styles.trustItem}>
@@ -529,50 +520,50 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             {/* Description & Fit Accordion Group */}
             <div className={styles.accordions}>
               
-              {/* Burn Time Accordion */}
+              {/* Care Accordion */}
               <div className={styles.accordionCard}>
                 <button className={styles.accordionHeader} onClick={() => toggleAccordion('burntime')}>
-                  <span>Burn time</span>
+                  <span>Finish & Polish</span>
                   <span className={styles.accordionIcon}>{openAccordion === 'burntime' ? '−' : '+'}</span>
                 </button>
                 {openAccordion === 'burntime' && (
                   <div className={styles.accordionBody}>
-                    <p className={styles.metaLabel}>{product.acc_burn_time || '32 Hours average'}</p>
+                    <p className={styles.metaLabel}>{product.acc_burn_time || 'Anti-tarnish, high-shine premium finish'}</p>
                     <div className={styles.progressContainer}>
                       <div 
                         className={styles.progressBar} 
-                        style={{ width: '80%' }}
+                        style={{ width: '100%' }}
                       ></div>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Ingredients Accordion */}
+              {/* Materials Accordion */}
               <div className={styles.accordionCard}>
                 <button className={styles.accordionHeader} onClick={() => toggleAccordion('ingredients')}>
-                  <span>Ingredients & how it&apos;s made</span>
+                  <span>Materials & Craftsmanship</span>
                   <span className={styles.accordionIcon}>{openAccordion === 'ingredients' ? '−' : '+'}</span>
                 </button>
                 {openAccordion === 'ingredients' && (
                   <div className={styles.accordionBody}>
                     <p>
-                      {product.acc_ingredients || "100% natural soy wax, phthalate-free premium fragrance oils, cotton-core crackling wooden wicks, reusable amber glass jars. No paraffin, no artificial dyes. Every jar is hand-poured and cured for 48 hours before it ships."}
+                      {product.acc_ingredients || "925 Sterling Silver base, 18k gold plating, AAA+ cubic zirconia, skin-friendly and completely lead and nickel free. Crafted to ensure lifetime durability and shine."}
                     </p>
                   </div>
                 )}
               </div>
 
-              {/* Burning Instructions Accordion */}
+              {/* Care Instructions Accordion */}
               <div className={styles.accordionCard}>
                 <button className={styles.accordionHeader} onClick={() => toggleAccordion('burning')}>
-                  <span>Burning instructions</span>
+                  <span>Jewelry care instructions</span>
                   <span className={styles.accordionIcon}>{openAccordion === 'burning' ? '−' : '+'}</span>
                 </button>
                 {openAccordion === 'burning' && (
                   <div className={styles.accordionBody}>
                     <p>
-                      {product.acc_instructions || "Trim the wooden wick to 1/4 inch before each burn. Allow the wax to melt to the edges on first burn to avoid tunneling. Never burn for more than 4 hours at a time. Keep away from drafts, children, and pets."}
+                      {product.acc_instructions || "Avoid direct contact with water, sweat, perfumes, or harsh chemicals. Clean gently with a dry microfibre cloth and store in an airtight zip-lock bag when not in use."}
                     </p>
                   </div>
                 )}
@@ -587,7 +578,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
                 {openAccordion === 'shipping' && (
                   <div className={styles.accordionBody}>
                     <p>
-                      {product.acc_shipping || "Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the candle is completely unburned and in its original packaging."}
+                      {product.acc_shipping || "Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewelry is completely unused and in its original packaging."}
                     </p>
                   </div>
                 )}
@@ -748,7 +739,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
                     <textarea
                       value={reviewForm.quote}
                       onChange={(event) => handleReviewFormChange('quote', event.target.value)}
-                      placeholder="Tell us what you loved about the candle..."
+                      placeholder="Tell us what you loved about the jewelry..."
                       required
                       rows={5}
                     />
@@ -1006,43 +997,43 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
               <div className={styles.afterTextCol}>
                 <div className={styles.columnHeader}>
                   <span className={styles.afterBadge}>AFTER</span>
-                  <h3>Deeksha Moments</h3>
-                  <p className={styles.colSub}>Warm. Relaxing. Magical.</p>
+                  <h3>Deera Glow Moments</h3>
+                  <p className={styles.colSub}>Elegant. Shining. Magical.</p>
                 </div>
                 <ul className={styles.featuresList}>
                   <li>
                     <span className={styles.featureEmoji}>😊</span>
                     <div>
-                      <strong>Calm & Relaxed Mind</strong>
-                      <p>Instantly feel peaceful & light</p>
+                      <strong>Confident & Styled Look</strong>
+                      <p>Instantly feel complete & elegant</p>
                     </div>
                   </li>
                   <li>
                     <span className={styles.featureEmoji}>🏠</span>
                     <div>
-                      <strong>Warm & Cozy Ambience</strong>
-                      <p>Transforms your space beautifully</p>
+                      <strong>Stunning Presence</strong>
+                      <p>Complements your outfit beautifully</p>
                     </div>
                   </li>
                   <li>
-                    <span className={styles.featureEmoji}>🌸</span>
+                    <span className={styles.featureEmoji}>✨</span>
                     <div>
-                      <strong>Luxurious Fragrance</strong>
-                      <p>Long-lasting, premium aroma</p>
+                      <strong>Shining Elegance</strong>
+                      <p>Long-lasting, premium polished finish</p>
                     </div>
                   </li>
                   <li>
-                    <span className={styles.featureEmoji}>🧘</span>
+                    <span className={styles.featureEmoji}>👑</span>
                     <div>
-                      <strong>Better Sleep & Well-being</strong>
-                      <p>Helps you unwind & relax</p>
+                      <strong>Boosted Self-Esteem</strong>
+                      <p>Stand out and command attention</p>
                     </div>
                   </li>
                   <li>
                     <span className={styles.featureEmoji}>🎁</span>
                     <div>
-                      <strong>Special Moments</strong>
-                      <p>Makes every moment memorable</p>
+                      <strong>Special Memories</strong>
+                      <p>Makes every celebration memorable</p>
                     </div>
                   </li>
                 </ul>
@@ -1050,29 +1041,29 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
 
             </div>
 
-            {/* Bottom Row: Why Thousands Choose Deeksha */}
+            {/* Bottom Row: Why Thousands Choose Deera Glow */}
             <div className={styles.chooseSection}>
-              <h3 className={styles.chooseTitle}>Why Thousands Choose Deeksha</h3>
+              <h3 className={styles.chooseTitle}>Why Thousands Choose Deera Glow</h3>
               <div className={styles.chooseGrid}>
                 <div className={styles.chooseCard}>
                   <span className={styles.chooseIcon}>🏅</span>
                   <div>
                     <h4>Premium Quality</h4>
-                    <p>Finest ingredients for the best experience</p>
+                    <p>Finest metals & stones for daily wear</p>
                   </div>
                 </div>
                 <div className={styles.chooseCard}>
-                  <span className={styles.chooseIcon}>⏳</span>
+                  <span className={styles.chooseIcon}>🛡️</span>
                   <div>
-                    <h4>Long Lasting Burn</h4>
-                    <p>30–40 hours of pure bliss</p>
+                    <h4>Anti-Tarnish Polish</h4>
+                    <p>Long lasting shine & protection</p>
                   </div>
                 </div>
                 <div className={styles.chooseCard}>
                   <span className={styles.chooseIcon}>🍃</span>
                   <div>
-                    <h4>Clean & Safe</h4>
-                    <p>Non-toxic, low smoke & eco-friendly</p>
+                    <h4>Skin Friendly</h4>
+                    <p>Nickel-free, lead-free & hypoallergenic</p>
                   </div>
                 </div>
                 <div className={styles.chooseCard}>
@@ -1086,7 +1077,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
                   <span className={styles.chooseIcon}>🧡</span>
                   <div>
                     <h4>Handcrafted with Love</h4>
-                    <p>Made with care in every candle</p>
+                    <p>Crafted with care in every piece</p>
                   </div>
                 </div>
               </div>
@@ -1147,90 +1138,102 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
           </div>
           
           <div className={styles.relatedProductsGrid}>
-            {relatedProducts.map((p) => {
+            {relatedProducts.map((p, index) => {
               const isAddingRelated = addingRelatedId === p.id;
+              const originalPrice = Math.round((p.price / 0.7) / 100) * 100 - 1;
+              const discountPercent = Math.round(((originalPrice - p.price) / originalPrice) * 100);
               
               return (
-                <div key={p.id} className={styles.relatedGlassCard}>
+                <div key={p.id} className={styles.jewelryCard}>
                   
-                  {/* IndicatorBadge */}
-                  <div className={styles.relatedIndicator}>
-                    <span>$</span>
+                  {/* Image Container with Badges */}
+                  <div className={styles.imageSection}>
+                    {index === 0 && (
+                      <div className={styles.bestSellerBadge}>
+                        <span>★ BEST SELLER</span>
+                      </div>
+                    )}
+
+                    <button className={styles.wishlistBtn} aria-label="Add to wishlist">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                      </svg>
+                    </button>
+
+                    <Link href={`/products/${p.slug}`} className={styles.imageLink}>
+                      <div className={styles.imageContainer}>
+                        <Image 
+                          src={p.image_url} 
+                          alt={p.name}
+                          width={400}
+                          height={400}
+                          className={styles.image}
+                        />
+                      </div>
+                    </Link>
                   </div>
 
-                  {/* Pedestal Image wrapped in Link */}
-                  <Link href={`/products/${p.slug}`} className={styles.relatedImageLink}>
-                    <div className={styles.relatedImageContainer}>
-                      <Image 
-                        src={p.image_url} 
-                        alt={p.name}
-                        width={400}
-                        height={400}
-                        className={styles.relatedImage}
-                      />
-                    </div>
-                  </Link>
-
-                  {/* Info details */}
-                  <div className={styles.relatedInfo}>
-                    <span className={styles.relatedFeatures}>{p.features}</span>
+                  {/* Content details */}
+                  <div className={styles.info}>
+                    <span className={styles.features}>{p.collection.toUpperCase()}</span>
+                    
                     <Link href={`/products/${p.slug}`}>
-                      <h3 className={styles.relatedProductName}>{p.name}</h3>
+                      <h3 className={styles.productName}>{p.name}</h3>
                     </Link>
                     
-                    <div className={styles.relatedRating}>
-                      <span className={styles.relatedStars}>★</span>
-                      <span>{p.rating}</span>
-                      <span className={styles.relatedReviews}>({p.reviews_count})</span>
+                    <div className={styles.ratingRow}>
+                      <div className={styles.stars}>★★★★★</div>
+                      <span className={styles.ratingValue}>{p.rating}</span>
+                      <span className={styles.ratingSeparator}>|</span>
+                      <span className={styles.reviewsCount}>{p.reviews_count} Reviews</span>
                     </div>
 
-                    <div className={styles.relatedDivider}></div>
+                    <div className={styles.priceRow}>
+                      <span className={styles.price}>₹{p.price}</span>
+                      <span className={styles.originalPrice}>₹{originalPrice}</span>
+                      <span className={styles.discountBadge}>{discountPercent}% OFF</span>
+                    </div>
 
-                    {/* Bottom Row */}
-                    <div className={styles.relatedBottom}>
-                      <span className={styles.relatedPrice}>₹{p.price}</span>
-                      
-                      <div className={styles.relatedActionButtons}>
-                        <button 
-                          className={styles.relatedTextAddBtn}
-                          onClick={() => handleAddRelatedToCart(p.id)}
-                          disabled={isAddingRelated}
-                        >
-                          {isAddingRelated ? "Added" : "Add to Cart"}
-                        </button>
-                        <button 
-                          className={styles.relatedBuyNowBtn}
-                          onClick={() => {
-                            handleAddRelatedToCart(p.id);
-                            setTimeout(() => {
-                              alert(`Proceeding to checkout with ${p.name}!`);
-                            }, 500);
-                          }}
-                        >
-                          Buy Now
-                        </button>
-                      </div>
+                    <div className={styles.divider}></div>
 
-                      {/* Circular button */}
+                    {/* Action row matching second image */}
+                    <div className={styles.actionRow}>
                       <button 
-                        className={`${styles.relatedAddBtn} ${isAddingRelated ? styles.relatedAdding : ''}`}
+                        className={styles.addBagBtn}
                         onClick={() => handleAddRelatedToCart(p.id)}
                         disabled={isAddingRelated}
-                        aria-label="Add to cart"
                       >
-                        {isAddingRelated ? (
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                            <polyline points="20 6 9 17 4 12"/>
-                          </svg>
-                        ) : (
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                          </svg>
-                        )}
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.btnIcon}>
+                          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                          <line x1="3" y1="6" x2="21" y2="6"></line>
+                          <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        <span>{isAddingRelated ? "ADDED" : "ADD TO BAG"}</span>
                       </button>
-                    </div>
 
+                      <button 
+                        className={styles.buyNowBtn}
+                        onClick={() => {
+                          handleAddRelatedToCart(p.id);
+                          setTimeout(() => {
+                            alert(`Proceeding to checkout with ${p.name}!`);
+                          }, 500);
+                        }}
+                      >
+                        <span>BUY NOW</span>
+                        <span className={styles.arrow}>→</span>
+                      </button>
+
+                      <Link href={`/products/${p.slug}`} className={styles.quickViewLink}>
+                        <button className={styles.quickViewBtn} type="button">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                          <span className={styles.quickViewText}>QUICK VIEW</span>
+                        </button>
+                      </Link>
+                    </div>
                   </div>
 
                 </div>

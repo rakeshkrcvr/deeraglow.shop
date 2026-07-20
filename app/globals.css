@@ -1,32 +1,51 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
 
+
 :root {
-  --background: #FAF8F5; /* Warm luxury cream */
-  --background-secondary: #F4F0E8; /* Softer sand/beige */
-  --foreground: #1A201C; /* Deep olive/charcoal */
-  --foreground-secondary: #4A544E; /* Softer muted green-charcoal */
-  
-  --primary: #3e0030; /* Premium Forest Green */
-  --primary-hover: #264E3A;
-  --primary-light: #E7ECE8; /* Soft green tint */
-  
-  --accent: #C3A375; /* Elegant Gold */
-  --accent-hover: #B29264;
-  --accent-light: #F7F3EB;
-  
-  --border: rgba(27, 59, 43, 0.1);
-  --border-light: rgba(27, 59, 43, 0.05);
-  
-  --shadow-sm: 0 2px 8px rgba(27, 59, 43, 0.04);
-  --shadow-md: 0 8px 24px rgba(27, 59, 43, 0.06);
-  --shadow-lg: 0 16px 40px rgba(27, 59, 43, 0.1);
-  
+  /* Backgrounds */
+  --background: #FCFAF8;
+  /* Luxury Ivory */
+  --background-secondary: #F7F1EB;
+  /* Warm Champagne */
+
+  /* Text */
+  --foreground: #1F1A1D;
+  /* Rich Charcoal */
+  --foreground-secondary: #5D555B;
+  /* Soft Gray */
+
+  /* Brand */
+  --primary: #3E0030;
+  /* Royal Plum */
+  --primary-hover: #540040;
+  /* Dark Plum */
+  --primary-light: #F4EAF1;
+  /* Soft Plum */
+
+  /* Accent */
+  --accent: #D4AF37;
+  /* Luxury Gold */
+  --accent-hover: #BF9B30;
+  --accent-light: #FBF6E8;
+
+  /* Borders */
+  --border: rgba(62, 0, 48, 0.10);
+  --border-light: rgba(62, 0, 48, 0.05);
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(62, 0, 48, 0.05);
+  --shadow-md: 0 8px 24px rgba(62, 0, 48, 0.08);
+  --shadow-lg: 0 16px 40px rgba(62, 0, 48, 0.12);
+
+  /* Fonts */
   --font-serif: 'Cormorant Garamond', Georgia, serif;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  
+
+  /* Animation */
   --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --transition-normal: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   --transition-slow: 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+
 }
 
 /* Base resets & styling */
@@ -54,7 +73,12 @@ body {
   overflow-x: hidden;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-serif);
   font-weight: 500;
   line-height: 1.25;
@@ -67,7 +91,10 @@ a {
   transition: all var(--transition-fast);
 }
 
-button, input, textarea, select {
+button,
+input,
+textarea,
+select {
   font-family: inherit;
   font-size: inherit;
   color: inherit;
@@ -110,8 +137,15 @@ img {
 
 /* Smooth fade-in utilities */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fade-in {
@@ -130,7 +164,7 @@ img {
   width: 100%;
 }
 
-.admin-main > div {
+.admin-main>div {
   max-width: 100%;
 }
 
@@ -233,12 +267,12 @@ img {
     overflow: visible !important;
   }
 
-  .admin-main > div > div[style*="justify-content: space-between"] {
+  .admin-main>div>div[style*="justify-content: space-between"] {
     flex-wrap: wrap;
     gap: 12px;
   }
 
-  .admin-main > div > div[style*="justify-content: space-between"] > div {
+  .admin-main>div>div[style*="justify-content: space-between"]>div {
     flex-wrap: wrap;
   }
 

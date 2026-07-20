@@ -82,174 +82,191 @@ export async function getProducts(options: { includeDeleted?: boolean } = {}): P
     }
 
     // 3. Query all products so deleted seeded items are not recreated.
+    try {
+      await sql`
+        DELETE FROM products 
+        WHERE collection ILIKE '%candle%' 
+           OR collection ILIKE '%wax%' 
+           OR description ILIKE '%aroma%' 
+           OR description ILIKE '%wax%'
+           OR description ILIKE '%scents%'
+           OR description ILIKE '%wick%'
+           OR name ILIKE '%candle%'
+           OR name ILIKE '%sacred ritual%'
+           OR name ILIKE '%oud%'
+      `;
+    } catch (err) {
+      console.error('Error clearing old candle products:', err);
+    }
+
     let allProducts = await sql`SELECT * FROM products ORDER BY id ASC` as unknown as Product[];
 
     // 4. Define all standard products with their unique SEO slugs
     const initialProducts = [
       {
-        name: "Sandalwood Sacred Ritual",
-        slug: "sandalwood-sacred-ritual",
-        collection: "Scented Candles",
+        name: "Royal Pearl Drops",
+        slug: "royal-pearl-drops",
+        collection: "Earrings",
         price: 899,
         rating: 4.9,
         reviews_count: 124,
-        description: "A deep, grounding aroma featuring raw Indian Mysore sandalwood, incense smoke, and dried jasmine blossoms.",
-        image_url: "/images/hero_candle.png",
-        features: "Sandalwood • Incense • Jasmine"
+        description: "Elegant double-layered drops with premium faux pearls and shimmering crystal settings.",
+        image_url: "/images/earrings_category.png",
+        features: "Pearl • Drop • Gold Plated"
       },
       {
-        name: "Lavender & Midnight Oud",
-        slug: "lavender-midnight-oud",
-        collection: "Soy Wax Candles",
-        price: 849,
-        rating: 4.8,
-        reviews_count: 88,
-        description: "A calming therapeutic blend of English lavender, dark agarwood (oud), and amber resin for deep sleep.",
-        image_url: "/images/lavender_candle.png",
-        features: "Lavender • Oud • Amber"
-      },
-      {
-        name: "Jasmine & Crushed Mint",
-        slug: "jasmine-crushed-mint",
-        collection: "Jar Candles",
-        price: 799,
-        rating: 4.7,
-        reviews_count: 62,
-        description: "A fresh, cooling combination of blooming night jasmine and wild crushed mint leaves, perfect for focus.",
-        image_url: "/images/jasmine_candle.png",
-        features: "Jasmine • Fresh Mint • Green Tea"
-      },
-      {
-        name: "Eucalyptus & Silver Cedar",
-        slug: "eucalyptus-silver-cedar",
-        collection: "Luxury Candles",
-        price: 949,
-        rating: 4.9,
-        reviews_count: 73,
-        description: "A fresh, clearing aura blend of fresh eucalyptus leaves, silver cedarwood, and wild forest moss.",
-        image_url: "/images/eucalyptus_candle.png",
-        features: "Eucalyptus • Cedarwood • Forest Moss"
-      },
-      {
-        name: "Amber Vanilla & Warm Tobacco",
-        slug: "amber-vanilla-warm-tobacco",
-        collection: "Decorative Candles",
-        price: 999,
-        rating: 4.8,
-        reviews_count: 95,
-        description: "A cozy, warm aura blend of sweet vanilla bean extract, aged bourbon, and tobacco leaf essence.",
-        image_url: "/images/vanilla_candle.png",
-        features: "Vanilla Bourbon • Sweet Amber • Tobacco"
-      },
-      {
-        name: "Rose & Himalayan Oud",
-        slug: "rose-himalayan-oud",
-        collection: "Scented Candles",
-        price: 949,
-        rating: 4.7,
-        reviews_count: 54,
-        description: "A devotive aura blend of pink rose blossoms, Himalayan agarwood (oud), and warm sandalwood.",
-        image_url: "/images/rose_candle.png",
-        features: "Pink Rose • Dark Oud • Mysore Sandalwood"
-      },
-      {
-        name: "Vanilla & Spiced Cocoa",
-        slug: "vanilla-spiced-cocoa",
-        collection: "Scented Candles",
-        price: 849,
-        rating: 4.8,
-        reviews_count: 36,
-        description: "A decadent holiday blend of warm vanilla extract, dark spiced cocoa, and cinnamon bark.",
-        image_url: "/images/vanilla_candle.png",
-        features: "Vanilla • Cocoa • Cinnamon"
-      },
-      {
-        name: "Lavender Sleep Infusion",
-        slug: "lavender-sleep-infusion",
-        collection: "Soy Wax Candles",
-        price: 799,
-        rating: 4.9,
-        reviews_count: 42,
-        description: "A calming herbal candle designed for sleep therapies, featuring French lavender, chamomile, and valerian roots.",
-        image_url: "/images/lavender_candle.png",
-        features: "Lavender • Chamomile • Valerian"
-      },
-      {
-        name: "Golden Amber & Sandalwood",
-        slug: "golden-amber-sandalwood",
-        collection: "Luxury Candles",
+        name: "Golden Solitaire Ring",
+        slug: "golden-solitaire-ring",
+        collection: "Rings",
         price: 1199,
         rating: 4.9,
-        reviews_count: 55,
-        description: "A luxurious aroma combining heavy golden amber resin, cedar shavings, and Indian sandalwood extract.",
-        image_url: "/images/hero_candle.png",
-        features: "Amber • Sandalwood • Cedarwood"
+        reviews_count: 88,
+        description: "A classic 925 sterling silver ring featuring a sparkling central cubic zirconia stone.",
+        image_url: "/images/rings_category.png",
+        features: "Solitaire • 925 Silver • Cubic Zirconia"
       },
       {
-        name: "Fresh Mint & Lime Citrus",
-        slug: "fresh-mint-lime-citrus",
-        collection: "Decorative Candles",
-        price: 849,
-        rating: 4.6,
-        reviews_count: 24,
-        description: "A bright and zesty decorative kitchen candle featuring fresh lime peels, key lime oil, and wild spearmint.",
-        image_url: "/images/eucalyptus_candle.png",
-        features: "Lime • Spearmint • Lemon"
-      },
-      {
-        name: "Coffee Bean & Caramel Swirl",
-        slug: "coffee-bean-caramel",
-        collection: "Jar Candles",
-        price: 899,
+        name: "Classic Heart Pendant",
+        slug: "classic-heart-pendant",
+        collection: "Necklaces",
+        price: 799,
         rating: 4.8,
-        reviews_count: 67,
-        description: "An invigorating coffeehouse scent featuring roasted arabica coffee beans, salted caramel drizzle, and steamed milk.",
-        image_url: "/images/hero_candle.png",
-        features: "Coffee • Caramel • Warm Milk"
+        reviews_count: 62,
+        description: "A delicate gold-plated chain with a polished heart-shaped pendant, perfect for daily layering.",
+        image_url: "/images/necklaces_category.png",
+        features: "Heart • Pendant • Layering Chain"
       },
       {
-        name: "Wild Rose & Patchouli",
-        slug: "wild-rose-patchouli",
-        collection: "Scented Candles",
-        price: 949,
+        name: "Minimalist Link Chain",
+        slug: "minimalist-link-chain",
+        collection: "Bracelets",
+        price: 699,
         rating: 4.7,
-        reviews_count: 31,
-        description: "A sensuous woody floral blend combining organic rose buds, aged patchouli leaves, and amber dust.",
-        image_url: "/images/rose_candle.png",
-        features: "Rose • Patchouli • Vanilla"
+        reviews_count: 45,
+        description: "An elegant, lightweight link bracelet crafted with gold-plated brass and adjustable clasp.",
+        image_url: "/images/bracelets_category.png",
+        features: "Link Chain • Gold Plated • Adjustable"
       },
       {
-        name: "Ocean Breeze & Salted Sage",
-        slug: "ocean-breeze-sage",
-        collection: "Soy Wax Candles",
-        price: 899,
+        name: "Emperor Crown Charm",
+        slug: "emperor-crown-charm",
+        collection: "Charms",
+        price: 499,
         rating: 4.8,
-        reviews_count: 48,
-        description: "A refreshing marine scent evoking windswept coastlines, featuring sea salt sprays, dry sage leaves, and vetiver.",
-        image_url: "/images/eucalyptus_candle.png",
-        features: "Sea Salt • Sage • Vetiver"
+        reviews_count: 36,
+        description: "A beautifully detailed miniature crown charm in sterling silver to add to your favorite carrier.",
+        image_url: "/images/charm_category.png",
+        features: "Crown • Sterling Silver • Charm Carrier"
       },
       {
-        name: "Smoked Oud & Amber Resin",
-        slug: "smoked-oud-amber",
-        collection: "Luxury Candles",
-        price: 1249,
+        name: "Dazzling Double Hoops",
+        slug: "dazzling-double-hoops",
+        collection: "Earrings",
+        price: 949,
+        rating: 4.9,
+        reviews_count: 52,
+        description: "Modern interlocking double-hoop earrings in gold plating with micro-paved cubic zirconia.",
+        image_url: "/images/earrings_category.png",
+        features: "Double Hoop • Micro-Pave • Gold Plated"
+      },
+      {
+        name: "Eternity Band Ring",
+        slug: "eternity-band-ring",
+        collection: "Rings",
+        price: 1299,
+        rating: 4.9,
+        reviews_count: 73,
+        description: "A full eternity band set with round-cut premium cubic zirconia stones for timeless shine.",
+        image_url: "/images/rings_category.png",
+        features: "Eternity Band • Full Setting • 925 Silver"
+      },
+      {
+        name: "Infinity Loop Necklace",
+        slug: "infinity-loop-necklace",
+        collection: "Necklaces",
+        price: 849,
+        rating: 4.8,
+        reviews_count: 58,
+        description: "A symbolic infinity loop necklace with delicate crystal accents, signifying infinite beauty.",
+        image_url: "/images/necklaces_category.png",
+        features: "Infinity Loop • Crystals • Silver Chain"
+      },
+      {
+        name: "Tennis Gemstone Bracelet",
+        slug: "tennis-gemstone-bracelet",
+        collection: "Bracelets",
+        price: 1499,
         rating: 4.9,
         reviews_count: 90,
-        description: "An opulent, heavy resinous blend featuring smoked agarwood logs, warm Baltic amber, and aromatic myrrh gums.",
-        image_url: "/images/lavender_candle.png",
-        features: "Smoked Oud • Amber • Myrrh"
+        description: "A luxurious tennis bracelet lined with sparkling brilliant-cut cubic zirconia crystals.",
+        image_url: "/images/bracelets_category.png",
+        features: "Tennis • Zirconia Crystals • Luxury Box"
       },
       {
-        name: "Sweet Orange & Lavender",
-        slug: "sweet-orange-lavender",
-        collection: "Mini Candles",
-        price: 499,
+        name: "Rose Gold Floral Studs",
+        slug: "rose-gold-floral-studs",
+        collection: "Earrings",
+        price: 799,
+        rating: 4.8,
+        reviews_count: 42,
+        description: "Dainty flower-shaped stud earrings in warm rose gold plating with a crystal center.",
+        image_url: "/images/earrings_category.png",
+        features: "Floral Studs • Rose Gold • Crystal Center"
+      },
+      {
+        name: "Vintage Emerald Ring",
+        slug: "vintage-emerald-ring",
+        collection: "Rings",
+        price: 1599,
+        rating: 4.9,
+        reviews_count: 31,
+        description: "An antique-inspired statement ring featuring a deep green oval-cut emerald glass center.",
+        image_url: "/images/rings_category.png",
+        features: "Vintage • Emerald Glass • Halo Crystals"
+      },
+      {
+        name: "Layered Paperclip Choker",
+        slug: "layered-paperclip-choker",
+        collection: "Necklaces",
+        price: 999,
         rating: 4.7,
-        reviews_count: 15,
-        description: "A travel-friendly mini tin balancing bright citrus notes of sweet blood orange with relaxing lavender blooms.",
-        image_url: "/images/vanilla_candle.png",
-        features: "Orange • Lavender • Vanilla"
+        reviews_count: 24,
+        description: "A trendy multi-layered paperclip chain choker in high-polish gold plating.",
+        image_url: "/images/necklaces_category.png",
+        features: "Paperclip Chain • Layered Choker • Gold Plated"
+      },
+      {
+        name: "Charm Carrier Bangle",
+        slug: "charm-carrier-bangle",
+        collection: "Bracelets",
+        price: 1199,
+        rating: 4.8,
+        reviews_count: 18,
+        description: "A sleek sterling silver bangle with a safe threaded clasp to securely carry your favorite charms.",
+        image_url: "/images/bracelets_category.png",
+        features: "Carrier Bangle • Sterling Silver • Threaded Clasp"
+      },
+      {
+        name: "Sparkling Hoop Huggies",
+        slug: "sparkling-hoop-huggies",
+        collection: "Earrings",
+        price: 699,
+        rating: 4.7,
+        reviews_count: 35,
+        description: "Minimalist crystal-lined huggie hoop earrings, perfect for everyday styling and layering.",
+        image_url: "/images/earrings_category.png",
+        features: "Huggies • Hoop Earrings • Crystal Channel"
+      },
+      {
+        name: "Adjustable Promise Ring",
+        slug: "adjustable-promise-ring",
+        collection: "Rings",
+        price: 899,
+        rating: 4.8,
+        reviews_count: 29,
+        description: "An adjustable-size sterling silver promise ring with twin interlocking cubic zirconia bands.",
+        image_url: "/images/rings_category.png",
+        features: "Promise Ring • Adjustable • Interlocking Bands"
       }
     ];
 

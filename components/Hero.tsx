@@ -20,25 +20,25 @@ interface HeroProps {
 type HeroSettings = Required<HeroProps>;
 
 const defaultHeroSettings: HeroSettings = {
-  eyebrow: 'DEEKSHA RITUALS',
-  title: 'The Art of',
-  italicTitle: 'Slow Burning',
-  description: 'Ancestral scents mindfully crafted in small batches. Poured with 100% organic soy wax, pure botanical extracts, and wood wicks to ground your soul and illuminate your sanctuary.',
-  primaryButtonText: 'Discover Our Rituals',
-  primaryButtonHref: '#products',
-  secondaryButtonText: 'Our Philosophy',
-  secondaryButtonHref: '#story',
-  floatingTag: 'Batch No. 042 / Sandalwood',
-  sliderImages: '["/images/hero_candle.png"]'
+  eyebrow: 'TIMELESS BEAUTY',
+  title: 'Shine Brighter',
+  italicTitle: 'Every Day',
+  description: 'Discover handcrafted jewelry that celebrates your unique style and every special moment.',
+  primaryButtonText: 'Shop Collection',
+  primaryButtonHref: '#shop-by-collection',
+  secondaryButtonText: 'New Arrivals',
+  secondaryButtonHref: '#products',
+  floatingTag: '925 Sterling Silver',
+  sliderImages: '["/images/hero_slide_1.png", "/images/hero_slide_2.png", "/images/hero_slide_3.png"]'
 };
 
 const getHeroImages = (sliderImages?: string) => {
-  if (!sliderImages) return ['/images/hero_candle.png'];
+  if (!sliderImages) return ['/images/hero_slide_1.png', '/images/hero_slide_2.png', '/images/hero_slide_3.png'];
   try {
     const parsed = JSON.parse(sliderImages);
     if (Array.isArray(parsed)) {
       const validImages = parsed.filter((image): image is string => typeof image === 'string' && image.trim().length > 0);
-      return validImages.length > 0 ? validImages : ['/images/hero_candle.png'];
+      return validImages.length > 0 ? validImages : ['/images/hero_slide_1.png', '/images/hero_slide_2.png', '/images/hero_slide_3.png'];
     }
   } catch {}
 
@@ -108,141 +108,132 @@ export default function Hero({
     };
   }, []);
 
-  const heroImages = useMemo(() => {
+  const slides = useMemo(() => {
     const images = getHeroImages(heroSettings.sliderImages);
-    return images.length > 0 ? images : ['/images/hero_candle.png'];
-  }, [heroSettings.sliderImages]);
+    
+    const defaultSlides = [
+      {
+        eyebrow: 'TIMELESS BEAUTY',
+        title: 'Shine Brighter Every Day',
+        description: 'Discover handcrafted jewelry that celebrates your unique style and every special moment.',
+        btnText: 'Shop Collection',
+        btnHref: '#shop-by-collection',
+        image: '/images/hero_slide_1.png'
+      },
+      {
+        eyebrow: 'LUXURY CRAFTSMANSHIP',
+        title: 'Elegance in Every Detail',
+        description: 'Adorn yourself with masterfully crafted necklaces, bracelets, and charms made to last.',
+        btnText: 'Explore New Arrivals',
+        btnHref: '/category/new-arrivals',
+        image: '/images/hero_slide_2.png'
+      },
+      {
+        eyebrow: 'THE GOLDEN HOUR',
+        title: 'Modern Classics',
+        description: 'Find the perfect signature pieces that seamlessly transitions from day to night.',
+        btnText: 'Shop Best Sellers',
+        btnHref: '/category/best-sellers',
+        image: '/images/hero_slide_3.png'
+      }
+    ];
+
+    // If matches default length, map them to default slides
+    if (images.length === 3 && images.includes('/images/hero_slide_1.png')) {
+      return defaultSlides;
+    }
+
+    return images.map((image, index) => {
+      const match = defaultSlides.find(s => s.image === image);
+      if (match) return match;
+
+      return {
+        eyebrow: heroSettings.eyebrow,
+        title: `${heroSettings.title} ${heroSettings.italicTitle}`,
+        description: heroSettings.description,
+        btnText: heroSettings.primaryButtonText,
+        btnHref: heroSettings.primaryButtonHref,
+        image
+      };
+    });
+  }, [heroSettings]);
+
   const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
-    if (heroImages.length < 2) return;
+    if (slides.length < 2) return;
 
     const interval = window.setInterval(() => {
-      setActiveSlide(current => (current + 1) % heroImages.length);
-    }, 4500);
+      setActiveSlide(current => (current + 1) % slides.length);
+    }, 5000);
 
     return () => window.clearInterval(interval);
-  }, [heroImages.length]);
-
-  const activeImageIndex = heroImages.length > 0 ? activeSlide % heroImages.length : 0;
-
-  const goToPreviousSlide = () => {
-    setActiveSlide(current => (current - 1 + heroImages.length) % heroImages.length);
-  };
-
-  const goToNextSlide = () => {
-    setActiveSlide(current => (current + 1) % heroImages.length);
-  };
+  }, [slides.length]);
 
   return (
     <section className={styles.hero}>
-      <div className={`container ${styles.heroContainer}`}>
-        
-        {/* Left Column: Text & CTA */}
-        <div className={styles.textContent}>
-          <span className={styles.tagline}>{heroSettings.eyebrow}</span>
-          <h1 className={styles.title}>
-            {heroSettings.title} <br />
-            <span className={styles.italicTitle}>{heroSettings.italicTitle}</span>
-          </h1>
-          <p className={styles.description}>
-            {heroSettings.description}
-          </p>
-          
-          <div className={styles.ctaGroup}>
-            <a href={heroSettings.primaryButtonHref} className={styles.primaryBtn}>
-              {heroSettings.primaryButtonText}
-            </a>
-            <a href={heroSettings.secondaryButtonHref} className={styles.secondaryBtn}>
-              {heroSettings.secondaryButtonText}
-            </a>
-          </div>
-
-          {/* Core Values / Features underneath */}
-          <div className={styles.values}>
-            <div className={styles.valueItem}>
-              <div className={styles.valueIcon}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
-              </div>
-              <div className={styles.valueText}>
-                <h4>Pure Soy Wax</h4>
-                <p>Biodegradable, slow clean burn</p>
-              </div>
-            </div>
-
-            <div className={styles.valueItem}>
-              <div className={styles.valueIcon}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
-                </svg>
-              </div>
-              <div className={styles.valueText}>
-                <h4>Therapeutic Scents</h4>
-                <p>Pure botanical essential oils</p>
-              </div>
-            </div>
-
-            <div className={styles.valueItem}>
-              <div className={styles.valueIcon}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                </svg>
-              </div>
-              <div className={styles.valueText}>
-                <h4>Cruelty-Free & Vegan</h4>
-                <p>Consciously sourced in India</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Hero Image with Floating Pedestal styling */}
-        <div className={styles.imageContent}>
-          <div className={styles.imageWrapper}>
-            <div className={styles.shadowOverlay}></div>
-            {heroImages.map((image, index) => (
+      {/* Background Slides */}
+      <div className={styles.sliderContainer}>
+        {slides.map((slide, index) => (
+          <div
+            key={`${slide.image}-${index}`}
+            className={`${styles.slide} ${index === activeSlide ? styles.slideActive : ''}`}
+          >
+            <div className={styles.imageWrapper}>
               <Image
-                key={`${image}-${index}`}
-                src={image}
-                alt="Premium luxury hand-poured soy candle"
-                width={600}
-                height={600}
+                src={slide.image}
+                alt={slide.title}
+                fill
                 priority={index === 0}
-                className={`${styles.heroImg} ${index === activeImageIndex ? styles.heroImgActive : ''}`}
+                className={styles.heroImg}
+                sizes="100vw"
               />
-            ))}
-            {heroImages.length > 1 && (
-              <>
-                <button type="button" className={`${styles.sliderButton} ${styles.sliderButtonPrev}`} onClick={goToPreviousSlide} aria-label="Previous hero image">
-                  ‹
-                </button>
-                <button type="button" className={`${styles.sliderButton} ${styles.sliderButtonNext}`} onClick={goToNextSlide} aria-label="Next hero image">
-                  ›
-                </button>
-                <div className={styles.sliderDots} aria-label="Hero image slides">
-                  {heroImages.map((image, index) => (
-                    <button
-                      key={`${image}-dot-${index}`}
-                      type="button"
-                      className={`${styles.sliderDot} ${index === activeImageIndex ? styles.sliderDotActive : ''}`}
-                      onClick={() => setActiveSlide(index)}
-                      aria-label={`Show hero image ${index + 1}`}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
+              <div className={styles.overlay}></div>
+            </div>
           </div>
-          {/* Subtle overlay elements */}
-          <div className={styles.floatingTag}>
-            <span className={styles.goldDot}></span>
-            <span>{heroSettings.floatingTag}</span>
-          </div>
-        </div>
-
+        ))}
       </div>
+
+      {/* Floating Content Overlay */}
+      <div className={`container ${styles.heroContainer}`}>
+        <div className={styles.textContent}>
+          {slides.map((slide, index) => (
+            <div
+              key={`content-${index}`}
+              className={`${styles.contentItem} ${index === activeSlide ? styles.contentItemActive : ''}`}
+            >
+              <span className={styles.tagline}>{slide.eyebrow}</span>
+              <h1 className={styles.title}>
+                {slide.title}
+              </h1>
+              <p className={styles.description}>
+                {slide.description}
+              </p>
+              
+              <div className={styles.ctaGroup}>
+                <a href={slide.btnHref} className={styles.primaryBtn}>
+                  {slide.btnText} <span className={styles.arrow}>→</span>
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Bottom Center Slide Pagination Dots */}
+      {slides.length > 1 && (
+        <div className={styles.sliderDots} aria-label="Hero slides">
+          {slides.map((_, index) => (
+            <button
+              key={`dot-${index}`}
+              type="button"
+              className={`${styles.sliderDot} ${index === activeSlide ? styles.sliderDotActive : ''}`}
+              onClick={() => setActiveSlide(index)}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

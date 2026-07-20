@@ -22,14 +22,14 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#0b1a11' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#3E0030' }}>
       <Header />
       
       <main style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', color: '#FAF8F5' }}>
         <div style={{ 
           width: '100%',
           maxWidth: '420px',
-          background: 'rgba(25, 48, 36, 0.35)', 
+          background: 'rgba(62, 0, 48, 0.35)', 
           backdropFilter: 'blur(16px)', 
           border: '1px solid rgba(197, 168, 128, 0.25)',
           padding: '40px',
@@ -41,7 +41,7 @@ export default function AdminLoginPage() {
             <span style={{ fontSize: '10px', fontWeight: '600', letterSpacing: '0.25em', color: 'var(--accent)', textTransform: 'uppercase' }}>
               Deera Glow
             </span>
-            <h1 style={{ fontSize: '28px', fontWeight: '400', margin: '8px 0 0 0', fontFamily: 'var(--font-serif)' }}>
+            <h1 style={{ fontSize: '28px', fontWeight: '400', margin: '8px 0 0 0', fontFamily: 'var(--font-serif)', color: '#FAF8F5' }}>
               Studio Portal
             </h1>
           </div>
@@ -110,7 +110,7 @@ export default function AdminLoginPage() {
               type="submit"
               style={{ 
                 background: 'var(--accent)', 
-                color: '#0b1a11', 
+                color: '#3E0030', 
                 border: 'none', 
                 borderRadius: '8px', 
                 padding: '14px',

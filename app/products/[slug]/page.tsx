@@ -29,7 +29,7 @@ export default async function ProductPage({ params }: PageProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Header />
-      <main style={{ flexGrow: 1, backgroundColor: '#0b1a11' }}>
+      <main style={{ flexGrow: 1, backgroundColor: '#3E0030' }}>
         <ProductDetail product={product} allProducts={products} />
       </main>
       <Footer />

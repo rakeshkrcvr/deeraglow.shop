@@ -141,8 +141,8 @@ export default function CustomerExperience() {
   const reviewStats = [
     { icon: '👥', value: '5,000+', label: 'Happy Customers' },
     { icon: '☆', value: '4.9/5', label: 'Average Rating' },
-    { icon: '◒', value: '100%', label: 'Natural Soy Wax' },
-    { icon: '◷', value: '40+', label: 'Hours Burn Time' },
+    { icon: '✨', value: '925', label: 'Sterling Silver' },
+    { icon: '💎', value: 'Premium', label: 'Cubic Zirconia' },
     { icon: '□', value: 'Premium', label: 'Gift Packaging' },
     { icon: '▱', value: 'Pan India', label: 'Free Shipping' }
   ];
@@ -160,13 +160,13 @@ export default function CustomerExperience() {
       city: reviewForm.city.trim() || 'India',
       time: 'Just now',
       helpful: 0,
-      avatar: reviewForm.avatar.trim().startsWith('/') ? reviewForm.avatar.trim() : '/images/hero_candle.png',
+      avatar: reviewForm.avatar.trim().startsWith('/') ? reviewForm.avatar.trim() : '/images/rings_category.png',
       quote: reviewForm.quote.trim(),
       rating: Number(reviewForm.rating),
       verified: reviewForm.verified,
       productId: 0,
-      productName: 'Signature Soy Wax Candle',
-      productImage: '/images/hero_candle.png'
+      productName: 'Signature Sterling Silver Ring',
+      productImage: '/images/rings_category.png'
     };
 
     if (!submittedReview.quote) return;
@@ -331,7 +331,7 @@ export default function CustomerExperience() {
                     <textarea
                       value={reviewForm.quote}
                       onChange={(event) => handleReviewFormChange('quote', event.target.value)}
-                      placeholder="Tell us what you loved about the candle..."
+                      placeholder="Tell us what you loved about the jewelry..."
                       required
                       rows={5}
                     />
@@ -483,15 +483,15 @@ export default function CustomerExperience() {
         </div>
       </section>
 
-      {/* Section: Before vs After Deeksha */}
+      {/* Section: Before vs After Deera Glow */}
       <section className={styles.comparisonSection}>
         <div className="container">
           
           <div className={styles.storyHeader}>
             <span className={styles.storySubtitle}>EXPERIENCE THE DIFFERENCE</span>
-            <h2 className={styles.storyTitle}>Before vs After Deeksha</h2>
+            <h2 className={styles.storyTitle}>Before vs After Deera Glow</h2>
             <div className={styles.storyLine}></div>
-            <p className={styles.comparisonSubTitle}>A small change that transforms your whole space & mood.</p>
+            <p className={styles.comparisonSubTitle}>A small change that transforms your whole look & confidence.</p>
           </div>
 
           <div className={styles.comparisonContainer}>
@@ -520,17 +520,17 @@ export default function CustomerExperience() {
                     </div>
                   </li>
                   <li>
-                    <span className={styles.featureEmoji}>💨</span>
+                    <span className={styles.featureEmoji}>💫</span>
                     <div>
-                      <strong>No Pleasant Aroma</strong>
-                      <p>Stale air & unwanted odors</p>
+                      <strong>No Elegant Shine</strong>
+                      <p>Dull look & lack of presence</p>
                     </div>
                   </li>
                   <li>
-                    <span className={styles.featureEmoji}>🛌</span>
+                    <span className={styles.featureEmoji}>👕</span>
                     <div>
-                      <strong>Hard to Relax</strong>
-                      <p>Mind is restless, sleep is hard</p>
+                      <strong>Uninspired Styling</strong>
+                      <p>Regular daily wear feels incomplete</p>
                     </div>
                   </li>
                   <li>
@@ -563,10 +563,10 @@ export default function CustomerExperience() {
                   >
                     <img 
                       src="/images/cozy_room_glow.png" 
-                      alt="Cozy Deeksha Ambience" 
+                      alt="Cozy Deera Glow Ambience" 
                       className={styles.sliderImg} 
                     />
-                    <div className={styles.imageLabelRight}>DEEKSHA GLOW</div>
+                    <div className={styles.imageLabelRight}>DEERA GLOW</div>
                   </div>
 
                   {/* Drag Line divider */}
@@ -615,17 +615,17 @@ export default function CustomerExperience() {
                     </div>
                   </li>
                   <li>
-                    <span className={styles.featureEmoji}>🌸</span>
+                    <span className={styles.featureEmoji}>✨</span>
                     <div>
-                      <strong>Luxurious Fragrance</strong>
-                      <p>Long-lasting, premium aroma</p>
+                      <strong>Shining Elegance</strong>
+                      <p>Long-lasting, premium polished finish</p>
                     </div>
                   </li>
                   <li>
-                    <span className={styles.featureEmoji}>🧘</span>
+                    <span className={styles.featureEmoji}>👑</span>
                     <div>
-                      <strong>Better Sleep & Well-being</strong>
-                      <p>Helps you unwind & relax</p>
+                      <strong>Boosted Confidence</strong>
+                      <p>Stand out and shine in any room</p>
                     </div>
                   </li>
                   <li>
@@ -640,29 +640,29 @@ export default function CustomerExperience() {
 
             </div>
 
-            {/* Bottom Row: Why Thousands Choose Deeksha */}
+            {/* Bottom Row: Why Thousands Choose Deera Glow */}
             <div className={styles.chooseSection}>
-              <h3 className={styles.chooseTitle}>Why Thousands Choose Deeksha</h3>
+              <h3 className={styles.chooseTitle}>Why Thousands Choose Deera Glow</h3>
               <div className={styles.chooseGrid}>
                 <div className={styles.chooseCard}>
                   <span className={styles.chooseIcon}>🏅</span>
                   <div>
                     <h4>Premium Quality</h4>
-                    <p>Finest ingredients for the best experience</p>
+                    <p>Finest metals & stones for daily wear</p>
                   </div>
                 </div>
                 <div className={styles.chooseCard}>
-                  <span className={styles.chooseIcon}>⏳</span>
+                  <span className={styles.chooseIcon}>🛡️</span>
                   <div>
-                    <h4>Long Lasting Burn</h4>
-                    <p>30–40 hours of pure bliss</p>
+                    <h4>Anti-Tarnish Polish</h4>
+                    <p>Long lasting shine & protection</p>
                   </div>
                 </div>
                 <div className={styles.chooseCard}>
                   <span className={styles.chooseIcon}>🍃</span>
                   <div>
-                    <h4>Clean & Safe</h4>
-                    <p>Non-toxic, low smoke & eco-friendly</p>
+                    <h4>Skin Friendly</h4>
+                    <p>Nickel-free, lead-free & hypoallergenic</p>
                   </div>
                 </div>
                 <div className={styles.chooseCard}>
@@ -676,7 +676,7 @@ export default function CustomerExperience() {
                   <span className={styles.chooseIcon}>🧡</span>
                   <div>
                     <h4>Handcrafted with Love</h4>
-                    <p>Made with care in every candle</p>
+                    <p>Crafted with care in every piece</p>
                   </div>
                 </div>
               </div>

@@ -53,28 +53,31 @@ export default async function CategoryPage({ params }: PageProps) {
           
           {/* Category Banner */}
           <div className={styles.categoryBanner}>
-            <span style={{ fontSize: '12px', fontWeight: '600', letterSpacing: '0.2em', color: 'var(--accent)', textTransform: 'uppercase' }}>
-              Artisanal Curation
-            </span>
-            <h1 style={{ fontSize: '38px', fontWeight: '300', margin: '12px 0 20px 0', fontFamily: 'var(--font-serif)' }}>
-              {title}
-            </h1>
-            <div style={{ width: '40px', height: '1.5px', backgroundColor: 'var(--accent)', margin: '0 auto 20px auto' }}></div>
-            
-            {hasProducts ? (
-              <p style={{ fontSize: '15px', color: 'rgba(250, 248, 245, 0.7)', fontWeight: '300', lineHeight: '1.6' }}>
-                Explore our signature premium candles curated for the {title} collection. Hand-poured with natural soy wax and luxurious fragrance notes.
-              </p>
-            ) : (
-              <div>
-                <p style={{ fontSize: '15px', color: 'rgba(250, 248, 245, 0.7)', fontWeight: '300', lineHeight: '1.6', marginBottom: '20px' }}>
-                  Our limited-edition <strong>{title}</strong> batch is currently curing in the studio. Explore our signature best-sellers below while we prepare the next release:
+            <div className={styles.bannerBg}></div>
+            <div className={styles.bannerContent}>
+              <span style={{ fontSize: '12px', fontWeight: '600', letterSpacing: '0.25em', color: 'var(--accent)', textTransform: 'uppercase' }}>
+                Artisanal Curation
+              </span>
+              <h1 style={{ fontSize: '42px', fontWeight: '300', margin: '12px 0 16px 0', fontFamily: 'var(--font-serif)', color: '#FAF8F5', letterSpacing: '0.05em' }}>
+                {title}
+              </h1>
+              <div style={{ width: '40px', height: '1.5px', backgroundColor: 'var(--accent)', margin: '0 auto 16px auto' }}></div>
+              
+              {hasProducts ? (
+                <p style={{ fontSize: '15px', color: 'rgba(250, 248, 245, 0.85)', fontWeight: '300', lineHeight: '1.6' }}>
+                  Explore our signature premium artificial jewelry curated for the {title} collection. Handcrafted with gold plating, sterling silver, and luxury cubic zirconia.
                 </p>
-                <div style={{ display: 'inline-block', fontSize: '12px', background: 'rgba(197, 168, 128, 0.12)', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '6px 14px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '600' }}>
-                  ⚡ Curing in Progress — Releasing Soon
+              ) : (
+                <div>
+                  <p style={{ fontSize: '15px', color: 'rgba(250, 248, 245, 0.85)', fontWeight: '300', lineHeight: '1.6', marginBottom: '12px' }}>
+                    Our limited-edition <strong>{title}</strong> pieces are currently in high demand. Explore our signature best-sellers below while we prepare the next restock:
+                  </p>
+                  <div style={{ display: 'inline-block', fontSize: '11px', background: 'rgba(212, 175, 55, 0.2)', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '5px 12px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '600' }}>
+                    ⚡ Premium Artistry — Handcrafted Collection
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Product Grid */}

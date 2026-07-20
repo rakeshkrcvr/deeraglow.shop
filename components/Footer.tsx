@@ -54,13 +54,13 @@ export default function Footer() {
               <img src={normalizedFooterLogoUrl} alt="Deera Glow" className={styles.logoImage} />
             ) : (
               <>
-                <span className={styles.logoText}>D E E K S H A</span>
-                <span className={styles.logoSub}>ARTISANAL ILLUMINATION</span>
+                <span className={styles.logoText}>D E E R A  G L O W</span>
+                <span className={styles.logoSub}>PREMIUM ARTIFICIAL JEWELRY</span>
               </>
             )}
           </Link>
           <p className={styles.bio}>
-            Crafting multisensory experiences to bring peace and presence to modern dwellings. Hand-poured with natural ingredients.
+            Discover the latest collection of premium artificial jewelry at Deera Glow. Shop stylish earrings, necklaces, rings, bracelets, and fashion accessories.
           </p>
           <div className={styles.socials}>
             <a href="#" aria-label="Instagram" className={styles.socialLink}>
@@ -77,63 +77,52 @@ export default function Footer() {
 
         {/* Shop by Collection */}
         <div className={styles.linksCol}>
-          <h3>🕯️ Collection</h3>
+          <h3>💍 Collection</h3>
           <ul>
-            <li><Link href="/category/scented-candles">Scented Candles</Link></li>
-            <li><Link href="/category/soy-wax-candles">Soy Wax Candles</Link></li>
-            <li><Link href="/category/jar-candles">Jar Candles</Link></li>
-            <li><Link href="/category/luxury-candles">Luxury Candles</Link></li>
-            <li><Link href="/category/decorative-candles">Decorative Candles</Link></li>
-            <li><Link href="/category/mini-candles">Mini Candles</Link></li>
-            <li><Link href="/category/large-candles">Large Candles</Link></li>
-            <li><Link href="/category/travel-candles">Travel Candles</Link></li>
+            <li><Link href="/category/rings">Rings</Link></li>
+            <li><Link href="/category/bracelets">Bracelets</Link></li>
+            <li><Link href="/category/necklaces">Necklaces</Link></li>
+            <li><Link href="/category/earrings">Earrings</Link></li>
+            <li><Link href="/category/charms">Charms & Pendants</Link></li>
+            <li><Link href="/category/bangles">Bangles</Link></li>
+            <li><Link href="/category/anklets">Anklets</Link></li>
           </ul>
         </div>
 
-        {/* Shop by Fragrance */}
+        {/* Shop by Material */}
         <div className={styles.linksCol}>
-          <h3>🌸 Fragrance</h3>
+          <h3>✨ Material</h3>
           <ul>
-            <li><Link href="/category/vanilla">Vanilla</Link></li>
-            <li><Link href="/category/lavender">Lavender</Link></li>
-            <li><Link href="/category/rose">Rose</Link></li>
-            <li><Link href="/category/jasmine">Jasmine</Link></li>
-            <li><Link href="/category/sandalwood">Sandalwood</Link></li>
-            <li><Link href="/category/coffee">Coffee</Link></li>
-            <li><Link href="/category/citrus">Citrus</Link></li>
-            <li><Link href="/category/ocean-breeze">Ocean Breeze</Link></li>
-            <li><Link href="/category/oud">Oud</Link></li>
-            <li><Link href="/category/mixed-fruits">Mixed Fruits</Link></li>
+            <li><Link href="/category/sterling-silver">Sterling Silver</Link></li>
+            <li><Link href="/category/gold-plated">Gold Plated</Link></li>
+            <li><Link href="/category/rose-gold">Rose Gold Plated</Link></li>
+            <li><Link href="/category/pearls">Pearl Jewelry</Link></li>
+            <li><Link href="/category/cubic-zirconia">Cubic Zirconia</Link></li>
+            <li><Link href="/category/solitaire">Solitaire</Link></li>
           </ul>
         </div>
 
-        {/* Shop by Purpose */}
+        {/* Shop by Style & Occasion */}
         <div className={styles.linksCol}>
-          <h3>🏠 Purpose</h3>
+          <h3>💝 Style & Occasion</h3>
           <ul>
-            <li><Link href="/category/home-decor">Home Décor</Link></li>
-            <li><Link href="/category/relaxation-spa">Relaxation & Spa</Link></li>
-            <li><Link href="/category/meditation">Meditation</Link></li>
-            <li><Link href="/category/yoga">Yoga</Link></li>
-            <li><Link href="/category/bedroom">Bedroom</Link></li>
-            <li><Link href="/category/living-room">Living Room</Link></li>
-            <li><Link href="/category/bathroom">Bathroom</Link></li>
-            <li><Link href="/category/office">Office</Link></li>
+            <li><Link href="/category/daily-wear">Daily Wear</Link></li>
+            <li><Link href="/category/office-wear">Office Wear</Link></li>
+            <li><Link href="/category/festive-wear">Festive Wear</Link></li>
+            <li><Link href="/category/party-wear">Party Wear</Link></li>
+            <li><Link href="/category/wedding-jewelry">Wedding Jewelry</Link></li>
+            <li><Link href="/category/anniversary-gifts">Anniversary Gifts</Link></li>
           </ul>
         </div>
 
-        {/* Shop by Occasion */}
+        {/* Shop by Gifts */}
         <div className={styles.linksCol}>
-          <h3>🎁 Occasion</h3>
+          <h3>🎁 Gifts</h3>
           <ul>
-            <li><Link href="/category/birthday">Birthday Gifts</Link></li>
-            <li><Link href="/category/anniversary">Anniversary Gifts</Link></li>
-            <li><Link href="/category/wedding">Wedding Gifts</Link></li>
-            <li><Link href="/category/housewarming">Housewarming Gifts</Link></li>
-            <li><Link href="/category/diwali">Diwali Collection</Link></li>
-            <li><Link href="/category/christmas">Christmas Collection</Link></li>
-            <li><Link href="/category/valentines">Valentine&apos;s Day</Link></li>
-            <li><Link href="/category/mothers-day">Mother&apos;s Day</Link></li>
+            <li><Link href="/category/gifts-for-her">Gifts for Her</Link></li>
+            <li><Link href="/category/gift-sets">Gift Sets</Link></li>
+            <li><Link href="/category/couple-rings">Couple Rings</Link></li>
+            <li><Link href="/category/birthday-gifts">Birthday Gifts</Link></li>
           </ul>
         </div>
 
@@ -145,7 +134,6 @@ export default function Footer() {
             <li><Link href="/category/new-arrivals">New Arrivals</Link></li>
             <li><Link href="/category/limited-edition">Limited Edition</Link></li>
             <li><Link href="/category/luxury-collection">Luxury Collection</Link></li>
-            <li><Link href="/category/gift-sets">Gift Sets</Link></li>
             <li><Link href="/category/combo-packs">Combo Packs</Link></li>
           </ul>
         </div>
@@ -154,21 +142,10 @@ export default function Footer() {
         <div className={styles.linksCol}>
           <h3>💰 Price</h3>
           <ul>
-            <li><Link href="/category/under-299">Under ₹299</Link></li>
-            <li><Link href="/category/300-499">₹300–₹499</Link></li>
+            <li><Link href="/category/under-499">Under ₹499</Link></li>
             <li><Link href="/category/500-999">₹500–₹999</Link></li>
-            <li><Link href="/category/above-999">Above ₹999</Link></li>
-          </ul>
-        </div>
-
-        {/* Shop by Wax Type */}
-        <div className={styles.linksCol}>
-          <h3>🌿 Wax Type</h3>
-          <ul>
-            <li><Link href="/category/soy-wax">Soy Wax</Link></li>
-            <li><Link href="/category/beeswax">Beeswax</Link></li>
-            <li><Link href="/category/coconut-wax">Coconut Wax</Link></li>
-            <li><Link href="/category/paraffin-wax">Paraffin Wax</Link></li>
+            <li><Link href="/category/1000-1999">₹1,000–₹1,999</Link></li>
+            <li><Link href="/category/above-2000">Above ₹2,000</Link></li>
           </ul>
         </div>
 
@@ -179,7 +156,7 @@ export default function Footer() {
         <div className={`container ${styles.bottomContainer}`}>
           <p>© {new Date().getFullYear()} Deera Glow. All rights reserved.</p>
           <div className={styles.handcrafted}>
-            <span>Handpoured with devotion in India 🇮🇳</span>
+            <span>Handcrafted with love in India 🇮🇳</span>
           </div>
         </div>
       </div>

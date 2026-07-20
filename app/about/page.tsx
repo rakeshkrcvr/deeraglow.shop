@@ -4,7 +4,7 @@ import Footer from '@/components/Footer';
 
 export default function AboutPage() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#0b1a11' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#3E0030' }}>
       <Header />
       
       <main style={{ flexGrow: 1, padding: '100px 0', color: '#FAF8F5' }}>
@@ -14,14 +14,14 @@ export default function AboutPage() {
             <span style={{ fontSize: '12px', fontWeight: '600', letterSpacing: '0.2em', color: 'var(--accent)', textTransform: 'uppercase' }}>
               Our Story
             </span>
-            <h1 style={{ fontSize: '46px', fontWeight: '300', margin: '12px 0 20px 0', fontFamily: 'var(--font-serif)' }}>
+            <h1 style={{ fontSize: '46px', fontWeight: '300', margin: '12px 0 20px 0', fontFamily: 'var(--font-serif)', color: '#FAF8F5' }}>
               Crafted for Consciousness
             </h1>
             <div style={{ width: '60px', height: '1.5px', backgroundColor: 'var(--accent)', margin: '0 auto' }}></div>
           </div>
 
           <div style={{ 
-            background: 'rgba(25, 48, 36, 0.35)', 
+            background: 'rgba(62, 0, 48, 0.35)', 
             backdropFilter: 'blur(16px)', 
             border: '1px solid rgba(250, 248, 245, 0.08)',
             padding: '48px',
