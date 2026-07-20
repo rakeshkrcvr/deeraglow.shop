@@ -282,7 +282,7 @@ export default function Header() {
         currency: "INR",
         name: "Deera Glow",
         description: `Order Payment for ${cartCount} items`,
-        image: "/images/hero_candle.png",
+        image: "/images/category_banner_jewelry.png",
         handler: async function (response: RazorpayResponse) {
           setIsProcessingCheckout(false);
           await markDiscountUsed();

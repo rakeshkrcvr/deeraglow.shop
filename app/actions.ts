@@ -36,7 +36,7 @@ export async function subscribeNewsletter(prevState: SubscriptionResult, formDat
       INSERT INTO newsletter_subscribers (email) VALUES (${email})
     `;
 
-    return { success: true, message: "Thank you for subscribing to the Deeksha Journal!" };
+    return { success: true, message: "Thank you for subscribing to the Deera Glow Journal!" };
   } catch (error) {
     console.error("Newsletter subscription error:", error);
     return { 

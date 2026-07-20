@@ -13,7 +13,10 @@ export default function AdminLoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === 'deekshacandles' && password === 'deekshacandles@123#') {
+    if (
+      (username === 'deekshacandles' && password === 'deekshacandles@123#') ||
+      (username === 'deeraglow' && password === 'deeraglow@123#')
+    ) {
       localStorage.setItem('deeksha_admin_logged_in', 'true');
       router.push('/admin/dashboard');
     } else {

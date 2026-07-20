@@ -28,9 +28,9 @@ export default function Newsletter() {
           
           <div className={styles.content}>
             <span className={styles.tagline}>THE JOURNAL</span>
-            <h2 className={styles.title}>Subscribe to Deeksha</h2>
+            <h2 className={styles.title}>Subscribe to Deera Glow</h2>
             <p className={styles.description}>
-              Receive monthly musings on mindful design, slow rituals, aromatherapy tips, and exclusive early access to our hand-poured seasonal collections.
+              Receive monthly styling updates, jewelry care guides, new collection launches, and exclusive early access to limited edition drops.
             </p>
 
             {state?.success ? (

@@ -502,42 +502,42 @@ export default function CustomerExperience() {
                 <div className={styles.columnHeader}>
                   <span className={styles.beforeBadge}>BEFORE</span>
                   <h3>Ordinary Life</h3>
-                  <p className={styles.colSub}>Dull. Stressful. Uninspired.</p>
+                  <p className={styles.colSub}>Dull. Plain. Uninspired.</p>
                 </div>
                 <ul className={styles.featuresList}>
                   <li>
                     <span className={styles.featureEmoji}>🙁</span>
                     <div>
-                      <strong>Stress & Tired Mind</strong>
-                      <p>Long day, no time for yourself</p>
+                      <strong>Dull & Plain Outfits</strong>
+                      <p>Regular daily wear feels incomplete</p>
                     </div>
                   </li>
                   <li>
-                    <span className={styles.featureEmoji}>🏠</span>
+                    <span className={styles.featureEmoji}>💍</span>
                     <div>
-                      <strong>Dull & Uninviting Space</strong>
-                      <p>Feels empty and lifeless</p>
+                      <strong>Uninspired Styling</strong>
+                      <p>Struggling to find the right signature piece</p>
                     </div>
                   </li>
                   <li>
                     <span className={styles.featureEmoji}>💫</span>
                     <div>
-                      <strong>No Elegant Shine</strong>
-                      <p>Dull look & lack of presence</p>
+                      <strong>Fading & Tarnishing</strong>
+                      <p>Cheap jewelry tarnishes after a few wears</p>
                     </div>
                   </li>
                   <li>
-                    <span className={styles.featureEmoji}>👕</span>
+                    <span className={styles.featureEmoji}>🍃</span>
                     <div>
-                      <strong>Uninspired Styling</strong>
-                      <p>Regular daily wear feels incomplete</p>
+                      <strong>Skin Irritations</strong>
+                      <p>Nickel-heavy accessories cause redness</p>
                     </div>
                   </li>
                   <li>
-                    <span className={styles.featureEmoji}>🎁</span>
+                    <span className={styles.featureEmoji}>😔</span>
                     <div>
-                      <strong>Ordinary Routine</strong>
-                      <p>Just another regular day</p>
+                      <strong>Lack of Confidence</strong>
+                      <p>Lacking that final elegant touch to stand out</p>
                     </div>
                   </li>
                 </ul>
@@ -549,11 +549,12 @@ export default function CustomerExperience() {
                   {/* Before (desaturated) */}
                   <div className={styles.beforeImageContainer}>
                     <img 
-                      src="/images/dull_room_bw.png" 
-                      alt="Dull Ordinary Life" 
+                      src="/images/category_banner_jewelry.png" 
+                      alt="Dull Ordinary Look" 
                       className={styles.sliderImg} 
+                      style={{ filter: 'grayscale(100%) contrast(90%) brightness(80%)' }}
                     />
-                    <div className={styles.imageLabelLeft}>DULL & GRAY</div>
+                    <div className={styles.imageLabelLeft}>PLAIN LOOK</div>
                   </div>
                   
                   {/* After (warm glow) */}
@@ -562,8 +563,8 @@ export default function CustomerExperience() {
                     style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
                   >
                     <img 
-                      src="/images/cozy_room_glow.png" 
-                      alt="Cozy Deera Glow Ambience" 
+                      src="/images/category_banner_jewelry.png" 
+                      alt="Vibrant Deera Glow Look" 
                       className={styles.sliderImg} 
                     />
                     <div className={styles.imageLabelRight}>DEERA GLOW</div>
@@ -596,43 +597,43 @@ export default function CustomerExperience() {
               <div className={styles.afterTextCol}>
                 <div className={styles.columnHeader}>
                   <span className={styles.afterBadge}>AFTER</span>
-                  <h3>Deeksha Moments</h3>
-                  <p className={styles.colSub}>Warm. Relaxing. Magical.</p>
+                  <h3>Deera Glow Moments</h3>
+                  <p className={styles.colSub}>Elegant. Shining. Beautiful.</p>
                 </div>
                 <ul className={styles.featuresList}>
                   <li>
                     <span className={styles.featureEmoji}>😊</span>
                     <div>
-                      <strong>Calm & Relaxed Mind</strong>
-                      <p>Instantly feel peaceful & light</p>
-                    </div>
-                  </li>
-                  <li>
-                    <span className={styles.featureEmoji}>🏠</span>
-                    <div>
-                      <strong>Warm & Cozy Ambience</strong>
-                      <p>Transforms your space beautifully</p>
+                      <strong>Stunning Signature Look</strong>
+                      <p>Instantly feel complete, styled & graceful</p>
                     </div>
                   </li>
                   <li>
                     <span className={styles.featureEmoji}>✨</span>
                     <div>
-                      <strong>Shining Elegance</strong>
-                      <p>Long-lasting, premium polished finish</p>
+                      <strong>Compliment Magnet</strong>
+                      <p>Beautiful handcrafted details that turn heads</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span className={styles.featureEmoji}>🛡️</span>
+                    <div>
+                      <strong>Anti-Tarnish Polish</strong>
+                      <p>Stays bright with long-lasting protective coating</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span className={styles.featureEmoji}>🍃</span>
+                    <div>
+                      <strong>Skin-Friendly Comfort</strong>
+                      <p>Hypoallergenic, lead-free & nickel-free silver base</p>
                     </div>
                   </li>
                   <li>
                     <span className={styles.featureEmoji}>👑</span>
                     <div>
                       <strong>Boosted Confidence</strong>
-                      <p>Stand out and shine in any room</p>
-                    </div>
-                  </li>
-                  <li>
-                    <span className={styles.featureEmoji}>🎁</span>
-                    <div>
-                      <strong>Special Moments</strong>
-                      <p>Makes every moment memorable</p>
+                      <p>Stand out and command attention in any room</p>
                     </div>
                   </li>
                 </ul>

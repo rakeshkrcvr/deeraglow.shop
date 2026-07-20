@@ -8,25 +8,25 @@ import Link from 'next/link';
 export default function BlogsPage() {
   const blogs = [
     {
-      title: "Why Wooden Wicks Crackle: The Science & Magic",
-      excerpt: "Explore the fascinating process behind wooden wicks and why they burn slower and cleaner than traditional cotton wicks.",
+      title: "How to Clean and Store Your Sterling Silver Jewelry",
+      excerpt: "Explore the best practices behind sterling silver care and how to protect your favorite pieces from tarnish and oxidation.",
       date: "June 28, 2026",
       readTime: "4 min read",
-      slug: "wooden-wicks-science"
+      slug: "sterling-silver-care"
     },
     {
-      title: "The Ultimate Guide to Soy Wax vs Paraffin",
-      excerpt: "Learn why choosing 100% natural soy wax is healthier for your indoor air quality and how it extends the burn time of your candles.",
+      title: "925 Sterling Silver vs Brass: Which Should You Choose?",
+      excerpt: "Learn the core differences in durability, weight, plating lifespan, and skin-friendliness to make the perfect jewelry investment.",
       date: "May 15, 2026",
       readTime: "6 min read",
-      slug: "soy-wax-vs-paraffin"
+      slug: "sterling-silver-vs-brass"
     },
     {
-      title: "How to Burn Your Candle Correctly (No Tunneling)",
-      excerpt: "A simple list of burning tips to ensure your candles melt evenly every single time and double their shelf life.",
+      title: "The Art of Layering: How to Stack Necklaces & Rings",
+      excerpt: "A simple guide to stacking necklaces, bangles, and statement rings beautifully to elevate any outfit effortlessly.",
       date: "April 22, 2026",
       readTime: "3 min read",
-      slug: "candle-care-guide"
+      slug: "jewelry-layering-guide"
     }
   ];
 
@@ -42,7 +42,7 @@ export default function BlogsPage() {
               The Journal
             </span>
             <h1 style={{ fontSize: '46px', fontWeight: '300', margin: '12px 0 20px 0', fontFamily: 'var(--font-serif)', color: '#FAF8F5' }}>
-              Candle Rituals & Care
+              Jewelry Styling & Care
             </h1>
             <div style={{ width: '60px', height: '1.5px', backgroundColor: 'var(--accent)', margin: '0 auto' }}></div>
           </div>

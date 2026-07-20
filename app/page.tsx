@@ -58,8 +58,8 @@ export default async function Home() {
               <div className={styles.imageGrid}>
                 <div className={styles.mainImageCol}>
                   <Image 
-                    src="/images/lavender_candle.png" 
-                    alt="Aromatherapy Lavender soy candle in amber jar" 
+                    src="/images/category_banner_jewelry.png" 
+                    alt="Premium handcrafted jewelry selection" 
                     width={450} 
                     height={450}
                     className={styles.storyImg1}
@@ -67,8 +67,8 @@ export default async function Home() {
                 </div>
                 <div className={styles.subImageCol}>
                   <Image 
-                    src="/images/jasmine_candle.png" 
-                    alt="Botanical Jasmine soy candle in white ceramic cup" 
+                    src="/images/earrings_category.png" 
+                    alt="Elegant gold plated earrings close-up" 
                     width={220} 
                     height={220}
                     className={styles.storyImg2}
@@ -81,35 +81,35 @@ export default async function Home() {
             {/* Story Text Column */}
             <div className={styles.storyContent}>
               <span className={styles.storyTagline}>OUR PHILOSOPHY</span>
-              <h2 className={styles.storyTitle}>Crafted for Consciousness</h2>
+              <h2 className={styles.storyTitle}>Crafted for Elegance</h2>
               <div className={styles.storyDivider}></div>
               
               <p className={styles.storyParagraph}>
-                At Deeksha, we believe that lighting a candle is a threshold. It marks the transition from the noise of the external world to the quiet sanctuary of the self. Every single creation is poured by hand, carrying the intention of warmth, grounding, and peace.
+                At Deera Glow, we believe that jewelry is more than an accessory—it is an expression of your inner light. Each piece is meticulously designed and handcrafted, carrying the promise of warmth, confidence, and timeless elegance for every moment.
               </p>
 
               <div className={styles.storyPoints}>
                 <div className={styles.point}>
                   <div className={styles.pointNumber}>01</div>
                   <div className={styles.pointText}>
-                    <h3>Sustainably Sourced Wax</h3>
-                    <p>We use 100% natural, biodegradable soy wax which burns slower and 90% cleaner than conventional paraffin.</p>
+                    <h3>Premium Materials</h3>
+                    <p>We use 925 sterling silver, 18k gold plating, and AAA+ cubic zirconia that mimic the luxury of fine jewelry.</p>
                   </div>
                 </div>
 
                 <div className={styles.point}>
                   <div className={styles.pointNumber}>02</div>
                   <div className={styles.pointText}>
-                    <h3>Therapeutic Botany</h3>
-                    <p>Infused only with pure, cold-pressed essential oils and extracts, omitting all synthetic chemical compounds.</p>
+                    <h3>Skin-Friendly Polish</h3>
+                    <p>Hypoallergenic, lead-free, and nickel-free construction ensures comfortable daily wear without irritation.</p>
                   </div>
                 </div>
 
                 <div className={styles.point}>
                   <div className={styles.pointNumber}>03</div>
                   <div className={styles.pointText}>
-                    <h3>Sound & Flame Rituals</h3>
-                    <p>Equipped with crackling wooden wicks that hum a soothing fireside melody, helping you practice active grounding.</p>
+                    <h3>Anti-Tarnish Polish</h3>
+                    <p>Equipped with a long-lasting protective coating that maintains a brilliant, high-shine finish for years.</p>
                   </div>
                 </div>
               </div>

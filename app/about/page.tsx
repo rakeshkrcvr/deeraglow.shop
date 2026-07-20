@@ -15,7 +15,7 @@ export default function AboutPage() {
               Our Story
             </span>
             <h1 style={{ fontSize: '46px', fontWeight: '300', margin: '12px 0 20px 0', fontFamily: 'var(--font-serif)', color: '#FAF8F5' }}>
-              Crafted for Consciousness
+              Crafted for Elegance
             </h1>
             <div style={{ width: '60px', height: '1.5px', backgroundColor: 'var(--accent)', margin: '0 auto' }}></div>
           </div>
@@ -50,24 +50,24 @@ At Deera Glow, we believe jewelry is more than just an accessory—it's a reflec
               color: '#ffffff',
               fontSize: '18px'
             }}>
-              &quot;We believe that a candle is not just a source of light, but a silent companion to your daily rituals, meditation, and quiet reflections.&quot;
+              &quot;We believe that jewelry is not just an adornment, but a silent amplifier of your confidence, beauty, and quiet elegance.&quot;
             </blockquote>
 
             <h3 style={{ color: '#ffffff', fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: '400', marginTop: '40px', marginBottom: '16px' }}>
-              Our Sourcing Standards
+              Our Quality Standards
             </h3>
             <p style={{ marginBottom: '24px' }}>
-              We carefully source our ingredients from eco-responsible partners:
+              We carefully design and source each piece to meet premium quality standards:
             </p>
             <ul style={{ paddingLeft: '20px', marginBottom: '32px', listStyleType: 'circle', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <li><strong>100% Pure Soy Wax:</strong> Biodegradable, clean-burning, and free of petroleum paraffin.</li>
-              <li><strong>Wooden Wicks:</strong> Sustainably sourced FSC-certified wicks that crackle like a mini fireplace.</li>
-              <li><strong>Premium Oils:</strong> Phthalate-free and paraben-free fragrance extracts.</li>
+              <li><strong>925 Sterling Silver & Gold Plated Brass:</strong> Durable bases finished with high-quality plating for lasting beauty.</li>
+              <li><strong>Tarnish-Free Polish:</strong> Advanced sealing processes to prevent oxidation and keep the shine bright.</li>
+              <li><strong>Skin-Friendly & Hypoallergenic:</strong> Completely lead, nickel, and toxin free, making them safe and comfortable for daily wear.</li>
             </ul>
 
             <div style={{ textAlign: 'center', marginTop: '48px' }}>
               <p style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', color: 'var(--accent)', margin: '0' }}>
-                Handpoured with devotion in India.
+                Handcrafted with devotion in India.
               </p>
             </div>
           </div>

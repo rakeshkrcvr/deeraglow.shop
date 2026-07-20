@@ -9,46 +9,46 @@ export interface CustomerVideo {
   verified: boolean;
 }
 
-export const CUSTOMER_VIDEOS_STORAGE_KEY = 'deeksha_customer_videos';
+export const CUSTOMER_VIDEOS_STORAGE_KEY = 'deeraglow_customer_videos';
 
 export const defaultCustomerVideos: CustomerVideo[] = [
   {
     id: 'video-unboxing',
-    title: 'Unboxing Experience',
+    title: 'Jewelry Unboxing Experience',
     author: 'Neha S.',
     duration: '0:18',
     videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-lighted-candle-in-a-glass-jar-42340-large.mp4',
-    thumbnail: '/images/cozy_room_glow.png',
+    thumbnail: '/images/collection_card.png',
     link: 'https://instagram.com',
     verified: true
   },
   {
     id: 'video-burn-test',
-    title: 'Burn Test - 40+ Hours',
+    title: 'Anti-Tarnish Polish Test',
     author: 'Rahul M.',
     duration: '0:24',
     videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-burning-candle-flame-in-close-up-42296-large.mp4',
-    thumbnail: '/images/hero_candle.png',
+    thumbnail: '/images/rings_category.png',
     link: 'https://instagram.com',
     verified: true
   },
   {
     id: 'video-evening-routine',
-    title: 'My Evening Routine',
+    title: 'My Daily Styling Routine',
     author: 'Ananya P.',
     duration: '0:31',
     videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hands-holding-a-lit-candle-42316-large.mp4',
-    thumbnail: '/images/rose_candle.png',
+    thumbnail: '/images/necklaces_category.png',
     link: 'https://instagram.com',
     verified: true
   },
   {
     id: 'video-glow-closeup',
-    title: 'Glow Close-up',
+    title: 'Glow & Shine Closeup',
     author: 'Deera Glow',
     duration: '0:20',
     videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-candle-flame-flickering-in-dark-room-42315-large.mp4',
-    thumbnail: '/images/lavender_candle.png',
+    thumbnail: '/images/earrings_category.png',
     link: 'https://instagram.com',
     verified: true
   }
@@ -68,7 +68,7 @@ export function normalizeCustomerVideos(value: unknown): CustomerVideo[] {
     author: typeof item.author === 'string' && item.author ? item.author : 'Customer',
     duration: typeof item.duration === 'string' && item.duration ? item.duration : '0:20',
     videoUrl: item.videoUrl || '',
-    thumbnail: typeof item.thumbnail === 'string' && item.thumbnail ? item.thumbnail : '/images/hero_candle.png',
+    thumbnail: typeof item.thumbnail === 'string' && item.thumbnail ? item.thumbnail : '/images/rings_category.png',
     link: typeof item.link === 'string' && item.link ? item.link : item.videoUrl || '#',
     verified: typeof item.verified === 'boolean' ? item.verified : true
   }));

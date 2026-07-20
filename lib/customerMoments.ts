@@ -4,17 +4,17 @@ export interface CustomerMoment {
   alt: string;
 }
 
-export const CUSTOMER_MOMENTS_STORAGE_KEY = 'deeksha_customer_moments';
+export const CUSTOMER_MOMENTS_STORAGE_KEY = 'deeraglow_customer_moments';
 
 export const defaultCustomerMoments: CustomerMoment[] = [
-  { id: 'moment-hero-candle', image: '/images/hero_candle.png', alt: 'Customer candle moment 1' },
-  { id: 'moment-cozy-room', image: '/images/cozy_room_glow.png', alt: 'Customer candle moment 2' },
-  { id: 'moment-vanilla', image: '/images/vanilla_candle.png', alt: 'Customer candle moment 3' },
-  { id: 'moment-lavender', image: '/images/lavender_candle.png', alt: 'Customer candle moment 4' },
-  { id: 'moment-eucalyptus', image: '/images/eucalyptus_candle.png', alt: 'Customer candle moment 5' },
-  { id: 'moment-rose', image: '/images/rose_candle.png', alt: 'Customer candle moment 6' },
-  { id: 'moment-jasmine', image: '/images/jasmine_candle.png', alt: 'Customer candle moment 7' },
-  { id: 'moment-cozy-room-repeat', image: '/images/cozy_room_glow.png', alt: 'Customer candle moment 8' }
+  { id: 'moment-rings', image: '/images/rings_category.png', alt: 'Customer rings moment 1' },
+  { id: 'moment-bracelets', image: '/images/bracelets_category.png', alt: 'Customer bracelets moment 2' },
+  { id: 'moment-necklaces', image: '/images/necklaces_category.png', alt: 'Customer necklaces moment 3' },
+  { id: 'moment-earrings', image: '/images/earrings_category.png', alt: 'Customer earrings moment 4' },
+  { id: 'moment-charm', image: '/images/charm_category.png', alt: 'Customer charm moment 5' },
+  { id: 'moment-banner', image: '/images/jewelry_category_banner.png', alt: 'Customer jewelry style moment 6' },
+  { id: 'moment-banner-cat', image: '/images/category_banner_jewelry.png', alt: 'Customer jewelry collection moment 7' },
+  { id: 'moment-card', image: '/images/collection_card.png', alt: 'Customer jewelry style moment 8' }
 ];
 
 export function normalizeCustomerMoments(value: unknown): CustomerMoment[] {
@@ -27,8 +27,8 @@ export function normalizeCustomerMoments(value: unknown): CustomerMoment[] {
     item.image.length > 0
   )).map((item, index) => ({
     id: typeof item.id === 'string' && item.id ? item.id : `moment-${index}`,
-    image: item.image || '/images/hero_candle.png',
-    alt: typeof item.alt === 'string' && item.alt ? item.alt : `Customer candle moment ${index + 1}`
+    image: item.image || '/images/rings_category.png',
+    alt: typeof item.alt === 'string' && item.alt ? item.alt : `Customer jewelry moment ${index + 1}`
   }));
 
   return moments.length > 0 ? moments : defaultCustomerMoments;

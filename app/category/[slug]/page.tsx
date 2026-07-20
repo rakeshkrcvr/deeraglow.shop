@@ -26,7 +26,7 @@ export default async function CategoryPage({ params }: PageProps) {
   // Filter products matching category
   let filteredProducts: Product[] = [];
   
-  if (slug === 'all-candles') {
+  if (slug === 'all-candles' || slug === 'all-jewelry') {
     filteredProducts = products;
   } else {
     // Check if slug matches fragrance features (e.g. 'vanilla' matches 'Amber Vanilla')
@@ -53,35 +53,37 @@ export default async function CategoryPage({ params }: PageProps) {
           
           {/* Category Banner */}
           <div className={styles.categoryBanner}>
-            <div className={styles.bannerBg}></div>
             <div className={styles.bannerContent}>
-              <span style={{ fontSize: '12px', fontWeight: '600', letterSpacing: '0.25em', color: 'var(--accent)', textTransform: 'uppercase' }}>
-                Artisanal Curation
-              </span>
-              <h1 style={{ fontSize: '42px', fontWeight: '300', margin: '12px 0 16px 0', fontFamily: 'var(--font-serif)', color: '#FAF8F5', letterSpacing: '0.05em' }}>
-                {title}
+              <span className={styles.bannerTagline}>World Of Jewelry</span>
+              <h1 className={styles.bannerTitle}>
+                {slug === 'rings' || slug === 'all-jewelry' || slug === 'all-candles' 
+                  ? "And She Said YES !!" 
+                  : slug === 'earrings' 
+                  ? "Shine With Every Move"
+                  : slug === 'necklaces'
+                  ? "Grace in Every Detail"
+                  : slug === 'bracelets'
+                  ? "A Touch of Sophistication"
+                  : `Premium ${title} Collection`}
               </h1>
-              <div style={{ width: '40px', height: '1.5px', backgroundColor: 'var(--accent)', margin: '0 auto 16px auto' }}></div>
               
-              {hasProducts ? (
-                <p style={{ fontSize: '15px', color: 'rgba(250, 248, 245, 0.85)', fontWeight: '300', lineHeight: '1.6' }}>
-                  Explore our signature premium artificial jewelry curated for the {title} collection. Handcrafted with gold plating, sterling silver, and luxury cubic zirconia.
-                </p>
-              ) : (
-                <div>
-                  <p style={{ fontSize: '15px', color: 'rgba(250, 248, 245, 0.85)', fontWeight: '300', lineHeight: '1.6', marginBottom: '12px' }}>
-                    Our limited-edition <strong>{title}</strong> pieces are currently in high demand. Explore our signature best-sellers below while we prepare the next restock:
-                  </p>
-                  <div style={{ display: 'inline-block', fontSize: '11px', background: 'rgba(212, 175, 55, 0.2)', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '5px 12px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '600' }}>
-                    ⚡ Premium Artistry — Handcrafted Collection
-                  </div>
-                </div>
-              )}
+              <a href="#products-list" className={styles.bannerBtn}>
+                Buy Now
+              </a>
+            </div>
+
+            {/* Slider Dots */}
+            <div className={styles.bannerDots}>
+              <span className={`${styles.bannerDot} ${styles.active}`}></span>
+              <span className={styles.bannerDot}></span>
+              <span className={styles.bannerDot}></span>
             </div>
           </div>
 
           {/* Product Grid */}
-          <AuraCollection products={displayProducts} />
+          <div id="products-list">
+            <AuraCollection products={displayProducts} />
+          </div>
 
         </div>
       </main>

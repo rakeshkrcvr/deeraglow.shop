@@ -13,7 +13,7 @@ export interface CustomerReview {
   productImage: string;
 }
 
-export const CUSTOMER_REVIEWS_STORAGE_KEY = 'deeksha_customer_reviews';
+export const CUSTOMER_REVIEWS_STORAGE_KEY = 'deeraglow_customer_reviews';
 
 export const defaultCustomerReviews: CustomerReview[] = [
   {
@@ -22,12 +22,12 @@ export const defaultCustomerReviews: CustomerReview[] = [
     city: 'Delhi',
     time: '3 days ago',
     helpful: 24,
-    avatar: '/images/cozy_room_glow.png',
-    quote: 'The coffee fragrance actually smells like a freshly brewed cafe. Everyone who visited my home asked where the fragrance was coming from.',
+    avatar: '/images/earrings_category.png',
+    quote: 'The Royal Pearl Drops are absolutely stunning! They look so elegant and premium, and the polish hasn\'t faded at all even after multiple wears.',
     rating: 5,
     verified: true,
-    productName: 'Iced Coffee Soy Wax Candle',
-    productImage: '/images/hero_candle.png'
+    productName: 'Royal Pearl Drops',
+    productImage: '/images/earrings_category.png'
   },
   {
     id: 'review-aditya-rane',
@@ -35,12 +35,12 @@ export const defaultCustomerReviews: CustomerReview[] = [
     city: 'Mumbai',
     time: '1 week ago',
     helpful: 18,
-    avatar: '/images/hero_candle.png',
-    quote: 'Bought this as a gift for my sister and she loved it! The packaging is so premium and the wooden wick crackle is super relaxing.',
+    avatar: '/images/rings_category.png',
+    quote: 'Bought the Golden Solitaire Ring as a gift for my sister and she loved it! The packaging is extremely premium and looks like real gold.',
     rating: 5,
     verified: true,
-    productName: 'Iced Coffee Soy Wax Candle',
-    productImage: '/images/hero_candle.png'
+    productName: 'Golden Solitaire Ring',
+    productImage: '/images/rings_category.png'
   },
   {
     id: 'review-sneha-kapoor',
@@ -48,12 +48,12 @@ export const defaultCustomerReviews: CustomerReview[] = [
     city: 'Bengaluru',
     time: '2 weeks ago',
     helpful: 31,
-    avatar: '/images/rose_candle.png',
-    quote: 'Finally found a candle that burns clean and lasts long. 40+ hours is real! My evenings are now more calm and cozy.',
+    avatar: '/images/necklaces_category.png',
+    quote: 'This necklace has become my everyday go-to. It is so lightweight, minimalist, and goes with everything. Highly recommend Deera Glow!',
     rating: 5,
     verified: true,
-    productName: 'Iced Coffee Soy Wax Candle',
-    productImage: '/images/hero_candle.png'
+    productName: 'Classic Heart Pendant',
+    productImage: '/images/necklaces_category.png'
   }
 ];
 
@@ -71,13 +71,13 @@ export function normalizeCustomerReviews(value: unknown): CustomerReview[] {
     city: typeof item.city === 'string' && item.city ? item.city : 'India',
     time: typeof item.time === 'string' && item.time ? item.time : 'Just now',
     helpful: typeof item.helpful === 'number' ? item.helpful : 0,
-    avatar: typeof item.avatar === 'string' && item.avatar ? item.avatar : '/images/hero_candle.png',
+    avatar: typeof item.avatar === 'string' && item.avatar ? item.avatar : '/images/rings_category.png',
     quote: item.quote || '',
     rating: typeof item.rating === 'number' && item.rating >= 1 && item.rating <= 5 ? item.rating : 5,
     verified: typeof item.verified === 'boolean' ? item.verified : true,
     productId: typeof item.productId === 'number' ? item.productId : undefined,
-    productName: typeof item.productName === 'string' && item.productName ? item.productName : 'Deeksha Candle',
-    productImage: typeof item.productImage === 'string' && item.productImage ? item.productImage : '/images/hero_candle.png'
+    productName: typeof item.productName === 'string' && item.productName ? item.productName : 'Deera Glow Jewelry',
+    productImage: typeof item.productImage === 'string' && item.productImage ? item.productImage : '/images/rings_category.png'
   }));
 
   return reviews.length > 0 ? reviews : defaultCustomerReviews;

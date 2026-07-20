@@ -24,7 +24,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const parseSavedCartItems = (): CartItem[] => {
-  const savedItems = localStorage.getItem('deeksha_cart_items');
+  const savedItems = localStorage.getItem('deeraglow_cart_items');
   if (!savedItems) return [];
 
   try {
@@ -36,8 +36,8 @@ const parseSavedCartItems = (): CartItem[] => {
 };
 
 const writeCartItems = (items: CartItem[]) => {
-  localStorage.setItem('deeksha_cart_items', JSON.stringify(items));
-  localStorage.setItem('deeksha_cart_count', items.reduce((acc, item) => acc + item.quantity, 0).toString());
+  localStorage.setItem('deeraglow_cart_items', JSON.stringify(items));
+  localStorage.setItem('deeraglow_cart_count', items.reduce((acc, item) => acc + item.quantity, 0).toString());
 };
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
@@ -98,20 +98,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     writeCartItems(items);
   };
 
-  const addToCart = (product?: Product, quantity: number = 1, selectedFragrance: string = 'Vanilla') => {
+  const addToCart = (product?: Product, quantity: number = 1, selectedFragrance: string = 'Standard') => {
     let targetProduct = product;
     if (!targetProduct) {
       targetProduct = {
-        id: 1,
-        name: "Sandalwood Sacred Ritual",
-        slug: "sandalwood-sacred-ritual",
-        collection: "Scented Candles",
+        id: 16,
+        name: "Royal Pearl Drops",
+        slug: "royal-pearl-drops",
+        collection: "Earrings",
         price: 899,
         rating: 4.9,
         reviews_count: 124,
-        description: "A deep, grounding aroma featuring raw Indian Mysore sandalwood, incense smoke, and dried jasmine blossoms.",
-        image_url: "/images/hero_candle.png",
-        features: "Sandalwood • Incense • Jasmine"
+        description: "Elegant double-layered drops with premium faux pearls and shimmering crystal settings.",
+        image_url: "/images/earrings_category.png",
+        features: "Pearl • Drop • Gold Plated"
       };
     }
 

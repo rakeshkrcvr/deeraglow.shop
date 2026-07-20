@@ -221,8 +221,8 @@ export default function AdminDashboard() {
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
   const [features, setFeatures] = useState('');
-  const [imageUrl, setImageUrl] = useState('/images/hero_candle.png');
-  const [galleryImages, setGalleryImages] = useState<string[]>(['/images/hero_candle.png']);
+  const [imageUrl, setImageUrl] = useState('/images/earrings_category.png');
+  const [galleryImages, setGalleryImages] = useState<string[]>(['/images/earrings_category.png']);
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -240,15 +240,15 @@ export default function AdminDashboard() {
   const [bulkUpdating, setBulkUpdating] = useState(false);
 
   // Specifications & Accordions States
-  const [tagline, setTagline] = useState('100% natural soy wax — wooden wick — 30-40 hours burn time');
-  const [fragrances, setFragrances] = useState('Oud, Jasmin, Rose, Vanilla');
-  const [dimensions, setDimensions] = useState('W: 2.5 inch x H: 3 inch');
-  const [weight, setWeight] = useState('350 gms');
-  const [burnHours, setBurnHours] = useState('32 Hrs');
-  const [accBurnTime, setAccBurnTime] = useState('32 Hours average');
-  const [accIngredients, setAccIngredients] = useState("100% natural soy wax, phthalate-free premium fragrance oils, cotton-core crackling wooden wicks, reusable amber glass jars. No paraffin, no artificial dyes. Every jar is hand-poured and cured for 48 hours before it ships.");
-  const [accInstructions, setAccInstructions] = useState("Trim the wooden wick to 1/4 inch before each burn. Allow the wax to melt to the edges on first burn to avoid tunneling. Never burn for more than 4 hours at a time. Keep away from drafts, children, and pets.");
-  const [accShipping, setAccShipping] = useState("Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the candle is completely unburned and in its original packaging.");
+  const [tagline, setTagline] = useState('100% tarnish-free — 925 sterling silver — premium cubic zirconia');
+  const [fragrances, setFragrances] = useState('925 Sterling Silver, Gold Plated, Cubic Zirconia');
+  const [dimensions, setDimensions] = useState('Adjustable Ring Size / Standard Size');
+  const [weight, setWeight] = useState('15 gms');
+  const [burnHours, setBurnHours] = useState('N/A');
+  const [accBurnTime, setAccBurnTime] = useState('Tarnish-free polish lifetime durability');
+  const [accIngredients, setAccIngredients] = useState("925 Sterling Silver base, 18k gold plating, AAA+ cubic zirconia, skin-friendly and completely lead and nickel free. Crafted to ensure lifetime durability and shine.");
+  const [accInstructions, setAccInstructions] = useState("Avoid direct contact with water, sweat, perfumes, or harsh chemicals. Clean gently with a dry microfibre cloth and store in an airtight zip-lock bag when not in use.");
+  const [accShipping, setAccShipping] = useState("Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewelry is completely unused and in its original packaging.");
 
   // New Draft Form States
   const [draftCustomer, setDraftCustomer] = useState('');
@@ -325,16 +325,16 @@ export default function AdminDashboard() {
   const [pinterestUrl, setPinterestUrl] = useState('');
   const [twitterUrl, setTwitterUrl] = useState('');
   const [youtubeUrl, setYoutubeUrl] = useState('');
-  const [heroEyebrow, setHeroEyebrow] = useState('DEEKSHA RITUALS');
-  const [heroTitle, setHeroTitle] = useState('The Art of');
-  const [heroItalicTitle, setHeroItalicTitle] = useState('Slow Burning');
-  const [heroDescription, setHeroDescription] = useState('Ancestral scents mindfully crafted in small batches. Poured with 100% organic soy wax, pure botanical extracts, and wood wicks to ground your soul and illuminate your sanctuary.');
-  const [heroPrimaryButtonText, setHeroPrimaryButtonText] = useState('Discover Our Rituals');
+  const [heroEyebrow, setHeroEyebrow] = useState('DEERA GLOW');
+  const [heroTitle, setHeroTitle] = useState('Handcrafted');
+  const [heroItalicTitle, setHeroItalicTitle] = useState('Fine Jewelry');
+  const [heroDescription, setHeroDescription] = useState('Premium artificial jewelry crafted for everyday elegance and special moments. Anti-tarnish, skin-friendly, and designed to shine.');
+  const [heroPrimaryButtonText, setHeroPrimaryButtonText] = useState('Shop Collections');
   const [heroPrimaryButtonHref, setHeroPrimaryButtonHref] = useState('#products');
   const [heroSecondaryButtonText, setHeroSecondaryButtonText] = useState('Our Philosophy');
   const [heroSecondaryButtonHref, setHeroSecondaryButtonHref] = useState('#story');
-  const [heroFloatingTag, setHeroFloatingTag] = useState('Batch No. 042 / Sandalwood');
-  const [heroSliderImages, setHeroSliderImages] = useState<string[]>(['/images/hero_candle.png']);
+  const [heroFloatingTag, setHeroFloatingTag] = useState('New Drop / Royal Pearl Drops');
+  const [heroSliderImages, setHeroSliderImages] = useState<string[]>(['/images/jewelry_category_banner.png']);
   const [contentSuccess, setContentSuccess] = useState('');
   const [contentError, setContentError] = useState('');
 
@@ -342,25 +342,25 @@ export default function AdminDashboard() {
   const campaigns: Campaign[] = [
     { name: 'Instagram Influencer Collab', impressions: '142,500', clicks: '8,420', conversions: 184, spend: '₹25,000', sales: '₹1,24,000', roi: '4.96x' },
     { name: 'Diwali Early Bird Google Ads', impressions: '280,000', clicks: '14,280', conversions: 312, spend: '₹40,000', sales: '₹2,18,000', roi: '5.45x' },
-    { name: 'Facebook Scented Blends Retargeting', impressions: '64,200', clicks: '3,810', conversions: 96, spend: '₹15,000', sales: '₹68,400', roi: '4.56x' }
+    { name: 'Facebook Jewelry Retargeting', impressions: '64,200', clicks: '3,810', conversions: 96, spend: '₹15,000', sales: '₹68,400', roi: '4.56x' }
   ];
 
   // Blog Posts Mock Data (Content)
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([
-    { id: 1, title: 'How to Trim Candle Wicks for a Clean Burn', author: 'Deeksha Sharma', date: 'Jul 2, 2026', status: 'Published' },
-    { id: 2, title: 'Choosing the Right Aromatherapy Scent for Sleep', author: 'Deeksha Sharma', date: 'Jun 28, 2026', status: 'Published' },
-    { id: 3, title: 'Why Soy Wax is Better than Paraffin Wax', author: 'Rohan Sen', date: 'Jun 24, 2026', status: 'Published' }
+    { id: 1, title: 'How to Clean and Store Your Sterling Silver Jewelry', author: 'Deera Glow', date: 'Jul 2, 2026', status: 'Published' },
+    { id: 2, title: '925 Sterling Silver vs Brass: Which Should You Choose?', author: 'Deera Glow', date: 'Jun 28, 2026', status: 'Published' },
+    { id: 3, title: 'The Art of Layering: How to Stack Necklaces & Rings', author: 'Rohan Sen', date: 'Jun 24, 2026', status: 'Published' }
   ]);
   const [newPostTitle, setNewPostTitle] = useState('');
-  const [newPostAuthor, setNewPostAuthor] = useState('Deeksha Sharma');
+  const [newPostAuthor, setNewPostAuthor] = useState('Deera Glow');
   const [newPostDate, setNewPostDate] = useState('');
   const [newPostStatus, setNewPostStatus] = useState('Published');
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
   const [showNewPostForm, setShowNewPostForm] = useState(false);
   const [navigationMenus, setNavigationMenus] = useState<NavigationMenu[]>([
-    { id: 1, menu: 'Main Menu', links: 'Home - Shop - Fragrance - Occasions - About Us - Blogs' },
-    { id: 2, menu: 'Footer Collection List', links: 'Scented Candles - Soy Wax - Jar Candles - Luxury Collection' },
-    { id: 3, menu: 'Footer Scent Categories', links: 'Vanilla - Lavender - Rose - Jasmine - Sandalwood - Coffee' }
+    { id: 1, menu: 'Main Menu', links: 'Home - Shop - collections - Occasions - About Us - Blogs' },
+    { id: 2, menu: 'Footer Collection List', links: 'Rings - Necklaces - Earrings - Bracelets - Charms' },
+    { id: 3, menu: 'Footer Scent Categories', links: 'Silver Plated - Gold Plated - Pearl Accessories - Gemstone Jewelry' }
   ]);
   const [navMenuName, setNavMenuName] = useState('');
   const [navMenuLinks, setNavMenuLinks] = useState('');
@@ -486,13 +486,13 @@ export default function AdminDashboard() {
       city: reviewForm.city.trim() || 'India',
       time: editingReviewId ? fallbackReview?.time || 'Just now' : 'Just now',
       helpful: Number(reviewForm.helpful) || 0,
-      avatar: reviewForm.avatar.trim() || selectedProduct?.image_url || fallbackReview?.avatar || '/images/hero_candle.png',
+      avatar: reviewForm.avatar.trim() || selectedProduct?.image_url || fallbackReview?.avatar || '/images/earrings_category.png',
       quote: reviewForm.quote.trim(),
       rating: Number(reviewForm.rating) || 5,
       verified: reviewForm.verified,
       productId: selectedProduct?.id || fallbackReview?.productId,
-      productName: selectedProduct?.name || fallbackReview?.productName || 'Deeksha Candle',
-      productImage: selectedProduct?.image_url || fallbackReview?.productImage || '/images/hero_candle.png'
+      productName: selectedProduct?.name || fallbackReview?.productName || 'Royal Pearl Drops',
+      productImage: selectedProduct?.image_url || fallbackReview?.productImage || '/images/earrings_category.png'
     };
 
     if (!nextReview.quote) return;
@@ -526,7 +526,7 @@ export default function AdminDashboard() {
         uploadedMoments.push({
           id: `moment-${imageSlug || uploadedMoments.length}`,
           image: data.url,
-          alt: data.filename.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ') || 'Customer candle moment'
+          alt: data.filename.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ') || 'Customer jewelry moment'
         });
       }
       saveCustomerMoments([...uploadedMoments, ...customerMoments]);
@@ -583,7 +583,7 @@ export default function AdminDashboard() {
       author: videoForm.author.trim() || fallbackVideo?.author || 'Customer',
       duration: videoForm.duration.trim() || fallbackVideo?.duration || '0:20',
       videoUrl,
-      thumbnail: videoForm.thumbnail.trim() || fallbackVideo?.thumbnail || '/images/hero_candle.png',
+      thumbnail: videoForm.thumbnail.trim() || fallbackVideo?.thumbnail || '/images/earrings_category.png',
       link: videoForm.link.trim() || videoUrl,
       verified: videoForm.verified
     };
@@ -893,20 +893,20 @@ export default function AdminDashboard() {
         setPinterestUrl(data.pinterestUrl || '');
         setTwitterUrl(data.twitterUrl || '');
         setYoutubeUrl(data.youtubeUrl || '');
-        setHeroEyebrow(data.heroEyebrow || 'DEEKSHA RITUALS');
-        setHeroTitle(data.heroTitle || 'The Art of');
-        setHeroItalicTitle(data.heroItalicTitle || 'Slow Burning');
-        setHeroDescription(data.heroDescription || 'Ancestral scents mindfully crafted in small batches. Poured with 100% organic soy wax, pure botanical extracts, and wood wicks to ground your soul and illuminate your sanctuary.');
-        setHeroPrimaryButtonText(data.heroPrimaryButtonText || 'Discover Our Rituals');
-        setHeroPrimaryButtonHref(data.heroPrimaryButtonHref || '#products');
-        setHeroSecondaryButtonText(data.heroSecondaryButtonText || 'Our Philosophy');
-        setHeroSecondaryButtonHref(data.heroSecondaryButtonHref || '#story');
-        setHeroFloatingTag(data.heroFloatingTag || 'Batch No. 042 / Sandalwood');
+        setHeroEyebrow(data.heroEyebrow || 'TIMELESS BEAUTY');
+        setHeroTitle(data.heroTitle || 'Shine Brighter');
+        setHeroItalicTitle(data.heroItalicTitle || 'Every Day');
+        setHeroDescription(data.heroDescription || 'Discover handcrafted jewelry that celebrates your unique style and every special moment.');
+        setHeroPrimaryButtonText(data.heroPrimaryButtonText || 'Shop Collection');
+        setHeroPrimaryButtonHref(data.heroPrimaryButtonHref || '#shop-by-collection');
+        setHeroSecondaryButtonText(data.heroSecondaryButtonText || 'New Arrivals');
+        setHeroSecondaryButtonHref(data.heroSecondaryButtonHref || '#products');
+        setHeroFloatingTag(data.heroFloatingTag || '925 Sterling Silver');
         try {
           const parsedImages = JSON.parse(data.heroSliderImages || '[]');
-          setHeroSliderImages(Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages.filter((image): image is string => typeof image === 'string') : ['/images/hero_candle.png']);
+          setHeroSliderImages(Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages.filter((image): image is string => typeof image === 'string') : ['/images/hero_slide_1.png']);
         } catch {
-          setHeroSliderImages(['/images/hero_candle.png']);
+          setHeroSliderImages(['/images/hero_slide_1.png']);
         }
         try {
           const parsedPosts = JSON.parse(data.contentBlogPosts || '[]');
@@ -1147,17 +1147,17 @@ export default function AdminDashboard() {
           setPrice('');
           setDescription('');
           setFeatures('');
-          setImageUrl('/images/hero_candle.png');
-          setGalleryImages(['/images/hero_candle.png']);
-          setTagline('100% natural soy wax — wooden wick — 30-40 hours burn time');
-          setFragrances('Oud, Jasmin, Rose, Vanilla');
-          setDimensions('W: 2.5 inch x H: 3 inch');
-          setWeight('350 gms');
-          setBurnHours('32 Hrs');
-          setAccBurnTime('32 Hours average');
-          setAccIngredients("100% natural soy wax, phthalate-free premium fragrance oils, cotton-core crackling wooden wicks, reusable amber glass jars. No paraffin, no artificial dyes. Every jar is hand-poured and cured for 48 hours before it ships.");
-          setAccInstructions("Trim the wooden wick to 1/4 inch before each burn. Allow the wax to melt to the edges on first burn to avoid tunneling. Never burn for more than 4 hours at a time. Keep away from drafts, children, and pets.");
-          setAccShipping("Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the candle is completely unburned and in its original packaging.");
+          setImageUrl('/images/category_banner_jewelry.png');
+          setGalleryImages(['/images/category_banner_jewelry.png']);
+          setTagline('100% tarnish-free — 925 sterling silver — premium cubic zirconia');
+          setFragrances('925 Sterling Silver, Gold Plated, Cubic Zirconia');
+          setDimensions('Adjustable Ring Size / Standard Size');
+          setWeight('15 gms');
+          setBurnHours('N/A');
+          setAccBurnTime('Tarnish-free polish lifetime durability');
+          setAccIngredients("925 Sterling Silver base, 18k gold plating, AAA+ cubic zirconia, skin-friendly and completely lead and nickel free. Crafted to ensure lifetime durability and shine.");
+          setAccInstructions("Avoid direct contact with water, sweat, perfumes, or harsh chemicals. Clean gently with a dry microfibre cloth and store in an airtight zip-lock bag when not in use.");
+          setAccShipping("Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewelry is completely unused and in its original packaging.");
         };
 
         resetForm();
@@ -1186,19 +1186,19 @@ export default function AdminDashboard() {
     if (prod.images && prod.images.trim()) {
       setGalleryImages(prod.images.split(',').map(s => s.trim()).filter(Boolean));
     } else {
-      setGalleryImages([prod.image_url || '/images/hero_candle.png']);
+      setGalleryImages([prod.image_url || '/images/category_banner_jewelry.png']);
     }
     
     // Set custom spec states
-    setTagline(prod.tagline || '100% natural soy wax — wooden wick — 30-40 hours burn time');
-    setFragrances(prod.fragrances || 'Oud, Jasmin, Rose, Vanilla');
-    setDimensions(prod.dimensions || 'W: 2.5 inch x H: 3 inch');
-    setWeight(prod.weight || '350 gms');
-    setBurnHours(prod.burn_hours || '32 Hrs');
-    setAccBurnTime(prod.acc_burn_time || '32 Hours average');
-    setAccIngredients(prod.acc_ingredients || '100% natural soy wax, phthalate-free premium fragrance oils, cotton-core crackling wooden wicks, reusable amber glass jars. No paraffin, no artificial dyes. Every jar is hand-poured and cured for 48 hours before it ships.');
-    setAccInstructions(prod.acc_instructions || 'Trim the wooden wick to 1/4 inch before each burn. Allow the wax to melt to the edges on first burn to avoid tunneling. Never burn for more than 4 hours at a time. Keep away from drafts, children, and pets.');
-    setAccShipping(prod.acc_shipping || 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the candle is completely unburned and in its original packaging.');
+    setTagline(prod.tagline || '100% tarnish-free — 925 sterling silver — premium cubic zirconia');
+    setFragrances(prod.fragrances || '925 Sterling Silver, Gold Plated, Cubic Zirconia');
+    setDimensions(prod.dimensions || 'Adjustable Ring Size / Standard Size');
+    setWeight(prod.weight || '15 gms');
+    setBurnHours(prod.burn_hours || 'N/A');
+    setAccBurnTime(prod.acc_burn_time || 'Tarnish-free polish lifetime durability');
+    setAccIngredients(prod.acc_ingredients || '925 Sterling Silver base, 18k gold plating, AAA+ cubic zirconia, skin-friendly and completely lead and nickel free. Crafted to ensure lifetime durability and shine.');
+    setAccInstructions(prod.acc_instructions || 'Avoid direct contact with water, sweat, perfumes, or harsh chemicals. Clean gently with a dry microfibre cloth and store in an airtight zip-lock bag when not in use.');
+    setAccShipping(prod.acc_shipping || 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewelry is completely unused and in its original packaging.');
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -1230,15 +1230,15 @@ export default function AdminDashboard() {
         description: prod.description,
         image_url: prod.image_url,
         features: prod.features,
-        tagline: prod.tagline || '100% natural soy wax — wooden wick — 30-40 hours burn time',
-        fragrances: prod.fragrances || 'Oud, Jasmin, Rose, Vanilla',
-        dimensions: prod.dimensions || 'W: 2.5 inch x H: 3 inch',
-        weight: prod.weight || '350 gms',
-        burn_hours: prod.burn_hours || '32 Hrs',
-        acc_burn_time: prod.acc_burn_time || '32 Hours average',
-        acc_ingredients: prod.acc_ingredients || '100% natural soy wax, phthalate-free premium fragrance oils, cotton-core crackling wooden wicks, reusable amber glass jars. No paraffin, no artificial dyes. Every jar is hand-poured and cured for 48 hours before it ships.',
-        acc_instructions: prod.acc_instructions || 'Trim the wooden wick to 1/4 inch before each burn. Allow the wax to melt to the edges on first burn to avoid tunneling. Never burn for more than 4 hours at a time. Keep away from drafts, children, and pets.',
-        acc_shipping: prod.acc_shipping || 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the candle is completely unburned and in its original packaging.',
+        tagline: prod.tagline || '100% tarnish-free — 925 sterling silver — premium cubic zirconia',
+        fragrances: prod.fragrances || '925 Sterling Silver, Gold Plated, Cubic Zirconia',
+        dimensions: prod.dimensions || 'Adjustable Ring Size / Standard Size',
+        weight: prod.weight || '15 gms',
+        burn_hours: prod.burn_hours || 'N/A',
+        acc_burn_time: prod.acc_burn_time || 'Tarnish-free polish lifetime durability',
+        acc_ingredients: prod.acc_ingredients || '925 Sterling Silver base, 18k gold plating, AAA+ cubic zirconia, skin-friendly and completely lead and nickel free. Crafted to ensure lifetime durability and shine.',
+        acc_instructions: prod.acc_instructions || 'Avoid direct contact with water, sweat, perfumes, or harsh chemicals. Clean gently with a dry microfibre cloth and store in an airtight zip-lock bag when not in use.',
+        acc_shipping: prod.acc_shipping || 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewelry is completely unused and in its original packaging.',
         images: prod.images || prod.image_url
       };
 
@@ -2806,13 +2806,13 @@ export default function AdminDashboard() {
             {showCollForm && (
               <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', marginBottom: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
                 <h3 style={{ fontSize: '14px', fontWeight: '700', margin: '0 0 16px 0' }}>
-                  {editingCollId ? 'Edit Collection Details' : 'Pave New Candle Collection'}
+                  {editingCollId ? 'Edit Collection Details' : 'Create New Jewelry Collection'}
                 </h3>
                 <form onSubmit={handleSaveCollection} style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '300px' }}>
                     <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Collection Name</label>
                     <input 
-                      type="text" value={collName} onChange={e => setCollName(e.target.value)} required placeholder="e.g. Scented Candles"
+                      type="text" value={collName} onChange={e => setCollName(e.target.value)} required placeholder="e.g. Sterling Silver Rings"
                       style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                     />
                   </div>
@@ -3215,7 +3215,7 @@ export default function AdminDashboard() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Summary Text</label>
-                    <input type="text" value={newDiscountSummary} onChange={e => setNewDiscountSummary(e.target.value)} required placeholder="e.g. 30% off select candles" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px', width: '260px' }} />
+                    <input type="text" value={newDiscountSummary} onChange={e => setNewDiscountSummary(e.target.value)} required placeholder="e.g. 30% off select rings" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px', width: '260px' }} />
                   </div>
                   <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', padding: '10px 20px', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
                     {editingDiscountId ? 'Update Code' : 'Save Code'}
@@ -3579,7 +3579,7 @@ export default function AdminDashboard() {
                   <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
                     Product
                     <select value={reviewForm.productId} onChange={e => setReviewForm(prev => ({ ...prev, productId: e.target.value }))} style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px', backgroundColor: '#ffffff' }}>
-                      <option value="">Generic Deeksha Candle</option>
+                      <option value="">Generic Deera Glow Jewelry</option>
                       {products.filter(product => !product.deleted_at).map(product => (
                         <option key={product.id} value={product.id}>{product.name}</option>
                       ))}
@@ -3597,7 +3597,7 @@ export default function AdminDashboard() {
                   </label>
                   <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
                     Customer photo path
-                    <input value={reviewForm.avatar} onChange={e => setReviewForm(prev => ({ ...prev, avatar: e.target.value }))} placeholder="/images/cozy_room_glow.png" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                    <input value={reviewForm.avatar} onChange={e => setReviewForm(prev => ({ ...prev, avatar: e.target.value }))} placeholder="/images/rings_category.png" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
                   </label>
                   <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
                     Helpful count
@@ -3605,7 +3605,7 @@ export default function AdminDashboard() {
                   </label>
                   <label style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
                     Review text
-                    <textarea value={reviewForm.quote} onChange={e => setReviewForm(prev => ({ ...prev, quote: e.target.value }))} required rows={4} placeholder="mujhe bahut jada pasand aayi h ye candle..." style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px', resize: 'vertical', fontFamily: 'inherit' }} />
+                    <textarea value={reviewForm.quote} onChange={e => setReviewForm(prev => ({ ...prev, quote: e.target.value }))} required rows={4} placeholder="mujhe bahut jada pasand aayi h ye ring..." style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px', resize: 'vertical', fontFamily: 'inherit' }} />
                   </label>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
                     <input type="checkbox" checked={reviewForm.verified} onChange={e => setReviewForm(prev => ({ ...prev, verified: e.target.checked }))} />
@@ -4818,7 +4818,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* TAB 2: PRODUCTS MANAGER (CANDLE INVENTORY) */}
+        {/* TAB 2: PRODUCTS MANAGER (JEWELRY INVENTORY) */}
         {activeTab === 'products' && (() => {
           const isAllSelected = filteredProducts.length > 0 && filteredProducts.every(p => selectedCatalogProductIds.includes(p.id));
           const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -4857,7 +4857,7 @@ export default function AdminDashboard() {
               {/* Add form */}
               <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                 <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>
-                  {editingProductId ? 'Edit Candle Details' : 'Add New Candle'}
+                  {editingProductId ? 'Edit Jewelry Details' : 'Add New Jewelry'}
                 </h3>
 
                 {formError && (
@@ -4873,9 +4873,9 @@ export default function AdminDashboard() {
 
                 <form onSubmit={handleAddProduct} style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Candle Name</label>
+                    <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Jewelry Name</label>
                     <input 
-                      type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder="e.g. Vanilla Bourbon Extract"
+                      type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder="e.g. Royal Pearl Drops"
                       style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                     />
                   </div>
@@ -4902,9 +4902,9 @@ export default function AdminDashboard() {
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Scent Notes</label>
+                    <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Highlights</label>
                     <input 
-                      type="text" value={features} onChange={(e) => setFeatures(e.target.value)} required placeholder="Vanilla • Amber • Bourbon"
+                      type="text" value={features} onChange={(e) => setFeatures(e.target.value)} required placeholder="e.g. 925 Sterling Silver • Gold Plated"
                       style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                     />
                   </div>
@@ -5098,7 +5098,7 @@ export default function AdminDashboard() {
                               const file = e.target.files[0];
                               try {
                                 const data = await uploadMediaFile(file);
-                                setGalleryImages((prev) => [...prev.filter(img => img !== '/images/hero_candle.png'), data.url]);
+                                setGalleryImages((prev) => [...prev.filter(img => img !== '/images/category_banner_jewelry.png'), data.url]);
                                 await fetchMediaFiles();
                               } catch (err) {
                                 alert(err instanceof Error ? err.message : 'Error uploading file.');
@@ -5116,7 +5116,7 @@ export default function AdminDashboard() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Description</label>
                     <textarea 
-                      value={description} onChange={(e) => setDescription(e.target.value)} required rows={4} placeholder="Describe the aroma and burn characteristics..."
+                      value={description} onChange={(e) => setDescription(e.target.value)} required rows={4} placeholder="Describe the jewelry design and details..."
                       style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'none' }}
                     />
                   </div>
@@ -5129,23 +5129,23 @@ export default function AdminDashboard() {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Subtitle / Highlights Tagline</label>
                         <input 
-                          type="text" value={tagline} onChange={(e) => setTagline(e.target.value)} required placeholder="e.g. 100% natural soy wax — wooden wick — 30-40 hours burn time"
+                          type="text" value={tagline} onChange={(e) => setTagline(e.target.value)} required placeholder="e.g. 100% tarnish-free — 925 sterling silver — premium cubic zirconia"
                           style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                         />
                       </div>
 
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Fragrances (Comma separated)</label>
+                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Materials (Comma separated)</label>
                           <input 
-                            type="text" value={fragrances} onChange={(e) => setFragrances(e.target.value)} required placeholder="Oud, Jasmin, Rose, Vanilla"
+                            type="text" value={fragrances} onChange={(e) => setFragrances(e.target.value)} required placeholder="925 Sterling Silver, Gold Plated, Cubic Zirconia"
                             style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                           />
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                           <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Dimensions</label>
                           <input 
-                            type="text" value={dimensions} onChange={(e) => setDimensions(e.target.value)} required placeholder="W: 2.5 inch x H: 3 inch"
+                            type="text" value={dimensions} onChange={(e) => setDimensions(e.target.value)} required placeholder="Adjustable Ring Size / Standard Size"
                             style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                           />
                         </div>
@@ -5153,16 +5153,16 @@ export default function AdminDashboard() {
 
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Wax Weight</label>
+                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Jewelry Weight</label>
                           <input 
-                            type="text" value={weight} onChange={(e) => setWeight(e.target.value)} required placeholder="350 gms"
+                            type="text" value={weight} onChange={(e) => setWeight(e.target.value)} required placeholder="15 gms"
                             style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                           />
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Burning Hours</label>
+                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Durability / Polish</label>
                           <input 
-                            type="text" value={burnHours} onChange={(e) => setBurnHours(e.target.value)} required placeholder="32 Hrs"
+                            type="text" value={burnHours} onChange={(e) => setBurnHours(e.target.value)} required placeholder="Tarnish-Free Polish"
                             style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                           />
                         </div>
@@ -5170,25 +5170,25 @@ export default function AdminDashboard() {
 
                       {/* Accordions */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Burn Time Description</label>
+                        <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Durability & Lifetime Polish</label>
                         <input 
-                          type="text" value={accBurnTime} onChange={(e) => setAccBurnTime(e.target.value)} required placeholder="32 Hours average"
+                          type="text" value={accBurnTime} onChange={(e) => setAccBurnTime(e.target.value)} required placeholder="Tarnish-free polish lifetime durability"
                           style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                         />
                       </div>
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Ingredients & How It&apos;s Made</label>
+                        <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Materials & Craftsmanship</label>
                         <textarea 
-                          value={accIngredients} onChange={(e) => setAccIngredients(e.target.value)} required rows={2} placeholder="Ingredients..."
+                          value={accIngredients} onChange={(e) => setAccIngredients(e.target.value)} required rows={2} placeholder="Materials and craftsmanship details..."
                           style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'none' }}
                         />
                       </div>
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Burning Instructions</label>
+                        <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Care Instructions</label>
                         <textarea 
-                          value={accInstructions} onChange={(e) => setAccInstructions(e.target.value)} required rows={2} placeholder="Instructions..."
+                          value={accInstructions} onChange={(e) => setAccInstructions(e.target.value)} required rows={2} placeholder="Cleaning and storage instructions..."
                           style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'none' }}
                         />
                       </div>

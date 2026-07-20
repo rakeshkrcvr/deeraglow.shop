@@ -59,6 +59,10 @@ const ensureOrdersTable = async () => {
       console.error('Order migration error for ' + migration + ':', error);
     }
   }
+
+  try {
+    await sql`UPDATE orders SET channel = REPLACE(channel, 'Deeksha', 'DeeraGlow') WHERE channel LIKE '%Deeksha%'`;
+  } catch {}
 };
 
 const buildFallbackItems = async (order: OrderRow, index: number) => {
@@ -96,22 +100,22 @@ export async function GET() {
     if (count === 0) {
       // Seed orders matching screenshot exactly
       const seedOrders = [
-        { num: '#1034', date: 'Jun 25 at 11:58 pm', cust: 'Jyoti Soni', chan: 'Deeksha<>Gokwik', total: '₹1,798.50', pay: 'Payment pending', fulfill: 'In progress', items: '4 items', del: '' },
-        { num: '#1033', date: 'Jun 8 at 1:48 pm', cust: 'Akshay Agrawal', chan: 'Deeksha<>Gokwik', total: '₹0.00', pay: 'Payment pending', fulfill: 'Not required', items: '0 items', del: '' },
-        { num: '#1032', date: 'Jun 5 at 11:32 pm', cust: 'Shan Mohd', chan: 'Deeksha<>Gokwik', total: '₹399.00', pay: 'Paid', fulfill: 'Fulfilled', items: '1 item', del: 'Delivered' },
-        { num: '#1031', date: 'May 28 at 1:18 pm', cust: 'Shantanu Ghosh', chan: 'Deeksha<>Gokwik', total: '₹0.00', pay: 'Payment pending', fulfill: 'Not required', items: '0 items', del: '' },
-        { num: '#1030', date: 'May 20 at 3:31 pm', cust: 'Akshay Agrawal', chan: 'Deeksha<>Gokwik', total: '₹0.00', pay: 'Payment pending', fulfill: 'Not required', items: '0 items', del: '' },
-        { num: '#1029', date: 'May 11 at 12:16 pm', cust: 'Jyoti Soni', chan: 'Deeksha<>Gokwik', total: '₹1,091.55', pay: 'Paid', fulfill: 'Fulfilled', items: '2 items', del: 'Delivered' },
-        { num: '#1028', date: 'May 9 at 3:52 pm', cust: 'Farmida Mir', chan: 'Deeksha<>Gokwik', total: '₹0.00', pay: 'Payment pending', fulfill: 'Not required', items: '0 items', del: '' },
-        { num: '#1027', date: 'May 7 at 1:09 pm', cust: 'Vereesha Sachan', chan: 'Deeksha<>Gokwik', total: '₹1,889.10', pay: 'Payment pending', fulfill: 'Not required', items: '1 item', del: '' },
-        { num: '#1026', date: 'Apr 25 at 5:04 pm', cust: 'Jyoti Soni', chan: 'Deeksha<>Gokwik', total: '₹2,975.00', pay: 'Paid', fulfill: 'Fulfilled', items: '1 item', del: 'Delivered' },
-        { num: '#1025', date: 'Apr 24 at 10:27 pm', cust: 'Rakesh Kumar', chan: 'Deeksha<>Gokwik', total: '₹0.00', pay: 'Payment pending', fulfill: 'Not required', items: '0 items', del: '' },
-        { num: '#1024', date: 'Apr 24 at 10:20 pm', cust: 'Akshay Agrawal', chan: 'Deeksha<>Gokwik', total: '₹0.00', pay: 'Payment pending', fulfill: 'Not required', items: '0 items', del: '' },
-        { num: '#1023', date: 'Apr 24 at 2:05 pm', cust: 'Akshay Agrawal', chan: 'Deeksha<>Gokwik', total: '₹0.00', pay: 'Payment pending', fulfill: 'Not required', items: '0 items', del: '' },
+        { num: '#1034', date: 'Jun 25 at 11:58 pm', cust: 'Jyoti Soni', chan: 'DeeraGlow<>Gokwik', total: '₹1,798.50', pay: 'Payment pending', fulfill: 'In progress', items: '4 items', del: '' },
+        { num: '#1033', date: 'Jun 8 at 1:48 pm', cust: 'Akshay Agrawal', chan: 'DeeraGlow<>Gokwik', total: '₹0.00', pay: 'Payment pending', fulfill: 'Not required', items: '0 items', del: '' },
+        { num: '#1032', date: 'Jun 5 at 11:32 pm', cust: 'Shan Mohd', chan: 'DeeraGlow<>Gokwik', total: '₹399.00', pay: 'Paid', fulfill: 'Fulfilled', items: '1 item', del: 'Delivered' },
+        { num: '#1031', date: 'May 28 at 1:18 pm', cust: 'Shantanu Ghosh', chan: 'DeeraGlow<>Gokwik', total: '₹0.00', pay: 'Payment pending', fulfill: 'Not required', items: '0 items', del: '' },
+        { num: '#1030', date: 'May 20 at 3:31 pm', cust: 'Akshay Agrawal', chan: 'DeeraGlow<>Gokwik', total: '₹0.00', pay: 'Payment pending', fulfill: 'Not required', items: '0 items', del: '' },
+        { num: '#1029', date: 'May 11 at 12:16 pm', cust: 'Jyoti Soni', chan: 'DeeraGlow<>Gokwik', total: '₹1,091.55', pay: 'Paid', fulfill: 'Fulfilled', items: '2 items', del: 'Delivered' },
+        { num: '#1028', date: 'May 9 at 3:52 pm', cust: 'Farmida Mir', chan: 'DeeraGlow<>Gokwik', total: '₹0.00', pay: 'Payment pending', fulfill: 'Not required', items: '0 items', del: '' },
+        { num: '#1027', date: 'May 7 at 1:09 pm', cust: 'Vereesha Sachan', chan: 'DeeraGlow<>Gokwik', total: '₹1,889.10', pay: 'Payment pending', fulfill: 'Not required', items: '1 item', del: '' },
+        { num: '#1026', date: 'Apr 25 at 5:04 pm', cust: 'Jyoti Soni', chan: 'DeeraGlow<>Gokwik', total: '₹2,975.00', pay: 'Paid', fulfill: 'Fulfilled', items: '1 item', del: 'Delivered' },
+        { num: '#1025', date: 'Apr 24 at 10:27 pm', cust: 'Rakesh Kumar', chan: 'DeeraGlow<>Gokwik', total: '₹0.00', pay: 'Payment pending', fulfill: 'Not required', items: '0 items', del: '' },
+        { num: '#1024', date: 'Apr 24 at 10:20 pm', cust: 'Akshay Agrawal', chan: 'DeeraGlow<>Gokwik', total: '₹0.00', pay: 'Payment pending', fulfill: 'Not required', items: '0 items', del: '' },
+        { num: '#1023', date: 'Apr 24 at 2:05 pm', cust: 'Akshay Agrawal', chan: 'DeeraGlow<>Gokwik', total: '₹0.00', pay: 'Payment pending', fulfill: 'Not required', items: '0 items', del: '' },
         { num: '#1022', date: 'Apr 12 at 10:32 pm', cust: 'Jyoti Soni', chan: 'Online Store', total: '₹4,749.00', pay: 'Paid', fulfill: 'Fulfilled', items: '1 item', del: 'Delivered' },
-        { num: '#1021', date: 'Apr 12 at 8:40 pm', cust: 'Snigdha Chamaria', chan: 'Deeksha<>Gokwik', total: '₹0.00', pay: 'Payment pending', fulfill: 'Not required', items: '0 items', del: '' },
-        { num: '#1020', date: 'Apr 9 at 10:34 pm', cust: 'NISHA MONTEEN', chan: 'Deeksha<>Gokwik', total: '₹1,970.00', pay: 'Paid', fulfill: 'Fulfilled', items: '1 item', del: 'Delivered' },
-        { num: '#1019', date: 'Apr 6 at 12:34 pm', cust: 'Dipti Karnawat', chan: 'Deeksha<>Gokwik', total: '₹850.00', pay: 'Paid', fulfill: 'Fulfilled', items: '1 item', del: 'Delivered' }
+        { num: '#1021', date: 'Apr 12 at 8:40 pm', cust: 'Snigdha Chamaria', chan: 'DeeraGlow<>Gokwik', total: '₹0.00', pay: 'Payment pending', fulfill: 'Not required', items: '0 items', del: '' },
+        { num: '#1020', date: 'Apr 9 at 10:34 pm', cust: 'NISHA MONTEEN', chan: 'DeeraGlow<>Gokwik', total: '₹1,970.00', pay: 'Paid', fulfill: 'Fulfilled', items: '1 item', del: 'Delivered' },
+        { num: '#1019', date: 'Apr 6 at 12:34 pm', cust: 'Dipti Karnawat', chan: 'DeeraGlow<>Gokwik', total: '₹850.00', pay: 'Paid', fulfill: 'Fulfilled', items: '1 item', del: 'Delivered' }
       ];
 
       for (const order of seedOrders) {

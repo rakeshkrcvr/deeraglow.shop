@@ -474,22 +474,27 @@
 }
 
 .buyNowBtn {
-  width: 100%;
-  background-color: transparent;
-  color: var(--accent);
-  border: 1px solid var(--accent);
-  height: 52px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 13px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  color: #3e0030;
+  letter-spacing: .06em;
+  cursor: pointer;
   transition: all var(--transition-fast);
+  background-color: #dfb549;
+  border: none;
+  border-radius: 8px;
+  flex: 1.2;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  padding: 19px;
+  width: 100%;
   margin-bottom: 30px;
 }
 
 .buyNowBtn:hover {
-  background-color: rgba(197, 168, 128, 0.08);
+  background-color: #E6C265;
 }
 
 /* Core Trust Grid styling */
@@ -670,7 +675,8 @@
     z-index: 80;
     width: calc(100% - 16px);
     margin: 0 8px 8px;
-    background-color: #3E0030;
+    background-color: #DFB549;
+    color: #3E0030;
     box-shadow: 0 -10px 28px rgba(0, 0, 0, 0.2);
     opacity: 0;
     pointer-events: none;
@@ -1854,8 +1860,8 @@
 .jewelryCard {
   background: #FCFAF8;
   border: 1px solid #EADBB6;
-  border-radius: 16px;
-  padding: 18px;
+  border-radius: 0px;
+  padding: 0px;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -1877,9 +1883,9 @@
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1; /* Force square aspect ratio */
-  border-radius: 12px;
+  border-radius: 0px;
   overflow: hidden;
-  margin-bottom: 18px;
+  margin-bottom: 0px;
   background-color: #F3ECE4;
 }
 
@@ -1914,7 +1920,7 @@
   background-color: #DFB549;
   color: #3E0030;
   padding: 6px 12px;
-  border-radius: 30px;
+  border-radius: 0px;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -1951,6 +1957,7 @@
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  padding: 4px;
 }
 
 .features {

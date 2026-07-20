@@ -43,15 +43,15 @@ export async function getProducts(options: { includeDeleted?: boolean } = {}): P
         image_url VARCHAR(255) NOT NULL,
         features VARCHAR(255) NOT NULL,
         
-        tagline VARCHAR(500) DEFAULT '100% natural soy wax — wooden wick — 30-40 hours burn time',
-        fragrances VARCHAR(500) DEFAULT 'Oud, Jasmin, Rose, Vanilla',
-        dimensions VARCHAR(255) DEFAULT 'W: 2.5 inch x H: 3 inch',
-        weight VARCHAR(255) DEFAULT '350 gms',
-        burn_hours VARCHAR(255) DEFAULT '32 Hrs',
-        acc_burn_time TEXT DEFAULT '32 Hours average',
-        acc_ingredients TEXT DEFAULT '100% natural soy wax, phthalate-free premium fragrance oils, cotton-core crackling wooden wicks, reusable amber glass jars. No paraffin, no artificial dyes. Every jar is hand-poured and cured for 48 hours before it ships.',
-        acc_instructions TEXT DEFAULT 'Trim the wooden wick to 1/4 inch before each burn. Allow the wax to melt to the edges on first burn to avoid tunneling. Never burn for more than 4 hours at a time. Keep away from drafts, children, and pets.',
-        acc_shipping TEXT DEFAULT 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the candle is completely unburned and in its original packaging.',
+        tagline VARCHAR(500) DEFAULT '100% tarnish-free — 925 sterling silver — premium cubic zirconia',
+        fragrances VARCHAR(500) DEFAULT '925 Sterling Silver, Gold Plated, Cubic Zirconia',
+        dimensions VARCHAR(255) DEFAULT 'Adjustable Ring Size / Standard Size',
+        weight VARCHAR(255) DEFAULT '15 gms',
+        burn_hours VARCHAR(255) DEFAULT 'N/A',
+        acc_burn_time TEXT DEFAULT 'Tarnish-free polish lifetime durability',
+        acc_ingredients TEXT DEFAULT '925 Sterling Silver base, 18k gold plating, AAA+ cubic zirconia, skin-friendly and completely lead and nickel free. Crafted to ensure lifetime durability and shine.',
+        acc_instructions TEXT DEFAULT 'Avoid direct contact with water, sweat, perfumes, or harsh chemicals. Clean gently with a dry microfibre cloth and store in an airtight zip-lock bag when not in use.',
+        acc_shipping TEXT DEFAULT 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewelry is completely unused and in its original packaging.',
         images TEXT DEFAULT '',
         deleted_at TIMESTAMPTZ DEFAULT NULL
       )
@@ -65,15 +65,15 @@ export async function getProducts(options: { includeDeleted?: boolean } = {}): P
     const migrations = ['tagline', 'fragrances', 'dimensions', 'weight', 'burn_hours', 'acc_burn_time', 'acc_ingredients', 'acc_instructions', 'acc_shipping', 'images', 'deleted_at'];
     for (const m of migrations) {
       try {
-        if (m === 'tagline') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS tagline VARCHAR(500) DEFAULT '100% natural soy wax — wooden wick — 30-40 hours burn time'`;
-        if (m === 'fragrances') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS fragrances VARCHAR(500) DEFAULT 'Oud, Jasmin, Rose, Vanilla'`;
-        if (m === 'dimensions') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS dimensions VARCHAR(255) DEFAULT 'W: 2.5 inch x H: 3 inch'`;
-        if (m === 'weight') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS weight VARCHAR(255) DEFAULT '350 gms'`;
-        if (m === 'burn_hours') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS burn_hours VARCHAR(255) DEFAULT '32 Hrs'`;
-        if (m === 'acc_burn_time') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS acc_burn_time TEXT DEFAULT '32 Hours average'`;
-        if (m === 'acc_ingredients') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS acc_ingredients TEXT DEFAULT '100% natural soy wax, phthalate-free premium fragrance oils, cotton-core crackling wooden wicks, reusable amber glass jars. No paraffin, no artificial dyes. Every jar is hand-poured and cured for 48 hours before it ships.'`;
-        if (m === 'acc_instructions') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS acc_instructions TEXT DEFAULT 'Trim the wooden wick to 1/4 inch before each burn. Allow the wax to melt to the edges on first burn to avoid tunneling. Never burn for more than 4 hours at a time. Keep away from drafts, children, and pets.'`;
-        if (m === 'acc_shipping') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS acc_shipping TEXT DEFAULT 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the candle is completely unburned and in its original packaging.'`;
+        if (m === 'tagline') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS tagline VARCHAR(500) DEFAULT '100% tarnish-free — 925 sterling silver — premium cubic zirconia'`;
+        if (m === 'fragrances') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS fragrances VARCHAR(500) DEFAULT '925 Sterling Silver, Gold Plated, Cubic Zirconia'`;
+        if (m === 'dimensions') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS dimensions VARCHAR(255) DEFAULT 'Adjustable Ring Size / Standard Size'`;
+        if (m === 'weight') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS weight VARCHAR(255) DEFAULT '15 gms'`;
+        if (m === 'burn_hours') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS burn_hours VARCHAR(255) DEFAULT 'N/A'`;
+        if (m === 'acc_burn_time') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS acc_burn_time TEXT DEFAULT 'Tarnish-free polish lifetime durability'`;
+        if (m === 'acc_ingredients') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS acc_ingredients TEXT DEFAULT '925 Sterling Silver base, 18k gold plating, AAA+ cubic zirconia, skin-friendly and completely lead and nickel free. Crafted to ensure lifetime durability and shine.'`;
+        if (m === 'acc_instructions') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS acc_instructions TEXT DEFAULT 'Avoid direct contact with water, sweat, perfumes, or harsh chemicals. Clean gently with a dry microfibre cloth and store in an airtight zip-lock bag when not in use.'`;
+        if (m === 'acc_shipping') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS acc_shipping TEXT DEFAULT 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewelry is completely unused and in its original packaging.'`;
         if (m === 'images') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS images TEXT DEFAULT ''`;
         if (m === 'deleted_at') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ DEFAULT NULL`;
       } catch (e) {
@@ -292,17 +292,35 @@ export async function getProducts(options: { includeDeleted?: boolean } = {}): P
             console.error(`Seeding failed for ${prod.name}:`, error);
           }
         }
-      } else if (dbProdByName && !dbProdByName.slug) {
-        console.log(`Updating missing slug for product: ${prod.name}`);
-        try {
-          await sql`
-            UPDATE products SET slug = ${prod.slug} WHERE id = ${dbProdByName.id}
-          `;
-          needsRequery = true;
-        } catch (e: unknown) {
-          const error = e as DatabaseError;
-          if (error.code !== '23505') {
-            console.error(error);
+      } else if (dbProdByName) {
+        const isStale = 
+          dbProdByName.image_url !== prod.image_url || 
+          dbProdByName.slug !== prod.slug || 
+          (dbProdByName.tagline && dbProdByName.tagline.includes('wax')) ||
+          (dbProdByName.acc_ingredients && dbProdByName.acc_ingredients.includes('wax'));
+
+        if (isStale) {
+          console.log(`Updating image_url, slug and default fields for product: ${prod.name}`);
+          try {
+            await sql`
+              UPDATE products 
+              SET 
+                slug = ${prod.slug}, 
+                image_url = ${prod.image_url},
+                tagline = '100% tarnish-free — 925 sterling silver — premium cubic zirconia',
+                fragrances = '925 Sterling Silver, Gold Plated, Cubic Zirconia',
+                dimensions = 'Adjustable Ring Size / Standard Size',
+                weight = '15 gms',
+                burn_hours = 'N/A',
+                acc_burn_time = 'Tarnish-free polish lifetime durability',
+                acc_ingredients = '925 Sterling Silver base, 18k gold plating, AAA+ cubic zirconia, skin-friendly and completely lead and nickel free. Crafted to ensure lifetime durability and shine.',
+                acc_instructions = 'Avoid direct contact with water, sweat, perfumes, or harsh chemicals. Clean gently with a dry microfibre cloth and store in an airtight zip-lock bag when not in use.',
+                acc_shipping = 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewelry is completely unused and in its original packaging.'
+              WHERE id = ${dbProdByName.id}
+            `;
+            needsRequery = true;
+          } catch (e: unknown) {
+            console.error(`Failed to update product ${prod.name}:`, e);
           }
         }
       }

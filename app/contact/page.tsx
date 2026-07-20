@@ -34,7 +34,7 @@ export default function ContactPage() {
             fontWeight: '300'
           }}>
             <p style={{ textAlign: 'center', marginBottom: '40px', fontSize: '16px' }}>
-              Have questions about our collections, scent ingredients, or wholesale partnerships? Send us a message and we&apos;ll reply within 24 hours.
+              Have questions about our collections, jewelry craftsmanship, or partnership inquiries? Send us a message and we&apos;ll reply within 24 hours.
             </p>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginBottom: '40px' }}>
@@ -50,7 +50,7 @@ export default function ContactPage() {
                 <h3 style={{ color: 'var(--accent)', fontSize: '16px', fontWeight: '600', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>
                   ✉️ Email Us
                 </h3>
-                <p style={{ color: '#ffffff', margin: 0 }}>deekshachauhancandles@gmail.com</p>
+                <p style={{ color: '#ffffff', margin: 0 }}>deeraglowshop@gmail.com</p>
                 <p style={{ margin: 0 }}>General & Wholesale Inquiries</p>
               </div>
             </div>

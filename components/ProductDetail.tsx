@@ -885,13 +885,13 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
           </div>
         </section>
 
-        {/* Section: Before vs After Deeksha */}
+        {/* Section: Before vs After Deera Glow */}
         <section className={styles.comparisonSection}>
           <div className={styles.storyHeader}>
             <span className={styles.storySubtitle}>EXPERIENCE THE DIFFERENCE</span>
-            <h2 className={styles.storyTitle}>Before vs After Deeksha</h2>
+            <h2 className={styles.storyTitle}>Before vs After Deera Glow</h2>
             <div className={styles.storyLine}></div>
-            <p className={styles.comparisonSubTitle}>A small change that transforms your whole space & mood.</p>
+            <p className={styles.comparisonSubTitle}>A small change that transforms your whole look & confidence.</p>
           </div>
 
           <div className={styles.comparisonContainer}>
@@ -903,42 +903,42 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
                 <div className={styles.columnHeader}>
                   <span className={styles.beforeBadge}>BEFORE</span>
                   <h3>Ordinary Life</h3>
-                  <p className={styles.colSub}>Dull. Stressful. Uninspired.</p>
+                  <p className={styles.colSub}>Dull. Plain. Uninspired.</p>
                 </div>
                 <ul className={styles.featuresList}>
                   <li>
                     <span className={styles.featureEmoji}>🙁</span>
                     <div>
-                      <strong>Stress & Tired Mind</strong>
-                      <p>Long day, no time for yourself</p>
+                      <strong>Dull & Plain Outfits</strong>
+                      <p>Regular daily wear feels incomplete</p>
                     </div>
                   </li>
                   <li>
-                    <span className={styles.featureEmoji}>🏠</span>
+                    <span className={styles.featureEmoji}>💍</span>
                     <div>
-                      <strong>Dull & Uninviting Space</strong>
-                      <p>Feels empty and lifeless</p>
+                      <strong>Uninspired Styling</strong>
+                      <p>Struggling to find the right signature piece</p>
                     </div>
                   </li>
                   <li>
-                    <span className={styles.featureEmoji}>💨</span>
+                    <span className={styles.featureEmoji}>💫</span>
                     <div>
-                      <strong>No Pleasant Aroma</strong>
-                      <p>Stale air & unwanted odors</p>
+                      <strong>Fading & Tarnishing</strong>
+                      <p>Cheap jewelry tarnishes after a few wears</p>
                     </div>
                   </li>
                   <li>
-                    <span className={styles.featureEmoji}>🛌</span>
+                    <span className={styles.featureEmoji}>🍃</span>
                     <div>
-                      <strong>Hard to Relax</strong>
-                      <p>Mind is restless, sleep is hard</p>
+                      <strong>Skin Irritations</strong>
+                      <p>Nickel-heavy accessories cause redness</p>
                     </div>
                   </li>
                   <li>
-                    <span className={styles.featureEmoji}>🎁</span>
+                    <span className={styles.featureEmoji}>😔</span>
                     <div>
-                      <strong>Ordinary Routine</strong>
-                      <p>Just another regular day</p>
+                      <strong>Lack of Confidence</strong>
+                      <p>Lacking that final elegant touch to stand out</p>
                     </div>
                   </li>
                 </ul>
@@ -950,11 +950,12 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
                   {/* Before (desaturated) */}
                   <div className={styles.beforeImageContainer}>
                     <img 
-                      src="/images/dull_room_bw.png" 
-                      alt="Dull Ordinary Life" 
+                      src="/images/category_banner_jewelry.png" 
+                      alt="Dull Ordinary Look" 
                       className={styles.sliderImg} 
+                      style={{ filter: 'grayscale(100%) contrast(90%) brightness(80%)' }}
                     />
-                    <div className={styles.imageLabelLeft}>DULL & GRAY</div>
+                    <div className={styles.imageLabelLeft}>PLAIN LOOK</div>
                   </div>
                   
                   {/* After (warm glow) */}
@@ -963,11 +964,11 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
                     style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
                   >
                     <img 
-                      src="/images/cozy_room_glow.png" 
-                      alt="Cozy Deeksha Ambience" 
+                      src="/images/category_banner_jewelry.png" 
+                      alt="Vibrant Deera Glow Look" 
                       className={styles.sliderImg} 
                     />
-                    <div className={styles.imageLabelRight}>DEEKSHA GLOW</div>
+                    <div className={styles.imageLabelRight}>DEERA GLOW</div>
                   </div>
 
                   {/* Drag Line divider */}
@@ -998,42 +999,42 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
                 <div className={styles.columnHeader}>
                   <span className={styles.afterBadge}>AFTER</span>
                   <h3>Deera Glow Moments</h3>
-                  <p className={styles.colSub}>Elegant. Shining. Magical.</p>
+                  <p className={styles.colSub}>Elegant. Shining. Beautiful.</p>
                 </div>
                 <ul className={styles.featuresList}>
                   <li>
                     <span className={styles.featureEmoji}>😊</span>
                     <div>
-                      <strong>Confident & Styled Look</strong>
-                      <p>Instantly feel complete & elegant</p>
-                    </div>
-                  </li>
-                  <li>
-                    <span className={styles.featureEmoji}>🏠</span>
-                    <div>
-                      <strong>Stunning Presence</strong>
-                      <p>Complements your outfit beautifully</p>
+                      <strong>Stunning Signature Look</strong>
+                      <p>Instantly feel complete, styled & graceful</p>
                     </div>
                   </li>
                   <li>
                     <span className={styles.featureEmoji}>✨</span>
                     <div>
-                      <strong>Shining Elegance</strong>
-                      <p>Long-lasting, premium polished finish</p>
+                      <strong>Compliment Magnet</strong>
+                      <p>Beautiful handcrafted details that turn heads</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span className={styles.featureEmoji}>🛡️</span>
+                    <div>
+                      <strong>Anti-Tarnish Polish</strong>
+                      <p>Stays bright with long-lasting protective coating</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span className={styles.featureEmoji}>🍃</span>
+                    <div>
+                      <strong>Skin-Friendly Comfort</strong>
+                      <p>Hypoallergenic, lead-free & nickel-free silver base</p>
                     </div>
                   </li>
                   <li>
                     <span className={styles.featureEmoji}>👑</span>
                     <div>
-                      <strong>Boosted Self-Esteem</strong>
-                      <p>Stand out and command attention</p>
-                    </div>
-                  </li>
-                  <li>
-                    <span className={styles.featureEmoji}>🎁</span>
-                    <div>
-                      <strong>Special Memories</strong>
-                      <p>Makes every celebration memorable</p>
+                      <strong>Boosted Confidence</strong>
+                      <p>Stand out and command attention in any room</p>
                     </div>
                   </li>
                 </ul>
