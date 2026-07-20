@@ -32,11 +32,14 @@ export default function AboutPage() {
             fontWeight: '300'
           }}>
             <p style={{ marginBottom: '24px' }}>
-              Welcome to <strong>Deeksha Candles</strong>. Our journey began in our small home studio, inspired by a desire to create clean-burning candles that evoke quiet mindfulness, deep focus, and relaxation.
+              Welcome to <strong>Deera Glow</strong>. Our journey began with a passion for creating elegant and affordable artificial jewelry that helps every woman express her unique style. From timeless classics to modern trends, each piece in our collection is carefully selected to bring confidence, beauty, and sophistication to your everyday look.
+
+At Deera Glow, we believe jewelry is more than just an accessory—it's a reflection of your personality. Whether you're dressing up for a wedding, festival, party, or adding a touch of elegance to your daily outfit, our thoughtfully curated collection is designed to make every moment shine.
+
             </p>
             
             <p style={{ marginBottom: '24px' }}>
-              Unlike mass-produced commercial alternatives, each Deeksha candle is hand-poured in small batches of 40 using 100% natural soy wax, premium botanical fragrance oils, and crackling wooden wicks.
+             Unlike mass-produced fashion accessories, every piece at <strong>Deera Glow</strong> is carefully selected for its quality, style, and craftsmanship. Our collection features premium artificial jewelry made with high-quality materials, elegant finishes, and trend-inspired designs, ensuring every piece adds beauty, confidence, and timeless charm to your look.
             </p>
 
             <blockquote style={{ 

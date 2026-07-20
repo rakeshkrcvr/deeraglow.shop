@@ -287,8 +287,8 @@ export default function AdminDashboard() {
   const [heroMediaTargetIndex, setHeroMediaTargetIndex] = useState<number | null>(null);
 
   // Settings States
-  const [storeName, setStoreName] = useState('Deeksha Candles');
-  const [storeEmail, setStoreEmail] = useState('contact@deekshacandles.in');
+  const [storeName, setStoreName] = useState('Deera Glow');
+  const [storeEmail, setStoreEmail] = useState('contact@deeraglow.shop');
   const [storeAddress, setStoreAddress] = useState('D-12, Lajpat Nagar, New Delhi, India');
   const [storeCurrency, setStoreCurrency] = useState('INR (₹)');
   const [isGokwikActive, setIsGokwikActive] = useState(true);
@@ -874,14 +874,14 @@ export default function AdminDashboard() {
         setFacebookPixelCode(data.facebookPixelCode || '');
         if (data.googleTagId) {
           setGoogleConnectedEmail('deeksha.candles.ads@gmail.com');
-          setGoogleSelectedAccount('Deeksha Candles - Ads Account (481-229-4820)');
+          setGoogleSelectedAccount('Deera Glow - Ads Account (481-229-4820)');
         } else {
           setGoogleConnectedEmail('');
           setGoogleSelectedAccount('');
         }
         if (data.facebookPixelId) {
           setFacebookConnectedUser('Deeksha Sharma');
-          setFacebookSelectedPixel('Deeksha Candles Pixel (ID: 928374928374829)');
+          setFacebookSelectedPixel('Deera Glow Pixel (ID: 928374928374829)');
         } else {
           setFacebookConnectedUser('');
           setFacebookSelectedPixel('');
@@ -1772,7 +1772,7 @@ export default function AdminDashboard() {
           ☰
         </button>
         <div>
-          <strong>Deeksha Candles</strong>
+          <strong>Deera Glow</strong>
           <span>Store Admin</span>
         </div>
       </div>
@@ -1793,7 +1793,7 @@ export default function AdminDashboard() {
             D
           </div>
           <div>
-            <h2 style={{ fontSize: '13px', fontWeight: '600', margin: 0 }}>Deeksha Candles</h2>
+            <h2 style={{ fontSize: '13px', fontWeight: '600', margin: 0 }}>Deera Glow</h2>
             <span style={{ fontSize: '11px', color: '#6d6d6d' }}>Store Admin</span>
           </div>
         </div>
@@ -4235,7 +4235,7 @@ export default function AdminDashboard() {
                         type="email" 
                         value={shiprocketEmail} 
                         onChange={e => setShiprocketEmail(e.target.value)} 
-                        placeholder="shipping@deekshacandles.in" 
+                        placeholder="shipping@deeraglow.shop" 
                         style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
                       />
                     </div>
@@ -4612,7 +4612,7 @@ export default function AdminDashboard() {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                               <span style={{ fontSize: '24px' }}>📈</span>
                               <div>
-                                <strong style={{ fontSize: '14px', color: '#202124', display: 'block', marginBottom: '2px' }}>Deeksha Candles - Ads Account</strong>
+                                <strong style={{ fontSize: '14px', color: '#202124', display: 'block', marginBottom: '2px' }}>Deera Glow - Ads Account</strong>
                                 <span style={{ fontSize: '12px', color: '#5f6368' }}>Conversion Tag ID: AW-10820381023</span>
                               </div>
                             </div>
@@ -4634,7 +4634,7 @@ export default function AdminDashboard() {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                               <span style={{ fontSize: '24px' }}>📊</span>
                               <div>
-                                <strong style={{ fontSize: '14px', color: '#202124', display: 'block', marginBottom: '2px' }}>Deeksha Candles - GA4 Analytics Property</strong>
+                                <strong style={{ fontSize: '14px', color: '#202124', display: 'block', marginBottom: '2px' }}>Deera Glow - GA4 Analytics Property</strong>
                                 <span style={{ fontSize: '12px', color: '#5f6368' }}>Measurement Tag ID: G-928374928</span>
                               </div>
                             </div>
@@ -4662,7 +4662,7 @@ export default function AdminDashboard() {
                           disabled={!googleTagId}
                           onClick={async () => {
                             setGoogleConnectedEmail('deeksha.candles.ads@gmail.com');
-                            setGoogleSelectedAccount(googleTagId === 'AW-10820381023' ? 'Deeksha Candles - Ads Account (481-229-4820)' : 'Deeksha Candles - GA4 Analytics Property (G-928374928)');
+                            setGoogleSelectedAccount(googleTagId === 'AW-10820381023' ? 'Deera Glow - Ads Account (481-229-4820)' : 'Deera Glow - GA4 Analytics Property (G-928374928)');
                             await handleSaveSettings({ 
                               googleTagId, 
                               googleTagCode: googleTagCode || `<!-- Google Tag (gtag.js) -->\n<script async src="https://www.googletagmanager.com/gtag/js?id=${googleTagId}"></script>\n<script>\n  window.dataLayer = window.dataLayer || [];\n  function gtag(){dataLayer.push(arguments);}\n  gtag('js', new Date());\n  gtag('config', '${googleTagId}');\n</script>`
@@ -4718,7 +4718,7 @@ export default function AdminDashboard() {
                         {/* Title & Description */}
                         <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600', color: '#1c1e21' }}>Choose Facebook Tracking Pixel</h4>
                         <p style={{ margin: '0 0 20px 0', fontSize: '13px', color: '#65676b', lineHeight: '1.4' }}>
-                          Select the Meta Pixel you want to link to your Deeksha Candles storefront. We will automatically fetch the ID and insert the required JavaScript tracking tags.
+                          Select the Meta Pixel you want to link to your Deera Glow storefront. We will automatically fetch the ID and insert the required JavaScript tracking tags.
                         </p>
 
                         {/* Pixel Selection List */}
@@ -4739,7 +4739,7 @@ export default function AdminDashboard() {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                               <span style={{ fontSize: '24px' }}>📊</span>
                               <div>
-                                <strong style={{ fontSize: '14px', color: '#1c1e21', display: 'block', marginBottom: '2px' }}>Deeksha Candles Pixel</strong>
+                                <strong style={{ fontSize: '14px', color: '#1c1e21', display: 'block', marginBottom: '2px' }}>Deera Glow Pixel</strong>
                                 <span style={{ fontSize: '12px', color: '#65676b' }}>Pixel ID: 928374928374829</span>
                               </div>
                             </div>
@@ -4796,7 +4796,7 @@ export default function AdminDashboard() {
                           disabled={!facebookPixelId}
                           onClick={async () => {
                             setFacebookConnectedUser('Deeksha Sharma');
-                            setFacebookSelectedPixel(facebookPixelId === '928374928374829' ? 'Deeksha Candles Pixel (ID: 928374928374829)' : 'Personal Test Pixel (ID: 1083948394832)');
+                            setFacebookSelectedPixel(facebookPixelId === '928374928374829' ? 'Deera Glow Pixel (ID: 928374928374829)' : 'Personal Test Pixel (ID: 1083948394832)');
                             await handleSaveSettings({ 
                               facebookPixelId, 
                               facebookPixelCode: facebookPixelCode || `<!-- Meta Pixel Code -->\n<script>\n!function(f,b,e,v,n,t,s)\n{if(f.fbq)return;n=f.fbq=function(){n.callMethod?\nn.callMethod.apply(n,arguments):n.queue.push(arguments)};\nif(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';\nn.queue=[];t=b.createElement(e);t.async=!0;\nt.src=v;s=b.getElementsByTagName(e)[0];\ns.parentNode.insertBefore(t,s)}(window, document,'script',\n'https://connect.facebook.net/en_US/fbevents.js');\nfbq('init', '${facebookPixelId}');\nfbq('track', 'PageView');\n</script>`

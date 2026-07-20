@@ -4,9 +4,9 @@ import { getStoreSettings } from "@/lib/settings";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Deeksha Candles | Luxury Hand-Poured Soy Candles",
-  description: "Experience the art of mindful living. Hand-crafted soy candles poured in small batches with natural botanicals, pure essential oils, and lead-free wicks for a clean, slow burn.",
-  metadataBase: new URL("https://deekshacandles.in"),
+ title: "Deera Glow | Premium Artificial Jewelry Online in India",
+description: "Discover the latest collection of premium artificial jewelry at Deera Glow. Shop stylish earrings, necklaces, rings, bracelets, bangles, and fashion accessories for every occasion. Affordable prices, secure payments, and fast delivery across India.",
+metadataBase: new URL("https://deeraglow.shop"),
 };
 
 export default async function RootLayout({

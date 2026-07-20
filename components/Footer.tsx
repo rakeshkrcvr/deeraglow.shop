@@ -51,7 +51,7 @@ export default function Footer() {
         <div className={styles.brandCol}>
           <Link href="/" className={styles.logo}>
             {normalizedFooterLogoUrl ? (
-              <img src={normalizedFooterLogoUrl} alt="Deeksha Candles" className={styles.logoImage} />
+              <img src={normalizedFooterLogoUrl} alt="Deera Glow" className={styles.logoImage} />
             ) : (
               <>
                 <span className={styles.logoText}>D E E K S H A</span>
@@ -177,7 +177,7 @@ export default function Footer() {
       {/* Footer Bottom */}
       <div className={styles.footerBottom}>
         <div className={`container ${styles.bottomContainer}`}>
-          <p>© {new Date().getFullYear()} Deeksha Candles. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Deera Glow. All rights reserved.</p>
           <div className={styles.handcrafted}>
             <span>Handpoured with devotion in India 🇮🇳</span>
           </div>

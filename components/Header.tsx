@@ -280,7 +280,7 @@ export default function Header() {
         key: keyId,
         amount: Math.round(estimatedTotal * 100), // amount in paisa
         currency: "INR",
-        name: "Deeksha Candles",
+        name: "Deera Glow",
         description: `Order Payment for ${cartCount} items`,
         image: "/images/hero_candle.png",
         handler: async function (response: RazorpayResponse) {
@@ -550,7 +550,7 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className={styles.logoContainer}>
             {normalizedHeaderLogoUrl ? (
-              <img src={normalizedHeaderLogoUrl} alt="Deeksha Candles" className={styles.logoImage} />
+              <img src={normalizedHeaderLogoUrl} alt="Deera Glow" className={styles.logoImage} />
             ) : (
               <>
                 <span className={styles.logoTitle}>D E E K S H A</span>
@@ -1135,7 +1135,7 @@ export default function Header() {
                   </button>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: '700', letterSpacing: '0.1em', fontFamily: 'serif' }}>DEEKSHA CANDLES</span>
+                    <span style={{ fontSize: '13px', fontWeight: '700', letterSpacing: '0.1em', fontFamily: 'serif' }}>Deera Glow</span>
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>

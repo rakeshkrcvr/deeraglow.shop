@@ -39,7 +39,7 @@ export default function AdminLoginPage() {
           
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
             <span style={{ fontSize: '10px', fontWeight: '600', letterSpacing: '0.25em', color: 'var(--accent)', textTransform: 'uppercase' }}>
-              Deeksha Candles
+              Deera Glow
             </span>
             <h1 style={{ fontSize: '28px', fontWeight: '400', margin: '8px 0 0 0', fontFamily: 'var(--font-serif)' }}>
               Studio Portal

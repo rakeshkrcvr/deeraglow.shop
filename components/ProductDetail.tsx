@@ -600,30 +600,33 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
         </div>
 
         {/* Section: Made Slow, On Purpose */}
-        <section className={styles.brandStorySection}>
-          <div className={styles.storyHeader}>
-            <span className={styles.storySubtitle}>WHY DEEKSHA CANDLES</span>
-            <h2 className={styles.storyTitle}>Made slow, on purpose</h2>
-            <div className={styles.storyLine}></div>
-          </div>
-          <div className={styles.storyGrid}>
-            <div className={styles.storyCard}>
-              <span className={styles.storyCardIcon}>🌿</span>
-              <h3>Clean burning, always</h3>
-              <p>No paraffin, no synthetic dyes, no soot. Just soy wax and real fragrance oil, safe for small rooms and sensitive noses.</p>
-            </div>
-            <div className={styles.storyCard}>
-              <span className={styles.storyCardIcon}>✋</span>
-              <h3>Poured in batches of 40</h3>
-              <p>We don&apos;t mass produce. Each batch is hand-poured, cured for two days, and hand-labelled before it ever reaches your cart.</p>
-            </div>
-            <div className={styles.storyCard}>
-              <span className={styles.storyCardIcon}>♻️</span>
-              <h3>A jar worth keeping</h3>
-              <p>Every candle ships in a reusable amber glass jar — wash it out and it becomes your next candle holder, planter, or brush pot.</p>
-            </div>
-          </div>
-        </section>
+       <section className={styles.brandStorySection}>
+  <div className={styles.storyHeader}>
+    <span className={styles.storySubtitle}>WHY DEERA GLOW</span>
+    <h2 className={styles.storyTitle}>Designed to make you shine</h2>
+    <div className={styles.storyLine}></div>
+  </div>
+
+  <div className={styles.storyGrid}>
+    <div className={styles.storyCard}>
+      <span className={styles.storyCardIcon}>✨</span>
+      <h3>Premium Quality</h3>
+      <p>Crafted with high-quality materials and fine finishes, our artificial jewelry is designed to offer lasting beauty, comfort, and everyday elegance.</p>
+    </div>
+
+    <div className={styles.storyCard}>
+      <span className={styles.storyCardIcon}>💎</span>
+      <h3>Trendy & Timeless Designs</h3>
+      <p>From everyday essentials to statement pieces, our carefully curated collection blends the latest trends with timeless elegance for every occasion.</p>
+    </div>
+
+    <div className={styles.storyCard}>
+      <span className={styles.storyCardIcon}>❤️</span>
+      <h3>Made for Every Occasion</h3>
+      <p>Whether it's a wedding, festival, party, or everyday wear, Deera Glow offers stylish jewelry that completes your look with confidence and grace.</p>
+    </div>
+  </div>
+</section>
 
         {/* Section: What Customers Are Saying */}
         <section className={styles.testimonialsSection}>
@@ -1095,7 +1098,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
         {/* Section: Instagram Video Slider */}
         <section id="instagram" className={styles.instagramSection}>
           <div className={styles.storyHeader}>
-            <span className={styles.storySubtitle}>#DEEKSHACANDLES ON INSTAGRAM</span>
+            <span className={styles.storySubtitle}># ON INSTAGRAM</span>
             <h2 className={styles.storyTitle}>Capture the Glow</h2>
             <div className={styles.storyLine}></div>
           </div>

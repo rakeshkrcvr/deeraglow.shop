@@ -45,7 +45,7 @@ export const defaultCustomerVideos: CustomerVideo[] = [
   {
     id: 'video-glow-closeup',
     title: 'Glow Close-up',
-    author: 'Deeksha Candles',
+    author: 'Deera Glow',
     duration: '0:20',
     videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-candle-flame-flickering-in-dark-room-42315-large.mp4',
     thumbnail: '/images/lavender_candle.png',

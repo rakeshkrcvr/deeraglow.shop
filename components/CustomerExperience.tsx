@@ -691,7 +691,7 @@ export default function CustomerExperience() {
         <div className="container">
           
           <div className={styles.storyHeader}>
-            <span className={styles.storySubtitle}>#DEEKSHACANDLES ON INSTAGRAM</span>
+            <span className={styles.storySubtitle}>#DEERAGLOW ON INSTAGRAM</span>
             <h2 className={styles.storyTitle}>Capture the Glow</h2>
             <div className={styles.storyLine}></div>
           </div>
