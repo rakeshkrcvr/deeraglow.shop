@@ -2,13 +2,16 @@ import React from 'react';
 import Image from 'next/image';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
+import CollectionSlider from '@/components/CollectionSlider';
 import ShopByCollection from '@/components/ShopByCollection';
+import ImageBanner from '@/components/ImageBanner';
 import AuraCollection from '@/components/AuraCollection';
 import CustomerExperience from '@/components/CustomerExperience';
 import Newsletter from '@/components/Newsletter';
 import Footer from '@/components/Footer';
 import { getProducts } from '@/lib/products';
 import { getStoreSettings } from '@/lib/settings';
+import { getSliderCollections } from '@/lib/collections';
 import styles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -16,9 +19,10 @@ export const revalidate = 0;
 export const fetchCache = 'force-no-store';
 
 export default async function Home() {
-  // Fetch products from Neon PostgreSQL
+  // Fetch products, settings and slider collections from Neon PostgreSQL
   const products = await getProducts();
   const settings = await getStoreSettings();
+  const sliderCollections = await getSliderCollections();
 
   return (
     <div className={styles.page}>
@@ -41,13 +45,25 @@ export default async function Home() {
         />
 
         {/* Shop By Collection Grid */}
-        <ShopByCollection />
+        <ShopByCollection categoriesJson={settings.contentCategoryGrid} />
+
+        {/* Promo Image Banner Section */}
+        <ImageBanner 
+          imageUrl={settings.contentPromoBannerImage} 
+          linkHref={settings.contentPromoBannerLink} 
+        />
+
+        {/* Curated Collection Slider (NEW LAUNCH) */}
+        <CollectionSlider collections={sliderCollections} />
 
         {/* Aura Collection (Pedestal Glassmorphic cards) */}
         <AuraCollection products={products} />
 
         {/* Customer Reviews, Galleries, Slider and Badges */}
-        <CustomerExperience />
+        <CustomerExperience 
+          promoBanner2Image={settings.contentPromoBanner2Image}
+          promoBanner2Link={settings.contentPromoBanner2Link}
+        />
 
         {/* Brand Philosophy / Story Section */}
         <section id="story" className={styles.storySection}>

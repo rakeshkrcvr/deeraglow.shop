@@ -17,6 +17,15 @@ export async function GET() {
       )
     `;
 
+    // 1b. Schema migrations for slider columns
+    try {
+      await sql`ALTER TABLE collections ADD COLUMN IF NOT EXISTS image_url VARCHAR(255) DEFAULT ''`;
+      await sql`ALTER TABLE collections ADD COLUMN IF NOT EXISTS show_in_slider BOOLEAN DEFAULT FALSE`;
+      await sql`ALTER TABLE collections ADD COLUMN IF NOT EXISTS slider_subtitle VARCHAR(255) DEFAULT ''`;
+    } catch (e) {
+      console.error('Migration error for collections columns:', e);
+    }
+
     // Check if we need to migrate/seed
     const existingCollections = await sql`SELECT name FROM collections` as unknown as CollectionNameRow[];
     const hasCandleCollections = existingCollections.some(c => 
@@ -105,7 +114,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, description, productIds } = body;
+    const { name, description, productIds, image_url, show_in_slider, slider_subtitle } = body;
 
     if (!name || !description) {
       return NextResponse.json({ error: 'Missing name or description' }, { status: 400 });
@@ -114,8 +123,8 @@ export async function POST(request: Request) {
     const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
     await sql`
-      INSERT INTO collections (name, description, slug)
-      VALUES (${name}, ${description}, ${slug})
+      INSERT INTO collections (name, description, slug, image_url, show_in_slider, slider_subtitle)
+      VALUES (${name}, ${description}, ${slug}, ${image_url || ''}, ${!!show_in_slider}, ${slider_subtitle || ''})
     `;
 
     // Associate product ids if provided
@@ -135,7 +144,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { id, name, description, productIds } = body;
+    const { id, name, description, productIds, image_url, show_in_slider, slider_subtitle } = body;
 
     if (!id || !name || !description) {
       return NextResponse.json({ error: 'Missing ID, name or description' }, { status: 400 });
@@ -155,7 +164,12 @@ export async function PUT(request: Request) {
     // 3. Update collection details
     await sql`
       UPDATE collections
-      SET name = ${name}, description = ${description}, slug = ${slug}
+      SET name = ${name}, 
+          description = ${description}, 
+          slug = ${slug},
+          image_url = ${image_url || ''},
+          show_in_slider = ${!!show_in_slider},
+          slider_subtitle = ${slider_subtitle || ''}
       WHERE id = ${parseInt(id, 10)}
     `;
 

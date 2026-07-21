@@ -30,7 +30,12 @@ export const defaultStoreSettings: Record<string, string> = {
   heroFloatingTag: '925 Sterling Silver',
   heroSliderImages: '["/images/hero_slide_1.png", "/images/hero_slide_2.png", "/images/hero_slide_3.png"]',
   contentBlogPosts: '[{"id":1,"title":"How to Style Minimalist Gold Jewelry","author":"Deera Sharma","date":"Jul 2, 2026","status":"Published"},{"id":2,"title":"The Ultimate Guide to Stacking Rings","author":"Deera Sharma","date":"Jun 28, 2026","status":"Published"},{"id":3,"title":"Why 925 Sterling Silver is Perfect for Daily Wear","author":"Rohan Sen","date":"Jun 24, 2026","status":"Published"}]',
-  contentNavigationMenus: '[{"id":1,"menu":"Main Menu","links":"Home - Shop - Rings - Necklaces - About Us - Blogs"},{"id":2,"menu":"Footer Collection List","links":"Rings - Bracelets - Necklaces - Earrings"},{"id":3,"menu":"Footer Scent Categories","links":"Gold Plated - Sterling Silver - Charms - Best Sellers"}]'
+  contentNavigationMenus: '[{"id":1,"menu":"Main Menu","links":"Home - Shop - Rings - Necklaces - About Us - Blogs"},{"id":2,"menu":"Footer Collection List","links":"Rings - Bracelets - Necklaces - Earrings"},{"id":3,"menu":"Footer Scent Categories","links":"Gold Plated - Sterling Silver - Charms - Best Sellers"}]',
+  contentCategoryGrid: '[{"id":"rings","title":"SHOP RINGS","link":"/category/rings","image":"/images/rings_category.png"},{"id":"bracelets","title":"SHOP BRACELETS","link":"/category/bracelets","image":"/images/bracelets_category.png"},{"id":"necklaces","title":"SHOP NECKLACES","link":"/category/necklaces","image":"/images/necklaces_category.png"},{"id":"earrings","title":"SHOP EARRINGS","link":"/category/earrings","image":"/images/earrings_category.png"},{"id":"charm","title":"SHOP CHARM","link":"/category/charms","image":"/images/charm_category.png"}]',
+  contentPromoBannerImage: '/images/category_banner_jewelry.png',
+  contentPromoBannerLink: '/category/necklaces',
+  contentPromoBanner2Image: '/images/jewelry_category_banner.png',
+  contentPromoBanner2Link: '/category/earrings'
 };
 
 export async function ensureStoreSettingsTable() {

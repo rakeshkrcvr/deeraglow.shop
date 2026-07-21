@@ -1,0 +1,236 @@
+.section {
+  padding: 60px 0 40px 0;
+  background-color: var(--background);
+  position: relative;
+  overflow: hidden;
+}
+
+.headerContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 32px;
+  padding: 0 20px;
+}
+
+.headerLine {
+  flex: 1;
+  max-width: 200px;
+  height: 1px;
+  background-color: rgba(62, 0, 48, 0.15);
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: #2c2c2c;
+  text-transform: uppercase;
+  margin: 0;
+  text-align: center;
+}
+
+/* Slider Track Wrapper */
+.sliderWrapper {
+  position: relative;
+  width: 100%;
+  padding: 0 10px;
+}
+
+.track {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  padding: 10px 5px 20px 5px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.track::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
+/* Slide Item */
+.slide {
+  flex: 0 0 calc(33.333% - 14px);
+  min-width: 310px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: transform var(--transition-normal);
+}
+
+/* Banner Card */
+.bannerCard {
+  position: relative;
+  width: 100%;
+  height: 380px;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #f0f0f0;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.bannerImage {
+  object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+
+.bannerCard:hover .bannerImage {
+  transform: scale(1.04);
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0.25) 50%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  text-align: center;
+  color: #ffffff;
+}
+
+.collectionTitle {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.2;
+  margin-bottom: 8px;
+  color: #ffffff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  letter-spacing: 0.02em;
+}
+
+.collectionSubtitle {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.04em;
+}
+
+/* Products Thumbnail Row */
+.thumbnailsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+.thumbnailCard {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #f7f7f7;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.thumbnailCard:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.thumbnailImage {
+  object-fit: cover;
+  transition: transform var(--transition-normal);
+}
+
+.thumbnailCard:hover .thumbnailImage {
+  transform: scale(1.06);
+}
+
+/* Navigation Arrow Buttons */
+.navButton {
+  position: absolute;
+  top: 190px;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: background-color var(--transition-fast), transform var(--transition-fast), opacity var(--transition-fast);
+}
+
+.navButton:hover {
+  background-color: #ffffff;
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.navPrev {
+  left: 20px;
+}
+
+.navNext {
+  right: 20px;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 1024px) {
+  .slide {
+    flex: 0 0 calc(50% - 10px);
+    min-width: 280px;
+  }
+
+  .bannerCard {
+    height: 340px;
+  }
+
+  .collectionTitle {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 40px 0 20px 0;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .slide {
+    flex: 0 0 calc(85% - 10px);
+    min-width: 260px;
+  }
+
+  .bannerCard {
+    height: 320px;
+  }
+
+  .navPrev {
+    left: 8px;
+  }
+
+  .navNext {
+    right: 8px;
+  }
+}

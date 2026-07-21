@@ -1,0 +1,37 @@
+.section {
+  padding: 40px 0;
+  background-color: var(--background);
+}
+
+.bannerWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 21 / 9; /* Ultra-wide desktop ratio */
+  min-height: 240px;
+  max-height: 480px;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  display: block;
+}
+
+.image {
+  object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+
+.bannerWrapper:hover .image {
+  transform: scale(1.015);
+}
+
+/* Tablet & Mobile tweaks */
+@media (max-width: 768px) {
+  .section {
+    padding: 20px 0;
+  }
+
+  .bannerWrapper {
+    aspect-ratio: 16 / 9;
+    min-height: 180px;
+  }
+}

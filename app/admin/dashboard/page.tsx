@@ -141,6 +141,9 @@ interface Collection {
   name: string;
   description: string;
   slug: string;
+  image_url?: string;
+  show_in_slider?: boolean;
+  slider_subtitle?: string;
 }
 
 interface MediaFile {
@@ -277,13 +280,31 @@ export default function AdminDashboard() {
   const [showBrowseModal, setShowBrowseModal] = useState(false);
   const [modalSearchQuery, setModalSearchQuery] = useState('');
   const [tempSelectedProductIds, setTempSelectedProductIds] = useState<number[]>([]);
+  const [collImageUrl, setCollImageUrl] = useState('');
+  const [collShowInSlider, setCollShowInSlider] = useState(false);
+  const [collSliderSubtitle, setCollSliderSubtitle] = useState('');
+
+  // Category Grid & Slider Collection form states for Content Tab
+  const [categoryGrid, setCategoryGrid] = useState<any[]>([
+    { id: 'rings', title: 'SHOP RINGS', link: '/category/rings', image: '/images/rings_category.png' },
+    { id: 'bracelets', title: 'SHOP BRACELETS', link: '/category/bracelets', image: '/images/bracelets_category.png' },
+    { id: 'necklaces', title: 'SHOP NECKLACES', link: '/category/necklaces', image: '/images/necklaces_category.png' },
+    { id: 'earrings', title: 'SHOP EARRINGS', link: '/category/earrings', image: '/images/earrings_category.png' },
+    { id: 'charm', title: 'SHOP CHARM', link: '/category/charms', image: '/images/charm_category.png' }
+  ]);
+  const [editingCategoryIndex, setEditingCategoryIndex] = useState<number | null>(null);
+  const [editingSliderCollectionId, setEditingSliderCollectionId] = useState<number | null>(null);
+  const [promoBannerImage, setPromoBannerImage] = useState('/images/category_banner_jewelry.png');
+  const [promoBannerLink, setPromoBannerLink] = useState('/category/necklaces');
+  const [promoBanner2Image, setPromoBanner2Image] = useState('/images/jewelry_category_banner.png');
+  const [promoBanner2Link, setPromoBanner2Link] = useState('/category/earrings');
 
   // Media Files States
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [loadingMedia, setLoadingMedia] = useState(true);
   const [mediaError, setMediaError] = useState('');
   const [showMediaModal, setShowMediaModal] = useState(false);
-  const [mediaSelectorMode, setMediaSelectorMode] = useState<'product' | 'hero' | 'general'>('product');
+  const [mediaSelectorMode, setMediaSelectorMode] = useState<'product' | 'hero' | 'general' | 'collection' | 'category' | 'slider-collection' | 'promo-banner' | 'promo-banner-2'>('product');
   const [heroMediaTargetIndex, setHeroMediaTargetIndex] = useState<number | null>(null);
 
   // Settings States
@@ -902,6 +923,20 @@ export default function AdminDashboard() {
         setHeroSecondaryButtonText(data.heroSecondaryButtonText || 'New Arrivals');
         setHeroSecondaryButtonHref(data.heroSecondaryButtonHref || '#products');
         setHeroFloatingTag(data.heroFloatingTag || '925 Sterling Silver');
+        if (data.contentCategoryGrid) {
+          try {
+            const parsed = JSON.parse(data.contentCategoryGrid);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setCategoryGrid(parsed);
+            }
+          } catch (e) {
+            console.error('Error parsing category grid settings:', e);
+          }
+        }
+        setPromoBannerImage(data.contentPromoBannerImage || '/images/category_banner_jewelry.png');
+        setPromoBannerLink(data.contentPromoBannerLink || '/category/necklaces');
+        setPromoBanner2Image(data.contentPromoBanner2Image || '/images/jewelry_category_banner.png');
+        setPromoBanner2Link(data.contentPromoBanner2Link || '/category/earrings');
         try {
           const parsedImages = JSON.parse(data.heroSliderImages || '[]');
           setHeroSliderImages(Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages.filter((image): image is string => typeof image === 'string') : ['/images/hero_slide_1.png']);
@@ -1017,6 +1052,102 @@ export default function AdminDashboard() {
     } catch (err) {
       console.error(err);
       setContentError('Network error saving content.');
+    }
+  };
+
+  const handleSaveCategoryGrid = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setContentSuccess('');
+    setContentError('');
+
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contentCategoryGrid: JSON.stringify(categoryGrid)
+        })
+      });
+
+      if (res.ok) {
+        setContentSuccess('Category banners updated successfully.');
+        await fetchSettings();
+      } else {
+        const data = await res.json().catch(() => null);
+        setContentError(data?.error || 'Failed to update category banners.');
+      }
+    } catch (err) {
+      console.error(err);
+      setContentError('Network error saving category banners.');
+    }
+  };
+
+  const handleSaveSliderCollections = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setContentSuccess('');
+    setContentError('');
+
+    try {
+      for (const coll of collections) {
+        const associatedIds = products
+          .filter(p => p.collection.toLowerCase() === coll.name.toLowerCase())
+          .map(p => p.id);
+
+        const res = await fetch('/api/admin/collections', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: coll.id,
+            name: coll.name,
+            description: coll.description,
+            productIds: associatedIds,
+            image_url: coll.image_url || '',
+            show_in_slider: !!coll.show_in_slider,
+            slider_subtitle: coll.slider_subtitle || ''
+          })
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => null);
+          throw new Error(data?.error || `Failed to update collection "${coll.name}".`);
+        }
+      }
+
+      setContentSuccess('Slider collections updated successfully.');
+      fetchCollections();
+    } catch (err) {
+      console.error(err);
+      setContentError(err instanceof Error ? err.message : 'Failed to save slider collections.');
+    }
+  };
+
+  const handleSavePromoBanner = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setContentSuccess('');
+    setContentError('');
+
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contentPromoBannerImage: promoBannerImage,
+          contentPromoBannerLink: promoBannerLink,
+          contentPromoBanner2Image: promoBanner2Image,
+          contentPromoBanner2Link: promoBanner2Link
+        })
+      });
+
+      if (res.ok) {
+        setContentSuccess('Promo banners updated successfully.');
+        await fetchSettings();
+      } else {
+        const data = await res.json().catch(() => null);
+        setContentError(data?.error || 'Failed to update promo banners.');
+      }
+    } catch (err) {
+      console.error(err);
+      setContentError('Network error saving promo banners.');
     }
   };
 
@@ -1672,9 +1803,17 @@ export default function AdminDashboard() {
 
     try {
       const method = editingCollId ? 'PUT' : 'POST';
+      const payloadData = {
+        name: collName,
+        description: collDesc,
+        productIds: selectedProductIds,
+        image_url: collImageUrl,
+        show_in_slider: collShowInSlider,
+        slider_subtitle: collSliderSubtitle
+      };
       const body = editingCollId 
-        ? { id: editingCollId, name: collName, description: collDesc, productIds: selectedProductIds }
-        : { name: collName, description: collDesc, productIds: selectedProductIds };
+        ? { id: editingCollId, ...payloadData }
+        : payloadData;
 
       const res = await fetch('/api/admin/collections', {
         method,
@@ -1685,6 +1824,10 @@ export default function AdminDashboard() {
       if (res.ok) {
         setCollName('');
         setCollDesc('');
+        setCollImageUrl('');
+        setCollShowInSlider(false);
+        setCollSliderSubtitle('');
+        setSelectedProductIds([]);
         setEditingCollId(null);
         setShowCollForm(false);
         fetchCollections();
@@ -1702,6 +1845,9 @@ export default function AdminDashboard() {
     setCollName(coll.name);
     setCollDesc(coll.description);
     setEditingCollId(coll.id);
+    setCollImageUrl(coll.image_url || '');
+    setCollShowInSlider(!!coll.show_in_slider);
+    setCollSliderSubtitle(coll.slider_subtitle || '');
     
     // Find products currently in this collection
     const associatedIds = products
@@ -2793,6 +2939,10 @@ export default function AdminDashboard() {
                 onClick={() => {
                   setCollName('');
                   setCollDesc('');
+                  setCollImageUrl('');
+                  setCollShowInSlider(false);
+                  setCollSliderSubtitle('');
+                  setSelectedProductIds([]);
                   setEditingCollId(null);
                   setShowCollForm(!showCollForm);
                 }}
@@ -2823,6 +2973,75 @@ export default function AdminDashboard() {
                       style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'none' }}
                     />
                   </div>
+
+                  {/* Collection Banner Image & Homepage Slider Options */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Collection Image / Banner</label>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <input 
+                        type="text" 
+                        value={collImageUrl} 
+                        onChange={e => setCollImageUrl(e.target.value)} 
+                        placeholder="Image URL or browse uploaded media"
+                        style={{ flexGrow: 1, padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                      />
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          setMediaSelectorMode('collection');
+                          setModalSearchQuery('');
+                          setShowMediaModal(true);
+                        }}
+                        style={{ 
+                          backgroundColor: '#ffffff', 
+                          border: '1px solid #cccccc', 
+                          borderRadius: '6px', 
+                          padding: '8px 16px', 
+                          fontSize: '13px',
+                          fontWeight: '600', 
+                          color: '#1a1a1a',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Browse Media
+                      </button>
+                    </div>
+                    {collImageUrl && (
+                      <div style={{ marginTop: '8px' }}>
+                        <img 
+                          src={collImageUrl} 
+                          alt="Collection Preview" 
+                          style={{ height: '80px', borderRadius: '6px', objectFit: 'cover' }} 
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                    <input 
+                      type="checkbox" 
+                      id="show-in-slider-checkbox"
+                      checked={collShowInSlider} 
+                      onChange={e => setCollShowInSlider(e.target.checked)} 
+                      style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                    />
+                    <label htmlFor="show-in-slider-checkbox" style={{ fontWeight: '600', color: '#1a1a1a', cursor: 'pointer' }}>
+                      ✨ Show in Homepage Collection Slider
+                    </label>
+                  </div>
+
+                  {collShowInSlider && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Slider Tagline / Subtitle</label>
+                      <input 
+                        type="text" 
+                        value={collSliderSubtitle} 
+                        onChange={e => setCollSliderSubtitle(e.target.value)} 
+                        placeholder="e.g. Jewels That Flow With You"
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                      />
+                    </div>
+                  )}
 
                   {/* Products Association Section (Shopify Style) */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
@@ -3120,10 +3339,22 @@ export default function AdminDashboard() {
                 <p style={{ color: '#9e9e9e', fontSize: '13px' }}>No collections configured.</p>
               ) : (
                 collections.map((coll) => (
-                  <div key={coll.id} style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '12px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div key={coll.id} style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div>
+                      {coll.image_url && (
+                        <div style={{ width: '100%', height: '110px', borderRadius: '8px', overflow: 'hidden', marginBottom: '12px', backgroundColor: '#f5f5f5' }}>
+                          <img src={coll.image_url} alt={coll.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                      )}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                        <h3 style={{ fontSize: '16px', fontWeight: '600', margin: 0, color: '#3E0030' }}>{coll.name}</h3>
+                        <div>
+                          <h3 style={{ fontSize: '16px', fontWeight: '600', margin: 0, color: '#3E0030' }}>{coll.name}</h3>
+                          {coll.show_in_slider && (
+                            <span style={{ fontSize: '10px', color: '#ffffff', backgroundColor: '#9c27b0', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold', display: 'inline-block', marginTop: '4px' }}>
+                              Slider Active
+                            </span>
+                          )}
+                        </div>
                         <div style={{ display: 'flex', gap: '10px' }}>
                           <button 
                             onClick={() => handleEditCollectionClick(coll)}
@@ -3908,6 +4139,279 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </form>
+
+            {/* Promo Banner Editor Section */}
+            <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', marginTop: '32px' }}>
+              <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>
+                🖼️ Promo Image Banners
+              </h3>
+              <form onSubmit={handleSavePromoBanner} style={{ display: 'flex', flexDirection: 'column', gap: '24px', fontSize: '13px' }}>
+                
+                {/* Banner 1 */}
+                <div style={{ padding: '16px', border: '1px solid #e3e3e3', borderRadius: '8px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600' }}>Promo Banner 1 (Above New Launch Slider)</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Banner Target Link</label>
+                      <input 
+                        value={promoBannerLink} 
+                        onChange={e => setPromoBannerLink(e.target.value)} 
+                        placeholder="e.g. /category/necklaces"
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Banner Image URL</label>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <input 
+                          value={promoBannerImage} 
+                          onChange={e => setPromoBannerImage(e.target.value)} 
+                          placeholder="Image URL or browse"
+                          style={{ flexGrow: 1, padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                        />
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            setModalSearchQuery('');
+                            setMediaSelectorMode('promo-banner');
+                            setShowMediaModal(true);
+                          }}
+                          style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                        >
+                          Browse Media
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  {promoBannerImage && (
+                    <div style={{ marginTop: '12px' }}>
+                      <img 
+                        src={promoBannerImage} 
+                        alt="Banner 1 Preview" 
+                        style={{ width: '100%', maxHeight: '120px', borderRadius: '6px', objectFit: 'cover' }} 
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Banner 2 */}
+                <div style={{ padding: '16px', border: '1px solid #e3e3e3', borderRadius: '8px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600' }}>Promo Banner 2 (Above Before vs After comparison)</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Banner Target Link</label>
+                      <input 
+                        value={promoBanner2Link} 
+                        onChange={e => setPromoBanner2Link(e.target.value)} 
+                        placeholder="e.g. /category/earrings"
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Banner Image URL</label>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <input 
+                          value={promoBanner2Image} 
+                          onChange={e => setPromoBanner2Image(e.target.value)} 
+                          placeholder="Image URL or browse"
+                          style={{ flexGrow: 1, padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                        />
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            setModalSearchQuery('');
+                            setMediaSelectorMode('promo-banner-2');
+                            setShowMediaModal(true);
+                          }}
+                          style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                        >
+                          Browse Media
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  {promoBanner2Image && (
+                    <div style={{ marginTop: '12px' }}>
+                      <img 
+                        src={promoBanner2Image} 
+                        alt="Banner 2 Preview" 
+                        style={{ width: '100%', maxHeight: '120px', borderRadius: '6px', objectFit: 'cover' }} 
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <button 
+                  type="submit" 
+                  style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', alignSelf: 'flex-start' }}
+                >
+                  Save Promo Banners
+                </button>
+              </form>
+            </div>
+
+            {/* Banners & Collection Slider Editors Row */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginTop: '32px', alignItems: 'start' }}>
+              
+              {/* Card 1: Home Category Banners */}
+              <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>
+                  🛍️ Home Category Banners
+                </h3>
+                <form onSubmit={handleSaveCategoryGrid} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {categoryGrid.map((cat, index) => (
+                    <div key={cat.id} style={{ display: 'grid', gridTemplateColumns: '64px 1fr', gap: '14px', alignItems: 'center', padding: '10px', border: '1px solid #e3e3e3', borderRadius: '8px' }}>
+                      <div style={{ position: 'relative', width: '64px', height: '64px', borderRadius: '6px', overflow: 'hidden', backgroundColor: '#f6f6f6' }}>
+                        {cat.image ? (
+                          <img src={cat.image} alt={cat.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#ccc', fontSize: '10px' }}>No Image</div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <input 
+                            value={cat.title} 
+                            onChange={(e) => {
+                              const next = [...categoryGrid];
+                              next[index] = { ...next[index], title: e.target.value };
+                              setCategoryGrid(next);
+                            }}
+                            placeholder="Title (e.g. SHOP RINGS)"
+                            style={{ flexGrow: 1, padding: '6px 10px', border: '1px solid #ccc', borderRadius: '6px' }}
+                          />
+                          <input 
+                            value={cat.link} 
+                            onChange={(e) => {
+                              const next = [...categoryGrid];
+                              next[index] = { ...next[index], link: e.target.value };
+                              setCategoryGrid(next);
+                            }}
+                            placeholder="Link"
+                            style={{ width: '130px', padding: '6px 10px', border: '1px solid #ccc', borderRadius: '6px' }}
+                          />
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <input 
+                            value={cat.image} 
+                            onChange={(e) => {
+                              const next = [...categoryGrid];
+                              next[index] = { ...next[index], image: e.target.value };
+                              setCategoryGrid(next);
+                            }}
+                            placeholder="Image URL"
+                            style={{ flexGrow: 1, padding: '6px 10px', border: '1px solid #ccc', borderRadius: '6px' }}
+                          />
+                          <button 
+                            type="button" 
+                            onClick={() => {
+                              setModalSearchQuery('');
+                              setMediaSelectorMode('category');
+                              setEditingCategoryIndex(index);
+                              setShowMediaModal(true);
+                            }}
+                            style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                          >
+                            Browse
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <button 
+                    type="submit" 
+                    style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', alignSelf: 'flex-start' }}
+                  >
+                    Save Category Banners
+                  </button>
+                </form>
+              </div>
+
+              {/* Card 2: New Launch Slider Collections */}
+              <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>
+                  ✨ New Launch Slider Banners
+                </h3>
+                <form onSubmit={handleSaveSliderCollections} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {collections.length === 0 ? (
+                    <p style={{ margin: 0, color: '#8c8c8c', fontSize: '13px' }}>No collections found. Configure them in Collections tab first.</p>
+                  ) : (
+                    collections.map((coll) => (
+                      <div key={coll.id} style={{ display: 'grid', gridTemplateColumns: '64px 1fr', gap: '14px', alignItems: 'center', padding: '10px', border: '1px solid #e3e3e3', borderRadius: '8px' }}>
+                        <div style={{ position: 'relative', width: '64px', height: '64px', borderRadius: '6px', overflow: 'hidden', backgroundColor: '#f6f6f6' }}>
+                          {coll.image_url ? (
+                            <img src={coll.image_url} alt={coll.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#ccc', fontSize: '10px' }}>No Image</div>
+                          )}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <strong style={{ fontSize: '13px', color: '#1a1a1a' }}>{coll.name}</strong>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontWeight: '600' }}>
+                              <input 
+                                type="checkbox"
+                                checked={!!coll.show_in_slider}
+                                onChange={(e) => {
+                                  setCollections(prev => prev.map(c => 
+                                    c.id === coll.id ? { ...c, show_in_slider: e.target.checked } : c
+                                  ));
+                                }}
+                                style={{ cursor: 'pointer' }}
+                              />
+                              Show in Slider
+                            </label>
+                          </div>
+                          <input 
+                            value={coll.slider_subtitle || ''} 
+                            onChange={(e) => {
+                              setCollections(prev => prev.map(c => 
+                                c.id === coll.id ? { ...c, slider_subtitle: e.target.value } : c
+                              ));
+                            }}
+                            placeholder="Slider Tagline (e.g. Jewels That Flow With You)"
+                            style={{ padding: '6px 10px', border: '1px solid #ccc', borderRadius: '6px' }}
+                          />
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <input 
+                              value={coll.image_url || ''} 
+                              onChange={(e) => {
+                                setCollections(prev => prev.map(c => 
+                                  c.id === coll.id ? { ...c, image_url: e.target.value } : c
+                                ));
+                              }}
+                              placeholder="Image URL"
+                              style={{ flexGrow: 1, padding: '6px 10px', border: '1px solid #ccc', borderRadius: '6px' }}
+                            />
+                            <button 
+                              type="button" 
+                              onClick={() => {
+                                setModalSearchQuery('');
+                                setMediaSelectorMode('slider-collection');
+                                setEditingSliderCollectionId(coll.id);
+                                setShowMediaModal(true);
+                              }}
+                              style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                            >
+                              Browse
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                  {collections.length > 0 && (
+                    <button 
+                      type="submit" 
+                      style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', alignSelf: 'flex-start' }}
+                    >
+                      Save Slider Collections
+                    </button>
+                  )}
+                </form>
+              </div>
+
+            </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginTop: '32px' }}>
               <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px' }}>
@@ -5856,6 +6360,33 @@ export default function AdminDashboard() {
                             setGalleryImages((prev) => [...prev.filter(img => img !== '/images/hero_candle.png'), data.url]);
                           } else if (mediaSelectorMode === 'hero') {
                             applyHeroImageSelection(data.url);
+                          } else if (mediaSelectorMode === 'collection') {
+                            setCollImageUrl(data.url);
+                          } else if (mediaSelectorMode === 'category') {
+                            if (editingCategoryIndex !== null) {
+                              setCategoryGrid(prev => {
+                                const next = [...prev];
+                                next[editingCategoryIndex] = {
+                                  ...next[editingCategoryIndex],
+                                  image: data.url
+                                };
+                                return next;
+                              });
+                              setEditingCategoryIndex(null);
+                            }
+                          } else if (mediaSelectorMode === 'slider-collection') {
+                            if (editingSliderCollectionId !== null) {
+                              setCollections(prev => prev.map(c => 
+                                c.id === editingSliderCollectionId 
+                                  ? { ...c, image_url: data.url } 
+                                  : c
+                              ));
+                              setEditingSliderCollectionId(null);
+                            }
+                          } else if (mediaSelectorMode === 'promo-banner') {
+                            setPromoBannerImage(data.url);
+                          } else if (mediaSelectorMode === 'promo-banner-2') {
+                            setPromoBanner2Image(data.url);
                           }
                           await fetchMediaFiles();
                           setShowMediaModal(false);
@@ -5900,6 +6431,33 @@ export default function AdminDashboard() {
                           });
                         } else if (mediaSelectorMode === 'hero') {
                           applyHeroImageSelection(file.url);
+                        } else if (mediaSelectorMode === 'collection') {
+                          setCollImageUrl(file.url);
+                        } else if (mediaSelectorMode === 'category') {
+                          if (editingCategoryIndex !== null) {
+                            setCategoryGrid(prev => {
+                              const next = [...prev];
+                              next[editingCategoryIndex] = {
+                                ...next[editingCategoryIndex],
+                                image: file.url
+                              };
+                              return next;
+                            });
+                            setEditingCategoryIndex(null);
+                          }
+                        } else if (mediaSelectorMode === 'slider-collection') {
+                          if (editingSliderCollectionId !== null) {
+                            setCollections(prev => prev.map(c => 
+                              c.id === editingSliderCollectionId 
+                                ? { ...c, image_url: file.url } 
+                                : c
+                            ));
+                            setEditingSliderCollectionId(null);
+                          }
+                        } else if (mediaSelectorMode === 'promo-banner') {
+                          setPromoBannerImage(file.url);
+                        } else if (mediaSelectorMode === 'promo-banner-2') {
+                          setPromoBanner2Image(file.url);
                         }
                         setShowMediaModal(false);
                       }}

@@ -5,8 +5,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import styles from './ShopByCollection.module.css';
 
-export default function ShopByCollection() {
-  const categories = [
+interface ShopByCollectionProps {
+  categoriesJson?: string;
+}
+
+export default function ShopByCollection({ categoriesJson }: ShopByCollectionProps) {
+  const defaultCategories = [
     {
       id: 'rings',
       title: 'SHOP RINGS',
@@ -44,11 +48,18 @@ export default function ShopByCollection() {
     }
   ];
 
+  const categories = categoriesJson
+    ? JSON.parse(categoriesJson).map((cat: any) => ({
+        ...cat,
+        className: styles[`${cat.id}Card`] || styles.card
+      }))
+    : defaultCategories;
+
   return (
     <section className={styles.section} id="shop-by-collection">
       <div className="container">
         <div className={styles.grid}>
-          {categories.map((cat) => (
+          {categories.map((cat: any) => (
             <Link key={cat.id} href={cat.link} className={`${styles.card} ${cat.className}`}>
               <div className={styles.imageContainer}>
                 <Image 

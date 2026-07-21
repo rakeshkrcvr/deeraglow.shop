@@ -21,6 +21,7 @@ import {
   normalizeCustomerVideos
 } from '@/lib/customerVideos';
 import styles from './CustomerExperience.module.css';
+import ImageBanner from './ImageBanner';
 
 interface ReviewFormData {
   name: string;
@@ -31,7 +32,12 @@ interface ReviewFormData {
   verified: boolean;
 }
 
-export default function CustomerExperience() {
+interface CustomerExperienceProps {
+  promoBanner2Image?: string;
+  promoBanner2Link?: string;
+}
+
+export default function CustomerExperience({ promoBanner2Image, promoBanner2Link }: CustomerExperienceProps) {
   // Modal & Slide States
   const [isReviewModalOpen, setIsReviewModalOpen] = useState<boolean>(false);
   const [isPhotoGalleryOpen, setIsPhotoGalleryOpen] = useState<boolean>(false);
@@ -482,6 +488,12 @@ export default function CustomerExperience() {
 
         </div>
       </section>
+
+      {/* Section: Promo Image Banner 2 */}
+      <ImageBanner 
+        imageUrl={promoBanner2Image}
+        linkHref={promoBanner2Link}
+      />
 
       {/* Section: Before vs After Deera Glow */}
       <section className={styles.comparisonSection}>
