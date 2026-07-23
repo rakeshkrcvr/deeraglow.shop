@@ -31,12 +31,12 @@ export default function BlogsPage() {
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#3E0030' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#3e0030' }}>
       <Header />
-      
+
       <main style={{ flexGrow: 1, padding: '100px 0', color: '#FAF8F5' }}>
         <div className="container" style={{ maxWidth: '900px' }}>
-          
+
           <div style={{ textAlign: 'center', marginBottom: '60px' }}>
             <span style={{ fontSize: '12px', fontWeight: '600', letterSpacing: '0.2em', color: 'var(--accent)', textTransform: 'uppercase' }}>
               The Journal
@@ -49,11 +49,11 @@ export default function BlogsPage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
             {blogs.map((blog, idx) => (
-              <div 
+              <div
                 key={idx}
-                style={{ 
-                  background: 'rgba(62, 0, 48, 0.35)', 
-                  backdropFilter: 'blur(16px)', 
+                style={{
+                  background: 'rgba(62, 0, 48, 0.35)',
+                  backdropFilter: 'blur(16px)',
                   border: '1px solid rgba(250, 248, 245, 0.08)',
                   padding: '36px',
                   borderRadius: '20px',
@@ -65,23 +65,23 @@ export default function BlogsPage() {
                   <span>{blog.date}</span>
                   <span>{blog.readTime}</span>
                 </div>
-                
+
                 <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '24px', fontWeight: '400', color: '#ffffff', marginBottom: '12px' }}>
                   {blog.title}
                 </h2>
-                
+
                 <p style={{ fontSize: '14px', color: 'rgba(250, 248, 245, 0.65)', lineHeight: '1.6', marginBottom: '24px', fontWeight: '300' }}>
                   {blog.excerpt}
                 </p>
 
-                <Link 
+                <Link
                   href={`/blogs`}
                   onClick={() => alert("Blog reading functionality coming soon in the next release!")}
-                  style={{ 
-                    fontSize: '12px', 
-                    fontWeight: '600', 
-                    letterSpacing: '0.05em', 
-                    textTransform: 'uppercase', 
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
                     color: 'var(--accent)',
                     borderBottom: '1px solid var(--accent)',
                     paddingBottom: '2px'

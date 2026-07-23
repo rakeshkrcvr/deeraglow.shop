@@ -159,7 +159,7 @@ export default function AdminDashboard() {
   const [authorized, setAuthorized] = useState(false);
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   const [activeTab, setActiveTab] = useState<AdminTab>('orders');
-  
+
   // Collapsible Dropdown States
   const [isOrdersExpanded, setIsOrdersExpanded] = useState(false);
   const [isProductsExpanded, setIsProductsExpanded] = useState(false);
@@ -207,7 +207,7 @@ export default function AdminDashboard() {
     link: '',
     verified: true
   });
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingOrders, setLoadingOrders] = useState(true);
@@ -215,7 +215,7 @@ export default function AdminDashboard() {
   const [loadingAbandoned, setLoadingAbandoned] = useState(true);
   const [loadingDiscounts, setLoadingDiscounts] = useState(true);
   const [loadingCollections, setLoadingCollections] = useState(true);
-  
+
   const router = useRouter();
 
   // New Product Form States
@@ -314,7 +314,7 @@ export default function AdminDashboard() {
   const [storeCurrency, setStoreCurrency] = useState('INR (₹)');
   const [isGokwikActive, setIsGokwikActive] = useState(true);
   const [isCodActive, setIsCodActive] = useState(true);
-  
+
   // Integration API states
   const [razorpayKeyId, setRazorpayKeyId] = useState('');
   const [razorpayKeySecret, setRazorpayKeySecret] = useState('');
@@ -956,7 +956,7 @@ export default function AdminDashboard() {
               typeof post.status === 'string'
             )));
           }
-        } catch {}
+        } catch { }
         try {
           const parsedMenus = JSON.parse(data.contentNavigationMenus || '[]');
           if (Array.isArray(parsedMenus)) {
@@ -968,7 +968,7 @@ export default function AdminDashboard() {
               typeof menu.links === 'string'
             )));
           }
-        } catch {}
+        } catch { }
       }
     } catch (err) {
       console.error(err);
@@ -1272,7 +1272,7 @@ export default function AdminDashboard() {
 
       if (res.ok) {
         setFormSuccess(editingProductId ? 'Product updated successfully!' : 'Product added successfully!');
-        
+
         const resetForm = () => {
           setName('');
           setPrice('');
@@ -1319,7 +1319,7 @@ export default function AdminDashboard() {
     } else {
       setGalleryImages([prod.image_url || '/images/category_banner_jewelry.png']);
     }
-    
+
     // Set custom spec states
     setTagline(prod.tagline || '100% tarnish-free — 925 sterling silver — premium cubic zirconia');
     setFragrances(prod.fragrances || '925 Sterling Silver, Gold Plated, Cubic Zirconia');
@@ -1456,7 +1456,7 @@ export default function AdminDashboard() {
   const handleBulkDelete = async () => {
     if (selectedCatalogProductIds.length === 0) return;
     if (!confirm(`Move ${selectedCatalogProductIds.length} products to trash? They will not show on the live store.`)) return;
-    
+
     setLoadingProducts(true);
     try {
       let successCount = 0;
@@ -1537,15 +1537,15 @@ export default function AdminDashboard() {
       alert("Please specify at least one field to update.");
       return;
     }
-    
+
     setBulkUpdating(true);
     try {
       let successCount = 0;
-      
+
       for (const id of selectedCatalogProductIds) {
         const prod = products.find(p => p.id === id);
         if (!prod) continue;
-        
+
         const payload = {
           id: prod.id,
           name: prod.name,
@@ -1565,18 +1565,18 @@ export default function AdminDashboard() {
           acc_shipping: prod.acc_shipping || 'Free standard shipping...',
           images: prod.images || ''
         };
-        
+
         const res = await fetch('/api/admin/products', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        
+
         if (res.ok) {
           successCount++;
         }
       }
-      
+
       setBulkPrice('');
       setBulkCollection('');
       setShowBulkEditModal(false);
@@ -1733,15 +1733,15 @@ export default function AdminDashboard() {
     const nextPosts = editingPostId
       ? blogPosts.map(post => post.id === editingPostId ? { ...post, title: newPostTitle, author: newPostAuthor, date: formattedDate, status: newPostStatus } : post)
       : [
-          {
-            id: blogPosts.length > 0 ? Math.max(...blogPosts.map(post => post.id)) + 1 : 1,
-            title: newPostTitle,
-            author: newPostAuthor,
-            date: formattedDate,
-            status: newPostStatus
-          },
-          ...blogPosts
-        ];
+        {
+          id: blogPosts.length > 0 ? Math.max(...blogPosts.map(post => post.id)) + 1 : 1,
+          title: newPostTitle,
+          author: newPostAuthor,
+          date: formattedDate,
+          status: newPostStatus
+        },
+        ...blogPosts
+      ];
 
     setBlogPosts(nextPosts);
     await saveContentLists(nextPosts, navigationMenus);
@@ -1776,13 +1776,13 @@ export default function AdminDashboard() {
     const nextMenus = editingNavMenuId
       ? navigationMenus.map(menu => menu.id === editingNavMenuId ? { ...menu, menu: navMenuName, links: navMenuLinks } : menu)
       : [
-          ...navigationMenus,
-          {
-            id: navigationMenus.length > 0 ? Math.max(...navigationMenus.map(menu => menu.id)) + 1 : 1,
-            menu: navMenuName,
-            links: navMenuLinks
-          }
-        ];
+        ...navigationMenus,
+        {
+          id: navigationMenus.length > 0 ? Math.max(...navigationMenus.map(menu => menu.id)) + 1 : 1,
+          menu: navMenuName,
+          links: navMenuLinks
+        }
+      ];
 
     setNavigationMenus(nextMenus);
     await saveContentLists(blogPosts, nextMenus);
@@ -1811,7 +1811,7 @@ export default function AdminDashboard() {
         show_in_slider: collShowInSlider,
         slider_subtitle: collSliderSubtitle
       };
-      const body = editingCollId 
+      const body = editingCollId
         ? { id: editingCollId, ...payloadData }
         : payloadData;
 
@@ -1848,13 +1848,13 @@ export default function AdminDashboard() {
     setCollImageUrl(coll.image_url || '');
     setCollShowInSlider(!!coll.show_in_slider);
     setCollSliderSubtitle(coll.slider_subtitle || '');
-    
+
     // Find products currently in this collection
     const associatedIds = products
       .filter(p => p.collection.toLowerCase() === coll.name.toLowerCase())
       .map(p => p.id);
     setSelectedProductIds(associatedIds);
-    
+
     setShowCollForm(true);
   };
 
@@ -1929,13 +1929,13 @@ export default function AdminDashboard() {
         className={`admin-sidebar-scrim ${isSidebarOpen ? 'is-open' : ''}`}
         onClick={() => setIsSidebarOpen(false)}
       />
-      
+
       {/* 1. Left Shopify Sidebar */}
       <aside className={`admin-sidebar ${isSidebarOpen ? 'is-open' : ''}`} style={{ width: '240px', backgroundColor: '#ebebeb', borderRight: '1px solid #dcdcdc', display: 'flex', flexDirection: 'column', padding: '16px 0', flexShrink: 0 }}>
-        
+
         {/* Brand/Store Indicator */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 16px 20px 16px', borderBottom: '1px solid #dcdcdc', marginBottom: '16px' }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '4px', backgroundColor: '#3E0030', color: '#c5a880', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '14px' }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '4px', backgroundColor: '#3e0030', color: '#c5a880', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '14px' }}>
             D
           </div>
           <div>
@@ -1946,7 +1946,7 @@ export default function AdminDashboard() {
 
         {/* Sidebar Navigation Links */}
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '2px', flexGrow: 1, padding: '0 8px', overflowY: 'auto' }}>
-          
+
           {/* Orders Collapsible Header */}
           <button
             onClick={() => {
@@ -2331,18 +2331,18 @@ export default function AdminDashboard() {
 
         {/* Logout */}
         <div style={{ padding: '0 16px' }}>
-          <button 
+          <button
             onClick={handleLogout}
-            style={{ 
-              width: '100%', 
-              padding: '10px', 
-              borderRadius: '8px', 
-              border: '1px solid #dcdcdc', 
-              background: '#ffffff', 
-              color: '#ff4d4d', 
-              fontSize: '13px', 
-              fontWeight: '600', 
-              cursor: 'pointer' 
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: '8px',
+              border: '1px solid #dcdcdc',
+              background: '#ffffff',
+              color: '#ff4d4d',
+              fontSize: '13px',
+              fontWeight: '600',
+              cursor: 'pointer'
             }}
           >
             Sign Out
@@ -2352,7 +2352,7 @@ export default function AdminDashboard() {
 
       {/* 2. Main Area */}
       <main className="admin-main" style={{ flexGrow: 1, padding: '32px 40px', overflowY: 'auto' }}>
-        
+
         {/* TAB 1: ORDERS DASHBOARD */}
         {activeTab === 'orders' && (
           <div>
@@ -2362,7 +2362,7 @@ export default function AdminDashboard() {
                 <span style={{ fontSize: '24px' }}>📥</span>
                 <h1 style={{ fontSize: '20px', fontWeight: '700', margin: 0 }}>Orders</h1>
               </div>
-              
+
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button style={{ backgroundColor: '#ffffff', border: '1px solid #ccc', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
                   Export
@@ -2370,7 +2370,7 @@ export default function AdminDashboard() {
                 <button style={{ backgroundColor: '#ffffff', border: '1px solid #ccc', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
                   More actions ▾
                 </button>
-                <button 
+                <button
                   onClick={() => alert("Quick order creation popup is under maintenance.")}
                   style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}
                 >
@@ -2403,14 +2403,14 @@ export default function AdminDashboard() {
 
             {/* Main Orders Table */}
             <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-              
+
               {/* Filter bar */}
               <div style={{ display: 'flex', borderBottom: '1px solid #e3e3e3', padding: '12px 16px', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <span style={{ fontSize: '13px', fontWeight: '600', borderBottom: '2px solid #1a1a1a', paddingBottom: '14px', marginBottom: '-13px' }}>All</span>
-                  <input 
-                    type="text" 
-                    placeholder="🔍 Search and filter orders..." 
+                  <input
+                    type="text"
+                    placeholder="🔍 Search and filter orders..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     style={{ marginLeft: '16px', padding: '6px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '13px', width: '280px' }}
@@ -2446,7 +2446,7 @@ export default function AdminDashboard() {
                         <td colSpan={10} style={{ padding: '24px', textAlign: 'center', color: '#9e9e9e' }}>No matching orders found.</td>
                       </tr>
                     ) : (
-                      orders.filter(order => 
+                      orders.filter(order =>
                         order.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
                         order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
                         order.channel.toLowerCase().includes(searchQuery.toLowerCase())
@@ -2464,10 +2464,10 @@ export default function AdminDashboard() {
                           <td style={{ padding: '12px 16px' }}>{order.customer}</td>
                           <td style={{ padding: '12px 16px', color: '#6d6d6d' }}>{order.channel}</td>
                           <td style={{ padding: '12px 16px', fontWeight: '600' }}>{order.total_price}</td>
-                          
+
                           {/* Payment status badge */}
                           <td style={{ padding: '12px 16px' }}>
-                            <span style={{ 
+                            <span style={{
                               fontSize: '11px',
                               fontWeight: '600',
                               padding: '4px 8px',
@@ -2481,7 +2481,7 @@ export default function AdminDashboard() {
 
                           {/* Fulfillment status badge */}
                           <td style={{ padding: '12px 16px' }}>
-                            <span style={{ 
+                            <span style={{
                               fontSize: '11px',
                               fontWeight: '600',
                               padding: '4px 8px',
@@ -2494,11 +2494,11 @@ export default function AdminDashboard() {
                           </td>
 
                           <td style={{ padding: '12px 16px', color: '#6d6d6d' }}>{order.items_count}</td>
-                          
+
                           {/* Delivery status badge */}
                           <td style={{ padding: '12px 16px' }}>
                             {order.delivery_status ? (
-                              <span style={{ 
+                              <span style={{
                                 fontSize: '11px',
                                 fontWeight: '600',
                                 padding: '4px 8px',
@@ -2732,8 +2732,8 @@ export default function AdminDashboard() {
                 <span style={{ fontSize: '24px' }}>📝</span>
                 <h1 style={{ fontSize: '20px', fontWeight: '700', margin: 0 }}>Draft Orders</h1>
               </div>
-              
-              <button 
+
+              <button
                 onClick={() => setShowDraftModal(true)}
                 style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}
               >
@@ -2808,7 +2808,7 @@ export default function AdminDashboard() {
                           </td>
                           <td style={{ padding: '12px 16px', color: '#6d6d6d' }}>{draft.items_count}</td>
                           <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                            <button 
+                            <button
                               onClick={() => handleCompleteDraft(draft.id)}
                               style={{ backgroundColor: '#2d5c4d', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '6px 12px', fontSize: '11px', fontWeight: '600', cursor: 'pointer' }}
                             >
@@ -2879,10 +2879,10 @@ export default function AdminDashboard() {
                           <td style={{ padding: '12px 16px', color: '#6d6d6d' }}>{checkout.email}</td>
                           <td style={{ padding: '12px 16px', fontWeight: '600' }}>{checkout.total_price}</td>
                           <td style={{ padding: '12px 16px', color: '#6d6d6d' }}>{checkout.items_count}</td>
-                          
+
                           {/* Recovery status badge */}
                           <td style={{ padding: '12px 16px' }}>
-                            <span style={{ 
+                            <span style={{
                               fontSize: '11px',
                               fontWeight: '600',
                               padding: '4px 8px',
@@ -2895,20 +2895,20 @@ export default function AdminDashboard() {
                           </td>
 
                           <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                            <button 
+                            <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleSendRecoveryEmail(checkout.id, checkout.email);
                               }}
-                              style={{ 
-                                backgroundColor: checkout.recovery_status === 'Sent' ? '#e3e3e3' : '#1a1a1a', 
-                                color: checkout.recovery_status === 'Sent' ? '#6d6d6d' : '#ffffff', 
-                                border: 'none', 
-                                borderRadius: '4px', 
-                                padding: '6px 12px', 
-                                fontSize: '11px', 
-                                fontWeight: '600', 
-                                cursor: checkout.recovery_status === 'Sent' ? 'not-allowed' : 'pointer' 
+                              style={{
+                                backgroundColor: checkout.recovery_status === 'Sent' ? '#e3e3e3' : '#1a1a1a',
+                                color: checkout.recovery_status === 'Sent' ? '#6d6d6d' : '#ffffff',
+                                border: 'none',
+                                borderRadius: '4px',
+                                padding: '6px 12px',
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                cursor: checkout.recovery_status === 'Sent' ? 'not-allowed' : 'pointer'
                               }}
                               disabled={checkout.recovery_status === 'Sent'}
                             >
@@ -2935,7 +2935,7 @@ export default function AdminDashboard() {
                 <span style={{ fontSize: '24px' }}>🕯️</span>
                 <h1 style={{ fontSize: '20px', fontWeight: '700', margin: 0 }}>Collections</h1>
               </div>
-              <button 
+              <button
                 onClick={() => {
                   setCollName('');
                   setCollDesc('');
@@ -2961,14 +2961,14 @@ export default function AdminDashboard() {
                 <form onSubmit={handleSaveCollection} style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '300px' }}>
                     <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Collection Name</label>
-                    <input 
+                    <input
                       type="text" value={collName} onChange={e => setCollName(e.target.value)} required placeholder="e.g. Sterling Silver Rings"
                       style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                     />
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Description</label>
-                    <textarea 
+                    <textarea
                       value={collDesc} onChange={e => setCollDesc(e.target.value)} required rows={3} placeholder="Describe the aesthetics of this collection..."
                       style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'none' }}
                     />
@@ -2978,27 +2978,27 @@ export default function AdminDashboard() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Collection Image / Banner</label>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <input 
-                        type="text" 
-                        value={collImageUrl} 
-                        onChange={e => setCollImageUrl(e.target.value)} 
+                      <input
+                        type="text"
+                        value={collImageUrl}
+                        onChange={e => setCollImageUrl(e.target.value)}
                         placeholder="Image URL or browse uploaded media"
                         style={{ flexGrow: 1, padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                       />
-                      <button 
+                      <button
                         type="button"
                         onClick={() => {
                           setMediaSelectorMode('collection');
                           setModalSearchQuery('');
                           setShowMediaModal(true);
                         }}
-                        style={{ 
-                          backgroundColor: '#ffffff', 
-                          border: '1px solid #cccccc', 
-                          borderRadius: '6px', 
-                          padding: '8px 16px', 
+                        style={{
+                          backgroundColor: '#ffffff',
+                          border: '1px solid #cccccc',
+                          borderRadius: '6px',
+                          padding: '8px 16px',
                           fontSize: '13px',
-                          fontWeight: '600', 
+                          fontWeight: '600',
                           color: '#1a1a1a',
                           cursor: 'pointer'
                         }}
@@ -3008,21 +3008,21 @@ export default function AdminDashboard() {
                     </div>
                     {collImageUrl && (
                       <div style={{ marginTop: '8px' }}>
-                        <img 
-                          src={collImageUrl} 
-                          alt="Collection Preview" 
-                          style={{ height: '80px', borderRadius: '6px', objectFit: 'cover' }} 
+                        <img
+                          src={collImageUrl}
+                          alt="Collection Preview"
+                          style={{ height: '80px', borderRadius: '6px', objectFit: 'cover' }}
                         />
                       </div>
                     )}
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       id="show-in-slider-checkbox"
-                      checked={collShowInSlider} 
-                      onChange={e => setCollShowInSlider(e.target.checked)} 
+                      checked={collShowInSlider}
+                      onChange={e => setCollShowInSlider(e.target.checked)}
                       style={{ width: '16px', height: '16px', cursor: 'pointer' }}
                     />
                     <label htmlFor="show-in-slider-checkbox" style={{ fontWeight: '600', color: '#1a1a1a', cursor: 'pointer' }}>
@@ -3033,10 +3033,10 @@ export default function AdminDashboard() {
                   {collShowInSlider && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Slider Tagline / Subtitle</label>
-                      <input 
-                        type="text" 
-                        value={collSliderSubtitle} 
-                        onChange={e => setCollSliderSubtitle(e.target.value)} 
+                      <input
+                        type="text"
+                        value={collSliderSubtitle}
+                        onChange={e => setCollSliderSubtitle(e.target.value)}
                         placeholder="e.g. Jewels That Flow With You"
                         style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                       />
@@ -3049,40 +3049,40 @@ export default function AdminDashboard() {
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                       <div style={{ position: 'relative', flexGrow: 1 }}>
                         <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#8c8c8c', fontSize: '14px' }}>🔍</span>
-                        <input 
-                          type="text" 
-                          placeholder="Search products" 
+                        <input
+                          type="text"
+                          placeholder="Search products"
                           onClick={() => {
                             setTempSelectedProductIds([...selectedProductIds]);
                             setModalSearchQuery('');
                             setShowBrowseModal(true);
                           }}
                           readOnly
-                          style={{ 
-                            width: '100%', 
-                            padding: '10px 12px 10px 36px', 
-                            border: '1px solid #cccccc', 
-                            borderRadius: '8px', 
+                          style={{
+                            width: '100%',
+                            padding: '10px 12px 10px 36px',
+                            border: '1px solid #cccccc',
+                            borderRadius: '8px',
                             fontSize: '13px',
                             cursor: 'pointer',
                             backgroundColor: '#ffffff'
                           }}
                         />
                       </div>
-                      <button 
+                      <button
                         type="button"
                         onClick={() => {
                           setTempSelectedProductIds([...selectedProductIds]);
                           setModalSearchQuery('');
                           setShowBrowseModal(true);
                         }}
-                        style={{ 
-                          backgroundColor: '#ffffff', 
-                          border: '1px solid #cccccc', 
-                          borderRadius: '8px', 
-                          padding: '10px 20px', 
+                        style={{
+                          backgroundColor: '#ffffff',
+                          border: '1px solid #cccccc',
+                          borderRadius: '8px',
+                          padding: '10px 20px',
                           fontSize: '13px',
-                          fontWeight: '600', 
+                          fontWeight: '600',
                           color: '#1a1a1a',
                           cursor: 'pointer',
                           transition: 'background 0.2s'
@@ -3096,48 +3096,48 @@ export default function AdminDashboard() {
 
                     {/* List of currently selected products below the search bar */}
                     {selectedProductIds.length > 0 && (
-                      <div style={{ 
-                        marginTop: '8px', 
-                        border: '1px solid #e3e3e3', 
-                        borderRadius: '8px', 
-                        backgroundColor: '#ffffff', 
-                        display: 'flex', 
+                      <div style={{
+                        marginTop: '8px',
+                        border: '1px solid #e3e3e3',
+                        borderRadius: '8px',
+                        backgroundColor: '#ffffff',
+                        display: 'flex',
                         flexDirection: 'column'
                       }}>
                         {selectedProductIds.map((prodId) => {
                           const prod = products.find(p => p.id === prodId);
                           if (!prod) return null;
                           return (
-                            <div 
-                              key={prod.id} 
-                              style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'space-between', 
-                                padding: '8px 12px', 
+                            <div
+                              key={prod.id}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '8px 12px',
                                 borderBottom: '1px solid #e3e3e3',
                                 fontSize: '13px'
                               }}
                             >
                               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <img 
-                                  src={prod.image_url} 
-                                  alt={prod.name} 
-                                  style={{ width: '36px', height: '36px', borderRadius: '4px', objectFit: 'cover' }} 
+                                <img
+                                  src={prod.image_url}
+                                  alt={prod.name}
+                                  style={{ width: '36px', height: '36px', borderRadius: '4px', objectFit: 'cover' }}
                                 />
                                 <div>
                                   <div style={{ fontWeight: '500', color: '#1a1a1a' }}>{prod.name}</div>
                                   <span style={{ fontSize: '11px', color: '#8c8c8c' }}>{prod.features}</span>
                                 </div>
                               </div>
-                              <button 
+                              <button
                                 type="button"
                                 onClick={() => setSelectedProductIds(selectedProductIds.filter(id => id !== prodId))}
-                                style={{ 
-                                  background: 'transparent', 
-                                  border: 'none', 
-                                  color: '#ff4d4d', 
-                                  fontSize: '16px', 
+                                style={{
+                                  background: 'transparent',
+                                  border: 'none',
+                                  color: '#ff4d4d',
+                                  fontSize: '16px',
                                   cursor: 'pointer',
                                   padding: '4px'
                                 }}
@@ -3153,38 +3153,38 @@ export default function AdminDashboard() {
 
                   {/* Shopify-style Browse Products Modal */}
                   {showBrowseModal && (
-                    <div style={{ 
-                      position: 'fixed', 
-                      top: 0, 
-                      left: 0, 
-                      right: 0, 
-                      bottom: 0, 
-                      backgroundColor: 'rgba(0, 0, 0, 0.4)', 
-                      display: 'flex', 
-                      justifyContent: 'center', 
-                      alignItems: 'center', 
+                    <div style={{
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
                       zIndex: 2000
                     }}>
-                      <div style={{ 
-                        width: '520px', 
-                        backgroundColor: '#ffffff', 
-                        borderRadius: '12px', 
-                        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.2)', 
-                        display: 'flex', 
-                        flexDirection: 'column', 
+                      <div style={{
+                        width: '520px',
+                        backgroundColor: '#ffffff',
+                        borderRadius: '12px',
+                        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.2)',
+                        display: 'flex',
+                        flexDirection: 'column',
                         maxHeight: '80vh',
                         overflow: 'hidden'
                       }}>
                         {/* Modal Header */}
-                        <div style={{ 
-                          display: 'flex', 
-                          justifyContent: 'space-between', 
-                          alignItems: 'center', 
-                          padding: '16px 20px', 
-                          borderBottom: '1px solid #e3e3e3' 
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '16px 20px',
+                          borderBottom: '1px solid #e3e3e3'
                         }}>
                           <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#1a1a1a' }}>Add products</h3>
-                          <button 
+                          <button
                             type="button"
                             onClick={() => setShowBrowseModal(false)}
                             style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#8c8c8c' }}
@@ -3197,17 +3197,17 @@ export default function AdminDashboard() {
                         <div style={{ padding: '12px 20px', borderBottom: '1px solid #e3e3e3', backgroundColor: '#f9f9f9' }}>
                           <div style={{ position: 'relative' }}>
                             <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#8c8c8c', fontSize: '14px' }}>🔍</span>
-                            <input 
-                              type="text" 
-                              placeholder="Search products" 
+                            <input
+                              type="text"
+                              placeholder="Search products"
                               value={modalSearchQuery}
                               onChange={(e) => setModalSearchQuery(e.target.value)}
-                              style={{ 
-                                width: '100%', 
-                                padding: '8px 12px 8px 36px', 
-                                border: '1px solid #cccccc', 
-                                borderRadius: '6px', 
-                                fontSize: '13px' 
+                              style={{
+                                width: '100%',
+                                padding: '8px 12px 8px 36px',
+                                border: '1px solid #cccccc',
+                                borderRadius: '6px',
+                                fontSize: '13px'
                               }}
                             />
                           </div>
@@ -3229,22 +3229,22 @@ export default function AdminDashboard() {
                             }).map((prod) => {
                               const isChecked = tempSelectedProductIds.includes(prod.id);
                               return (
-                                <label 
-                                  key={prod.id} 
-                                  style={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    gap: '12px', 
-                                    padding: '10px 20px', 
-                                    cursor: 'pointer', 
+                                <label
+                                  key={prod.id}
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    padding: '10px 20px',
+                                    cursor: 'pointer',
                                     borderBottom: '1px solid #f6f6f6',
                                     transition: 'background 0.1s'
                                   }}
                                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9f9f9'}
                                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                                 >
-                                  <input 
-                                    type="checkbox" 
+                                  <input
+                                    type="checkbox"
                                     checked={isChecked}
                                     onChange={(e) => {
                                       if (e.target.checked) {
@@ -3255,10 +3255,10 @@ export default function AdminDashboard() {
                                     }}
                                     style={{ width: '16px', height: '16px' }}
                                   />
-                                  <img 
-                                    src={prod.image_url} 
-                                    alt={prod.name} 
-                                    style={{ width: '36px', height: '36px', borderRadius: '4px', objectFit: 'cover' }} 
+                                  <img
+                                    src={prod.image_url}
+                                    alt={prod.name}
+                                    style={{ width: '36px', height: '36px', borderRadius: '4px', objectFit: 'cover' }}
                                   />
                                   <div style={{ flexGrow: 1 }}>
                                     <div style={{ fontSize: '13px', fontWeight: '500', color: '#1a1a1a' }}>{prod.name}</div>
@@ -3273,43 +3273,43 @@ export default function AdminDashboard() {
                         </div>
 
                         {/* Modal Footer */}
-                        <div style={{ 
-                          padding: '12px 20px', 
-                          borderTop: '1px solid #e3e3e3', 
-                          display: 'flex', 
-                          justifyContent: 'flex-end', 
+                        <div style={{
+                          padding: '12px 20px',
+                          borderTop: '1px solid #e3e3e3',
+                          display: 'flex',
+                          justifyContent: 'flex-end',
                           gap: '10px',
                           backgroundColor: '#f9f9f9'
                         }}>
-                          <button 
+                          <button
                             type="button"
                             onClick={() => setShowBrowseModal(false)}
-                            style={{ 
-                              backgroundColor: '#ffffff', 
-                              border: '1px solid #cccccc', 
-                              borderRadius: '6px', 
-                              padding: '8px 16px', 
-                              fontSize: '13px', 
-                              cursor: 'pointer' 
+                            style={{
+                              backgroundColor: '#ffffff',
+                              border: '1px solid #cccccc',
+                              borderRadius: '6px',
+                              padding: '8px 16px',
+                              fontSize: '13px',
+                              cursor: 'pointer'
                             }}
                           >
                             Cancel
                           </button>
-                          <button 
+                          <button
                             type="button"
                             onClick={() => {
                               setSelectedProductIds(tempSelectedProductIds);
                               setShowBrowseModal(false);
                             }}
-                            style={{ 
-                              backgroundColor: '#1a1a1a', 
-                              color: '#ffffff', 
-                              border: 'none', 
-                              borderRadius: '6px', 
-                              padding: '8px 20px', 
-                              fontSize: '13px', 
-                              fontWeight: '600', 
-                              cursor: 'pointer' 
+                            style={{
+                              backgroundColor: '#1a1a1a',
+                              color: '#ffffff',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '8px 20px',
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              cursor: 'pointer'
                             }}
                           >
                             Done
@@ -3348,7 +3348,7 @@ export default function AdminDashboard() {
                       )}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                         <div>
-                          <h3 style={{ fontSize: '16px', fontWeight: '600', margin: 0, color: '#3E0030' }}>{coll.name}</h3>
+                          <h3 style={{ fontSize: '16px', fontWeight: '600', margin: 0, color: '#3e0030' }}>{coll.name}</h3>
                           {coll.show_in_slider && (
                             <span style={{ fontSize: '10px', color: '#ffffff', backgroundColor: '#9c27b0', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold', display: 'inline-block', marginTop: '4px' }}>
                               Slider Active
@@ -3356,13 +3356,13 @@ export default function AdminDashboard() {
                           )}
                         </div>
                         <div style={{ display: 'flex', gap: '10px' }}>
-                          <button 
+                          <button
                             onClick={() => handleEditCollectionClick(coll)}
                             style={{ background: 'transparent', border: 'none', color: '#2196f3', fontSize: '11px', fontWeight: '700', cursor: 'pointer', padding: 0 }}
                           >
                             Edit
                           </button>
-                          <button 
+                          <button
                             onClick={() => handleDeleteCollection(coll.id)}
                             style={{ background: 'transparent', border: 'none', color: '#ff4d4d', fontSize: '11px', fontWeight: '700', cursor: 'pointer', padding: 0 }}
                           >
@@ -3372,7 +3372,7 @@ export default function AdminDashboard() {
                       </div>
                       <p style={{ fontSize: '13px', color: '#6d6d6d', margin: '0 0 16px 0', minHeight: '3.6em', overflow: 'hidden', lineHeight: '1.4' }}>{coll.description}</p>
                     </div>
-                    
+
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f0f0f0', paddingTop: '12px' }}>
                       <span style={{ fontSize: '12px', color: '#9e9e9e' }}>Active Catalog Products</span>
                       <span style={{ fontSize: '12px', fontWeight: '700', backgroundColor: '#e2ece9', color: '#2d5c4d', padding: '3px 8px', borderRadius: '12px' }}>
@@ -3396,12 +3396,12 @@ export default function AdminDashboard() {
                 <span style={{ fontSize: '24px' }}>🏷️</span>
                 <h1 style={{ fontSize: '20px', fontWeight: '700', margin: 0 }}>Discounts</h1>
               </div>
-              
+
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button style={{ backgroundColor: '#ffffff', border: '1px solid #ccc', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>
                   Export
                 </button>
-                <button 
+                <button
                   onClick={() => {
                     resetDiscountForm();
                     setShowDiscountTypeModal(true);
@@ -3460,7 +3460,7 @@ export default function AdminDashboard() {
 
             {/* Discounts list table */}
             <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', overflow: 'hidden' }}>
-              
+
               <div style={{ borderBottom: '1px solid #e3e3e3', padding: '12px 16px' }}>
                 <span style={{ fontSize: '13px', fontWeight: '600', borderBottom: '2px solid #1a1a1a', paddingBottom: '14px', marginBottom: '-13px' }}>All</span>
               </div>
@@ -3492,17 +3492,17 @@ export default function AdminDashboard() {
                         <tr key={disc.id} style={{ borderBottom: '1px solid #e3e3e3' }}>
                           <td style={{ padding: '12px 16px' }}><input type="checkbox" /></td>
                           <td style={{ padding: '12px 16px' }}>
-                            <strong style={{ display: 'block', color: '#3E0030' }}>{disc.title}</strong>
+                            <strong style={{ display: 'block', color: '#3e0030' }}>{disc.title}</strong>
                             <span style={{ fontSize: '11px', color: '#6d6d6d' }}>{disc.summary}</span>
                           </td>
                           <td style={{ padding: '12px 16px' }}>
-                            <span style={{ 
-                              fontSize: '11px', 
-                              fontWeight: '600', 
-                              padding: '4px 8px', 
-                              borderRadius: '12px', 
-                              backgroundColor: disc.status === 'Active' ? '#e2ece9' : '#ffe8d6', 
-                              color: disc.status === 'Active' ? '#2d5c4d' : '#a65d00' 
+                            <span style={{
+                              fontSize: '11px',
+                              fontWeight: '600',
+                              padding: '4px 8px',
+                              borderRadius: '12px',
+                              backgroundColor: disc.status === 'Active' ? '#e2ece9' : '#ffe8d6',
+                              color: disc.status === 'Active' ? '#2d5c4d' : '#a65d00'
                             }}>
                               {disc.status}
                             </span>
@@ -3529,21 +3529,21 @@ export default function AdminDashboard() {
 
             {/* Select discount type popup modal */}
             {showDiscountTypeModal && (
-              <div style={{ 
-                position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', 
-                backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, 
-                display: 'flex', alignItems: 'center', justifyContent: 'center' 
+              <div style={{
+                position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+                backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000,
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
               }}>
-                <div style={{ 
-                  backgroundColor: '#ffffff', width: '90%', maxWidth: '540px', 
+                <div style={{
+                  backgroundColor: '#ffffff', width: '90%', maxWidth: '540px',
                   borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 45px rgba(0,0,0,0.3)',
                   border: '1px solid #ccc'
                 }}>
-                  
+
                   {/* Modal Header */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', borderBottom: '1px solid #e3e3e3' }}>
                     <h3 style={{ fontSize: '15px', fontWeight: '600', margin: 0 }}>Select discount type</h3>
-                    <button 
+                    <button
                       onClick={() => setShowDiscountTypeModal(false)}
                       style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#6d6d6d' }}
                     >
@@ -3597,12 +3597,12 @@ export default function AdminDashboard() {
 
                   {/* Footer Actions */}
                   <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 24px', backgroundColor: '#f9f9f9', borderTop: '1px solid #e3e3e3' }}>
-                    <button 
+                    <button
                       onClick={() => setShowDiscountTypeModal(false)}
-                      style={{ 
-                        border: '1px solid #ccc', backgroundColor: '#ffffff', color: '#1a1a1a', 
-                        borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '500', 
-                        cursor: 'pointer' 
+                      style={{
+                        border: '1px solid #ccc', backgroundColor: '#ffffff', color: '#1a1a1a',
+                        borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '500',
+                        cursor: 'pointer'
                       }}
                     >
                       Cancel
@@ -3923,7 +3923,7 @@ export default function AdminDashboard() {
 
             {/* Campaign conversion stats */}
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px', alignItems: 'start' }}>
-              
+
               {/* Active Campaigns list */}
               <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                 <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>Active Campaigns</h3>
@@ -3931,7 +3931,7 @@ export default function AdminDashboard() {
                   {campaigns.map((camp, idx) => (
                     <div key={idx} style={{ border: '1px solid #f0f0f0', borderRadius: '8px', padding: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <strong style={{ fontSize: '14px', color: '#3E0030' }}>{camp.name}</strong>
+                        <strong style={{ fontSize: '14px', color: '#3e0030' }}>{camp.name}</strong>
                         <span style={{ fontSize: '12px', color: '#2d5c4d', fontWeight: '700', backgroundColor: '#e2ece9', padding: '2px 8px', borderRadius: '10px' }}>ROI: {camp.roi}</span>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', fontSize: '12px', color: '#6d6d6d' }}>
@@ -4120,10 +4120,10 @@ export default function AdminDashboard() {
                           <button type="button" onClick={() => { setModalSearchQuery(''); setMediaSelectorMode('hero'); setHeroMediaTargetIndex(index); setShowMediaModal(true); }} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
                             Change
                           </button>
-                          <button type="button" disabled={index === 0} onClick={() => setHeroSliderImages(prev => { const next = [...prev]; [next[index - 1], next[index]] = [next[index], next[index - 1]]; return next; })} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: index === 0 ? 'not-allowed' : 'pointer', opacity: index === 0 ? 0.5 : 1 }}>
+                          <button type="button" disabled={index === 0} onClick={() => setHeroSliderImages(prev => { const next = [...prev];[next[index - 1], next[index]] = [next[index], next[index - 1]]; return next; })} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: index === 0 ? 'not-allowed' : 'pointer', opacity: index === 0 ? 0.5 : 1 }}>
                             Up
                           </button>
-                          <button type="button" disabled={index === heroSliderImages.length - 1} onClick={() => setHeroSliderImages(prev => { const next = [...prev]; [next[index + 1], next[index]] = [next[index], next[index + 1]]; return next; })} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: index === heroSliderImages.length - 1 ? 'not-allowed' : 'pointer', opacity: index === heroSliderImages.length - 1 ? 0.5 : 1 }}>
+                          <button type="button" disabled={index === heroSliderImages.length - 1} onClick={() => setHeroSliderImages(prev => { const next = [...prev];[next[index + 1], next[index]] = [next[index], next[index + 1]]; return next; })} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: index === heroSliderImages.length - 1 ? 'not-allowed' : 'pointer', opacity: index === heroSliderImages.length - 1 ? 0.5 : 1 }}>
                             Down
                           </button>
                           <button type="button" disabled={heroSliderImages.length === 1} onClick={() => setHeroSliderImages(prev => prev.filter((_, imageIndex) => imageIndex !== index))} style={{ backgroundColor: '#ffebe9', color: '#ff4d4d', border: 'none', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: heroSliderImages.length === 1 ? 'not-allowed' : 'pointer', opacity: heroSliderImages.length === 1 ? 0.5 : 1 }}>
@@ -4146,16 +4146,16 @@ export default function AdminDashboard() {
                 🖼️ Promo Image Banners
               </h3>
               <form onSubmit={handleSavePromoBanner} style={{ display: 'flex', flexDirection: 'column', gap: '24px', fontSize: '13px' }}>
-                
+
                 {/* Banner 1 */}
                 <div style={{ padding: '16px', border: '1px solid #e3e3e3', borderRadius: '8px' }}>
                   <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600' }}>Promo Banner 1 (Above New Launch Slider)</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Banner Target Link</label>
-                      <input 
-                        value={promoBannerLink} 
-                        onChange={e => setPromoBannerLink(e.target.value)} 
+                      <input
+                        value={promoBannerLink}
+                        onChange={e => setPromoBannerLink(e.target.value)}
                         placeholder="e.g. /category/necklaces"
                         style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                       />
@@ -4163,13 +4163,13 @@ export default function AdminDashboard() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Banner Image URL</label>
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        <input 
-                          value={promoBannerImage} 
-                          onChange={e => setPromoBannerImage(e.target.value)} 
+                        <input
+                          value={promoBannerImage}
+                          onChange={e => setPromoBannerImage(e.target.value)}
                           placeholder="Image URL or browse"
                           style={{ flexGrow: 1, padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                         />
-                        <button 
+                        <button
                           type="button"
                           onClick={() => {
                             setModalSearchQuery('');
@@ -4185,10 +4185,10 @@ export default function AdminDashboard() {
                   </div>
                   {promoBannerImage && (
                     <div style={{ marginTop: '12px' }}>
-                      <img 
-                        src={promoBannerImage} 
-                        alt="Banner 1 Preview" 
-                        style={{ width: '100%', maxHeight: '120px', borderRadius: '6px', objectFit: 'cover' }} 
+                      <img
+                        src={promoBannerImage}
+                        alt="Banner 1 Preview"
+                        style={{ width: '100%', maxHeight: '120px', borderRadius: '6px', objectFit: 'cover' }}
                       />
                     </div>
                   )}
@@ -4200,9 +4200,9 @@ export default function AdminDashboard() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Banner Target Link</label>
-                      <input 
-                        value={promoBanner2Link} 
-                        onChange={e => setPromoBanner2Link(e.target.value)} 
+                      <input
+                        value={promoBanner2Link}
+                        onChange={e => setPromoBanner2Link(e.target.value)}
                         placeholder="e.g. /category/earrings"
                         style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                       />
@@ -4210,13 +4210,13 @@ export default function AdminDashboard() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Banner Image URL</label>
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        <input 
-                          value={promoBanner2Image} 
-                          onChange={e => setPromoBanner2Image(e.target.value)} 
+                        <input
+                          value={promoBanner2Image}
+                          onChange={e => setPromoBanner2Image(e.target.value)}
                           placeholder="Image URL or browse"
                           style={{ flexGrow: 1, padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                         />
-                        <button 
+                        <button
                           type="button"
                           onClick={() => {
                             setModalSearchQuery('');
@@ -4232,17 +4232,17 @@ export default function AdminDashboard() {
                   </div>
                   {promoBanner2Image && (
                     <div style={{ marginTop: '12px' }}>
-                      <img 
-                        src={promoBanner2Image} 
-                        alt="Banner 2 Preview" 
-                        style={{ width: '100%', maxHeight: '120px', borderRadius: '6px', objectFit: 'cover' }} 
+                      <img
+                        src={promoBanner2Image}
+                        alt="Banner 2 Preview"
+                        style={{ width: '100%', maxHeight: '120px', borderRadius: '6px', objectFit: 'cover' }}
                       />
                     </div>
                   )}
                 </div>
 
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', alignSelf: 'flex-start' }}
                 >
                   Save Promo Banners
@@ -4252,7 +4252,7 @@ export default function AdminDashboard() {
 
             {/* Banners & Collection Slider Editors Row */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginTop: '32px', alignItems: 'start' }}>
-              
+
               {/* Card 1: Home Category Banners */}
               <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px' }}>
                 <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>
@@ -4270,8 +4270,8 @@ export default function AdminDashboard() {
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
                         <div style={{ display: 'flex', gap: '8px' }}>
-                          <input 
-                            value={cat.title} 
+                          <input
+                            value={cat.title}
                             onChange={(e) => {
                               const next = [...categoryGrid];
                               next[index] = { ...next[index], title: e.target.value };
@@ -4280,8 +4280,8 @@ export default function AdminDashboard() {
                             placeholder="Title (e.g. SHOP RINGS)"
                             style={{ flexGrow: 1, padding: '6px 10px', border: '1px solid #ccc', borderRadius: '6px' }}
                           />
-                          <input 
-                            value={cat.link} 
+                          <input
+                            value={cat.link}
                             onChange={(e) => {
                               const next = [...categoryGrid];
                               next[index] = { ...next[index], link: e.target.value };
@@ -4292,8 +4292,8 @@ export default function AdminDashboard() {
                           />
                         </div>
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                          <input 
-                            value={cat.image} 
+                          <input
+                            value={cat.image}
                             onChange={(e) => {
                               const next = [...categoryGrid];
                               next[index] = { ...next[index], image: e.target.value };
@@ -4302,8 +4302,8 @@ export default function AdminDashboard() {
                             placeholder="Image URL"
                             style={{ flexGrow: 1, padding: '6px 10px', border: '1px solid #ccc', borderRadius: '6px' }}
                           />
-                          <button 
-                            type="button" 
+                          <button
+                            type="button"
                             onClick={() => {
                               setModalSearchQuery('');
                               setMediaSelectorMode('category');
@@ -4318,8 +4318,8 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   ))}
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', alignSelf: 'flex-start' }}
                   >
                     Save Category Banners
@@ -4349,11 +4349,11 @@ export default function AdminDashboard() {
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <strong style={{ fontSize: '13px', color: '#1a1a1a' }}>{coll.name}</strong>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontWeight: '600' }}>
-                              <input 
+                              <input
                                 type="checkbox"
                                 checked={!!coll.show_in_slider}
                                 onChange={(e) => {
-                                  setCollections(prev => prev.map(c => 
+                                  setCollections(prev => prev.map(c =>
                                     c.id === coll.id ? { ...c, show_in_slider: e.target.checked } : c
                                   ));
                                 }}
@@ -4362,10 +4362,10 @@ export default function AdminDashboard() {
                               Show in Slider
                             </label>
                           </div>
-                          <input 
-                            value={coll.slider_subtitle || ''} 
+                          <input
+                            value={coll.slider_subtitle || ''}
                             onChange={(e) => {
-                              setCollections(prev => prev.map(c => 
+                              setCollections(prev => prev.map(c =>
                                 c.id === coll.id ? { ...c, slider_subtitle: e.target.value } : c
                               ));
                             }}
@@ -4373,18 +4373,18 @@ export default function AdminDashboard() {
                             style={{ padding: '6px 10px', border: '1px solid #ccc', borderRadius: '6px' }}
                           />
                           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                            <input 
-                              value={coll.image_url || ''} 
+                            <input
+                              value={coll.image_url || ''}
                               onChange={(e) => {
-                                setCollections(prev => prev.map(c => 
+                                setCollections(prev => prev.map(c =>
                                   c.id === coll.id ? { ...c, image_url: e.target.value } : c
                                 ));
                               }}
                               placeholder="Image URL"
                               style={{ flexGrow: 1, padding: '6px 10px', border: '1px solid #ccc', borderRadius: '6px' }}
                             />
-                            <button 
-                              type="button" 
+                            <button
+                              type="button"
                               onClick={() => {
                                 setModalSearchQuery('');
                                 setMediaSelectorMode('slider-collection');
@@ -4401,8 +4401,8 @@ export default function AdminDashboard() {
                     ))
                   )}
                   {collections.length > 0 && (
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', alignSelf: 'flex-start' }}
                     >
                       Save Slider Collections
@@ -4517,7 +4517,7 @@ export default function AdminDashboard() {
             {/* Sales Graph Widget */}
             <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '12px', padding: '24px', marginBottom: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
               <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 20px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>Weekly Sales Performance</h3>
-              
+
               <div style={{ height: '30px', color: '#2d5c4d', fontWeight: '700', fontSize: '14px', marginBottom: '10px' }}>
                 {hoveredBarIndex !== null ? (
                   <span>Sales on {salesHistory[hoveredBarIndex].day}: ₹{salesHistory[hoveredBarIndex].sales.toLocaleString()}</span>
@@ -4531,15 +4531,15 @@ export default function AdminDashboard() {
                   const maxSales = Math.max(...salesHistory.map(s => s.sales));
                   const percentHeight = (item.sales / maxSales) * 100;
                   return (
-                    <div 
-                      key={idx} 
+                    <div
+                      key={idx}
                       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexGrow: 1 }}
                       onMouseEnter={() => setHoveredBarIndex(idx)}
                       onMouseLeave={() => setHoveredBarIndex(null)}
                     >
-                      <div style={{ 
-                        width: '45px', 
-                        height: `${percentHeight * 1.5}px`, 
+                      <div style={{
+                        width: '45px',
+                        height: `${percentHeight * 1.5}px`,
                         backgroundColor: hoveredBarIndex === idx ? 'var(--accent)' : '#2d5c4d',
                         borderRadius: '4px 4px 0 0',
                         cursor: 'pointer',
@@ -4593,15 +4593,15 @@ export default function AdminDashboard() {
             )}
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'start' }}>
-              
+
               {/* Left Column: Store Information & Active Gateways */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                
+
                 {/* Store Information */}
                 <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                   <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>Store Information</h3>
                   <form onSubmit={e => { e.preventDefault(); alert('Store configurations updated successfully!'); }} style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '13px' }}>
-                    
+
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Store Name</label>
                       <input type="text" value={storeName} onChange={e => setStoreName(e.target.value)} required style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
@@ -4636,19 +4636,19 @@ export default function AdminDashboard() {
                 <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                   <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>Active Checkout Gateways</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '13px' }}>
-                    
+
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px', border: '1px solid #f0f0f0', borderRadius: '8px', transition: 'all 0.2s' }}>
                       <div>
                         <strong style={{ display: 'block', fontSize: '14px', color: '#1a1a1a' }}>Gokwik Super Checkout</strong>
                         <span style={{ fontSize: '11px', color: '#6d6d6d', marginTop: '2px', display: 'block' }}>Single-click cod & pre-paid checkout funnel</span>
                       </div>
-                      <button 
+                      <button
                         onClick={() => {
                           const val = !isGokwikActive;
                           setIsGokwikActive(val);
                           handleSaveSettings({ isGokwikActive: val.toString() });
                         }}
-                        style={{ 
+                        style={{
                           border: 'none', borderRadius: '14px', padding: '6px 14px', fontSize: '12px', fontWeight: '700', cursor: 'pointer',
                           backgroundColor: isGokwikActive ? '#e2ece9' : '#ffe8d6',
                           color: isGokwikActive ? '#2d5c4d' : '#a65d00',
@@ -4664,13 +4664,13 @@ export default function AdminDashboard() {
                         <strong style={{ display: 'block', fontSize: '14px', color: '#1a1a1a' }}>Cash on Delivery (COD)</strong>
                         <span style={{ fontSize: '11px', color: '#6d6d6d', marginTop: '2px', display: 'block' }}>Support cash payments upon product delivery</span>
                       </div>
-                      <button 
+                      <button
                         onClick={() => {
                           const val = !isCodActive;
                           setIsCodActive(val);
                           handleSaveSettings({ isCodActive: val.toString() });
                         }}
-                        style={{ 
+                        style={{
                           border: 'none', borderRadius: '14px', padding: '6px 14px', fontSize: '12px', fontWeight: '700', cursor: 'pointer',
                           backgroundColor: isCodActive ? '#e2ece9' : '#ffe8d6',
                           color: isCodActive ? '#2d5c4d' : '#a65d00',
@@ -4688,7 +4688,7 @@ export default function AdminDashboard() {
 
               {/* Right Column: API Integrations */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                
+
                 {/* Razorpay Integration */}
                 <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                   <div style={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px', marginBottom: '16px' }}>
@@ -4696,26 +4696,26 @@ export default function AdminDashboard() {
                     <span style={{ backgroundColor: '#3399FF', color: '#ffffff', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '12px', textTransform: 'uppercase' }}>Razorpay</span>
                   </div>
                   <form onSubmit={e => { e.preventDefault(); handleSaveSettings({ razorpayKeyId, razorpayKeySecret }); }} style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
-                    
+
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Key ID</label>
-                      <input 
-                        type="text" 
-                        value={razorpayKeyId} 
-                        onChange={e => setRazorpayKeyId(e.target.value)} 
-                        placeholder="rzp_live_..." 
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                      <input
+                        type="text"
+                        value={razorpayKeyId}
+                        onChange={e => setRazorpayKeyId(e.target.value)}
+                        placeholder="rzp_live_..."
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                       />
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Key Secret</label>
-                      <input 
-                        type="password" 
-                        value={razorpayKeySecret} 
-                        onChange={e => setRazorpayKeySecret(e.target.value)} 
-                        placeholder="••••••••••••••••" 
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                      <input
+                        type="password"
+                        value={razorpayKeySecret}
+                        onChange={e => setRazorpayKeySecret(e.target.value)}
+                        placeholder="••••••••••••••••"
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                       />
                     </div>
 
@@ -4732,37 +4732,37 @@ export default function AdminDashboard() {
                     <span style={{ backgroundColor: '#7A22A5', color: '#ffffff', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '12px', textTransform: 'uppercase' }}>Shiprocket</span>
                   </div>
                   <form onSubmit={e => { e.preventDefault(); handleSaveSettings({ shiprocketEmail, shiprocketPassword, shiprocketToken }); }} style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
-                    
+
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Account Email / Username</label>
-                      <input 
-                        type="email" 
-                        value={shiprocketEmail} 
-                        onChange={e => setShiprocketEmail(e.target.value)} 
-                        placeholder="shipping@deeraglow.shop" 
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                      <input
+                        type="email"
+                        value={shiprocketEmail}
+                        onChange={e => setShiprocketEmail(e.target.value)}
+                        placeholder="shipping@deeraglow.shop"
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                       />
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Password</label>
-                      <input 
-                        type="password" 
-                        value={shiprocketPassword} 
-                        onChange={e => setShiprocketPassword(e.target.value)} 
-                        placeholder="••••••••" 
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                      <input
+                        type="password"
+                        value={shiprocketPassword}
+                        onChange={e => setShiprocketPassword(e.target.value)}
+                        placeholder="••••••••"
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                       />
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>API Token / Channel ID</label>
-                      <input 
-                        type="text" 
-                        value={shiprocketToken} 
-                        onChange={e => setShiprocketToken(e.target.value)} 
-                        placeholder="API Authentication Token" 
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                      <input
+                        type="text"
+                        value={shiprocketToken}
+                        onChange={e => setShiprocketToken(e.target.value)}
+                        placeholder="API Authentication Token"
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                       />
                     </div>
 
@@ -4779,15 +4779,15 @@ export default function AdminDashboard() {
                     <span style={{ backgroundColor: '#ff9800', color: '#ffffff', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '12px', textTransform: 'uppercase' }}>Logos</span>
                   </div>
                   <form onSubmit={e => { e.preventDefault(); handleSaveSettings({ logoHeaderUrl, logoFooterUrl }); }} style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
-                    
+
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Header Logo URL</label>
-                      <input 
-                        type="text" 
-                        value={logoHeaderUrl} 
-                        onChange={e => setLogoHeaderUrl(e.target.value)} 
-                        placeholder="https://example.com/logo-header.png" 
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                      <input
+                        type="text"
+                        value={logoHeaderUrl}
+                        onChange={e => setLogoHeaderUrl(e.target.value)}
+                        placeholder="https://example.com/logo-header.png"
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                       />
                       {logoHeaderUrl && (
                         <div style={{ marginTop: '6px', border: '1px dashed #ccc', padding: '6px', borderRadius: '4px', textAlign: 'center', backgroundColor: '#fafafa' }}>
@@ -4798,12 +4798,12 @@ export default function AdminDashboard() {
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Footer Logo URL</label>
-                      <input 
-                        type="text" 
-                        value={logoFooterUrl} 
-                        onChange={e => setLogoFooterUrl(e.target.value)} 
-                        placeholder="https://example.com/logo-footer.png" 
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                      <input
+                        type="text"
+                        value={logoFooterUrl}
+                        onChange={e => setLogoFooterUrl(e.target.value)}
+                        placeholder="https://example.com/logo-footer.png"
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                       />
                       {logoFooterUrl && (
                         <div style={{ marginTop: '6px', border: '1px dashed #ccc', padding: '6px', borderRadius: '4px', textAlign: 'center', backgroundColor: '#fafafa' }}>
@@ -4825,59 +4825,59 @@ export default function AdminDashboard() {
                     <span style={{ backgroundColor: '#e91e63', color: '#ffffff', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '12px', textTransform: 'uppercase' }}>Socials</span>
                   </div>
                   <form onSubmit={e => { e.preventDefault(); handleSaveSettings({ instagramUrl, facebookUrl, pinterestUrl, twitterUrl, youtubeUrl }); }} style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
-                    
+
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Instagram URL</label>
-                      <input 
-                        type="text" 
-                        value={instagramUrl} 
-                        onChange={e => setInstagramUrl(e.target.value)} 
-                        placeholder="https://instagram.com/your-brand" 
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                      <input
+                        type="text"
+                        value={instagramUrl}
+                        onChange={e => setInstagramUrl(e.target.value)}
+                        placeholder="https://instagram.com/your-brand"
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                       />
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Facebook URL</label>
-                      <input 
-                        type="text" 
-                        value={facebookUrl} 
-                        onChange={e => setFacebookUrl(e.target.value)} 
-                        placeholder="https://facebook.com/your-brand" 
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                      <input
+                        type="text"
+                        value={facebookUrl}
+                        onChange={e => setFacebookUrl(e.target.value)}
+                        placeholder="https://facebook.com/your-brand"
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                       />
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Pinterest URL</label>
-                      <input 
-                        type="text" 
-                        value={pinterestUrl} 
-                        onChange={e => setPinterestUrl(e.target.value)} 
-                        placeholder="https://pinterest.com/your-brand" 
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                      <input
+                        type="text"
+                        value={pinterestUrl}
+                        onChange={e => setPinterestUrl(e.target.value)}
+                        placeholder="https://pinterest.com/your-brand"
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                       />
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Twitter / X URL</label>
-                      <input 
-                        type="text" 
-                        value={twitterUrl} 
-                        onChange={e => setTwitterUrl(e.target.value)} 
-                        placeholder="https://twitter.com/your-brand" 
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                      <input
+                        type="text"
+                        value={twitterUrl}
+                        onChange={e => setTwitterUrl(e.target.value)}
+                        placeholder="https://twitter.com/your-brand"
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                       />
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>YouTube URL</label>
-                      <input 
-                        type="text" 
-                        value={youtubeUrl} 
-                        onChange={e => setYoutubeUrl(e.target.value)} 
-                        placeholder="https://youtube.com/your-brand" 
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                      <input
+                        type="text"
+                        value={youtubeUrl}
+                        onChange={e => setYoutubeUrl(e.target.value)}
+                        placeholder="https://youtube.com/your-brand"
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                       />
                     </div>
 
@@ -4895,7 +4895,7 @@ export default function AdminDashboard() {
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', fontSize: '13px' }}>
-                    
+
                     {/* Google Tag Configuration */}
                     <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '16px', backgroundColor: '#fafafa' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
@@ -4949,23 +4949,23 @@ export default function AdminDashboard() {
                       <form onSubmit={e => { e.preventDefault(); handleSaveSettings({ googleTagId, googleTagCode }); }} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                           <label style={{ fontWeight: '600', color: '#6d6d6d', fontSize: '11px' }}>Google Tag ID (Measurement ID / Conversion ID)</label>
-                          <input 
-                            type="text" 
-                            value={googleTagId} 
-                            onChange={e => setGoogleTagId(e.target.value)} 
-                            placeholder="e.g. G-XXXXXXXXXX or AW-XXXXXXXXXX" 
-                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                          <input
+                            type="text"
+                            value={googleTagId}
+                            onChange={e => setGoogleTagId(e.target.value)}
+                            placeholder="e.g. G-XXXXXXXXXX or AW-XXXXXXXXXX"
+                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                           />
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                           <label style={{ fontWeight: '600', color: '#6d6d6d', fontSize: '11px' }}>Custom Google Tag Code script (optional)</label>
-                          <textarea 
-                            value={googleTagCode} 
-                            onChange={e => setGoogleTagCode(e.target.value)} 
-                            placeholder="<!-- Paste Google Tag script here -->" 
+                          <textarea
+                            value={googleTagCode}
+                            onChange={e => setGoogleTagCode(e.target.value)}
+                            placeholder="<!-- Paste Google Tag script here -->"
                             rows={3}
-                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontFamily: 'monospace', fontSize: '11px', resize: 'vertical' }} 
+                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontFamily: 'monospace', fontSize: '11px', resize: 'vertical' }}
                           />
                         </div>
 
@@ -5028,23 +5028,23 @@ export default function AdminDashboard() {
                       <form onSubmit={e => { e.preventDefault(); handleSaveSettings({ facebookPixelId, facebookPixelCode }); }} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                           <label style={{ fontWeight: '600', color: '#6d6d6d', fontSize: '11px' }}>Meta Pixel ID</label>
-                          <input 
-                            type="text" 
-                            value={facebookPixelId} 
-                            onChange={e => setFacebookPixelId(e.target.value)} 
-                            placeholder="e.g. 928374928374829" 
-                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} 
+                          <input
+                            type="text"
+                            value={facebookPixelId}
+                            onChange={e => setFacebookPixelId(e.target.value)}
+                            placeholder="e.g. 928374928374829"
+                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                           />
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                           <label style={{ fontWeight: '600', color: '#6d6d6d', fontSize: '11px' }}>Custom Meta Pixel Code script (optional)</label>
-                          <textarea 
-                            value={facebookPixelCode} 
-                            onChange={e => setFacebookPixelCode(e.target.value)} 
-                            placeholder="<!-- Paste Meta Pixel script here -->" 
+                          <textarea
+                            value={facebookPixelCode}
+                            onChange={e => setFacebookPixelCode(e.target.value)}
+                            placeholder="<!-- Paste Meta Pixel script here -->"
                             rows={3}
-                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontFamily: 'monospace', fontSize: '11px', resize: 'vertical' }} 
+                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontFamily: 'monospace', fontSize: '11px', resize: 'vertical' }}
                           />
                         </div>
 
@@ -5065,7 +5065,7 @@ export default function AdminDashboard() {
             {showGooglePopup && (
               <div style={{ position: 'fixed', inset: 0, zIndex: 9999, backgroundColor: 'rgba(11,26,17,0.7)', display: 'grid', placeItems: 'center', padding: '20px', backdropFilter: 'blur(4px)' }}>
                 <div style={{ backgroundColor: '#f1f3f4', width: '100%', maxWidth: '850px', height: '90vh', maxHeight: '600px', borderRadius: '12px', boxShadow: '0 12px 40px rgba(0,0,0,0.4)', overflow: 'hidden', color: '#202124', fontFamily: 'Roboto, Arial, sans-serif', display: 'flex', flexDirection: 'column' }}>
-                  
+
                   {/* Google Top Bar */}
                   <div style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #dadce0', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -5080,7 +5080,7 @@ export default function AdminDashboard() {
 
                   {/* Body area */}
                   <div style={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
-                    
+
                     {/* Left Sidebar */}
                     <div style={{ width: '200px', backgroundColor: '#ffffff', borderRight: '1px solid #dadce0', padding: '16px 0', display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 }}>
                       <div style={{ padding: '8px 24px', fontSize: '13px', fontWeight: '600', backgroundColor: '#e8f0fe', color: '#1a73e8', borderLeft: '3px solid #1a73e8' }}>Workspaces</div>
@@ -5092,7 +5092,7 @@ export default function AdminDashboard() {
 
                     {/* Right Main Content */}
                     <div style={{ flexGrow: 1, padding: '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                      
+
                       <div>
                         <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600', color: '#202124' }}>Select Google Property or Tag</h4>
                         <p style={{ margin: '0 0 20px 0', fontSize: '13px', color: '#5f6368', lineHeight: '1.4' }}>
@@ -5100,13 +5100,13 @@ export default function AdminDashboard() {
                         </p>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                          
+
                           <button
                             type="button"
                             onClick={() => {
                               setGoogleTagId('AW-10820381023');
                             }}
-                            style={{ 
+                            style={{
                               display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', border: '1px solid #dadce0', borderRadius: '8px', background: '#ffffff', cursor: 'pointer', width: '100%', textAlign: 'left',
                               borderColor: googleTagId === 'AW-10820381023' ? '#1a73e8' : '#dadce0',
                               backgroundColor: googleTagId === 'AW-10820381023' ? '#f8f9fa' : '#ffffff',
@@ -5128,7 +5128,7 @@ export default function AdminDashboard() {
                             onClick={() => {
                               setGoogleTagId('G-928374928');
                             }}
-                            style={{ 
+                            style={{
                               display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', border: '1px solid #dadce0', borderRadius: '8px', background: '#ffffff', cursor: 'pointer', width: '100%', textAlign: 'left',
                               borderColor: googleTagId === 'G-928374928' ? '#1a73e8' : '#dadce0',
                               backgroundColor: googleTagId === 'G-928374928' ? '#f8f9fa' : '#ffffff',
@@ -5167,8 +5167,8 @@ export default function AdminDashboard() {
                           onClick={async () => {
                             setGoogleConnectedEmail('deeksha.candles.ads@gmail.com');
                             setGoogleSelectedAccount(googleTagId === 'AW-10820381023' ? 'Deera Glow - Ads Account (481-229-4820)' : 'Deera Glow - GA4 Analytics Property (G-928374928)');
-                            await handleSaveSettings({ 
-                              googleTagId, 
+                            await handleSaveSettings({
+                              googleTagId,
                               googleTagCode: googleTagCode || `<!-- Google Tag (gtag.js) -->\n<script async src="https://www.googletagmanager.com/gtag/js?id=${googleTagId}"></script>\n<script>\n  window.dataLayer = window.dataLayer || [];\n  function gtag(){dataLayer.push(arguments);}\n  gtag('js', new Date());\n  gtag('config', '${googleTagId}');\n</script>`
                             });
                             setShowGooglePopup(false);
@@ -5190,7 +5190,7 @@ export default function AdminDashboard() {
             {showFacebookPopup && (
               <div style={{ position: 'fixed', inset: 0, zIndex: 9999, backgroundColor: 'rgba(11,26,17,0.7)', display: 'grid', placeItems: 'center', padding: '20px', backdropFilter: 'blur(4px)' }}>
                 <div style={{ backgroundColor: '#f0f2f5', width: '100%', maxWidth: '850px', height: '90vh', maxHeight: '600px', borderRadius: '12px', boxShadow: '0 12px 40px rgba(0,0,0,0.4)', overflow: 'hidden', color: '#1c1e21', fontFamily: 'SFProText-Regular, Helvetica, Arial, sans-serif', display: 'flex', flexDirection: 'column' }}>
-                  
+
                   {/* Meta Suite Top Bar */}
                   <div style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #dddfe2', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -5205,7 +5205,7 @@ export default function AdminDashboard() {
 
                   {/* Body area split into Left Sidebar and Right Main Content */}
                   <div style={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
-                    
+
                     {/* Left Sidebar */}
                     <div style={{ width: '200px', backgroundColor: '#ffffff', borderRight: '1px solid #dddfe2', padding: '16px 0', display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 }}>
                       <div style={{ padding: '8px 24px', fontSize: '13px', fontWeight: '600', backgroundColor: '#e7f3ff', color: '#1877F2', borderLeft: '3px solid #1877F2' }}>Data Sources</div>
@@ -5217,7 +5217,7 @@ export default function AdminDashboard() {
 
                     {/* Right Main Content */}
                     <div style={{ flexGrow: 1, padding: '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                      
+
                       <div>
                         {/* Title & Description */}
                         <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600', color: '#1c1e21' }}>Choose Facebook Tracking Pixel</h4>
@@ -5227,13 +5227,13 @@ export default function AdminDashboard() {
 
                         {/* Pixel Selection List */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                          
+
                           <button
                             type="button"
                             onClick={() => {
                               setFacebookPixelId('928374928374829');
                             }}
-                            style={{ 
+                            style={{
                               display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', border: '1px solid #ced0d4', borderRadius: '8px', background: '#ffffff', cursor: 'pointer', width: '100%', textAlign: 'left',
                               borderColor: facebookPixelId === '928374928374829' ? '#1877F2' : '#ced0d4',
                               backgroundColor: facebookPixelId === '928374928374829' ? '#f0f7ff' : '#ffffff',
@@ -5258,7 +5258,7 @@ export default function AdminDashboard() {
                             onClick={() => {
                               setFacebookPixelId('1083948394832');
                             }}
-                            style={{ 
+                            style={{
                               display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', border: '1px solid #ced0d4', borderRadius: '8px', background: '#ffffff', cursor: 'pointer', width: '100%', textAlign: 'left',
                               borderColor: facebookPixelId === '1083948394832' ? '#1877F2' : '#ced0d4',
                               backgroundColor: facebookPixelId === '1083948394832' ? '#f0f7ff' : '#ffffff',
@@ -5301,8 +5301,8 @@ export default function AdminDashboard() {
                           onClick={async () => {
                             setFacebookConnectedUser('Deeksha Sharma');
                             setFacebookSelectedPixel(facebookPixelId === '928374928374829' ? 'Deera Glow Pixel (ID: 928374928374829)' : 'Personal Test Pixel (ID: 1083948394832)');
-                            await handleSaveSettings({ 
-                              facebookPixelId, 
+                            await handleSaveSettings({
+                              facebookPixelId,
                               facebookPixelCode: facebookPixelCode || `<!-- Meta Pixel Code -->\n<script>\n!function(f,b,e,v,n,t,s)\n{if(f.fbq)return;n=f.fbq=function(){n.callMethod?\nn.callMethod.apply(n,arguments):n.queue.push(arguments)};\nif(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';\nn.queue=[];t=b.createElement(e);t.async=!0;\nt.src=v;s=b.getElementsByTagName(e)[0];\ns.parentNode.insertBefore(t,s)}(window, document,'script',\n'https://connect.facebook.net/en_US/fbevents.js');\nfbq('init', '${facebookPixelId}');\nfbq('track', 'PageView');\n</script>`
                             });
                             setShowFacebookPopup(false);
@@ -5346,780 +5346,780 @@ export default function AdminDashboard() {
 
           return (
             <div>
-            
-            {/* Header row */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '24px' }}>🏷️</span>
-                <h1 style={{ fontSize: '20px', fontWeight: '700', margin: 0 }}>Inventory Catalog</h1>
+
+              {/* Header row */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '24px' }}>🏷️</span>
+                  <h1 style={{ fontSize: '20px', fontWeight: '700', margin: 0 }}>Inventory Catalog</h1>
+                </div>
               </div>
-            </div>
 
-            {/* Vertical layout: Add form and Catalog Listing stacked vertically and full-width */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-              
-              {/* Add form */}
-              <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-                <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>
-                  {editingProductId ? 'Edit Jewelry Details' : 'Add New Jewelry'}
-                </h3>
+              {/* Vertical layout: Add form and Catalog Listing stacked vertically and full-width */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
 
-                {formError && (
-                  <div style={{ backgroundColor: '#ffe8d6', color: '#a65d00', padding: '10px 12px', borderRadius: '6px', fontSize: '12px', marginBottom: '16px' }}>
-                    ⚠️ {formError}
-                  </div>
-                )}
-                {formSuccess && (
-                  <div style={{ backgroundColor: '#e2ece9', color: '#2d5c4d', padding: '10px 12px', borderRadius: '6px', fontSize: '12px', marginBottom: '16px' }}>
-                    ✓ {formSuccess}
-                  </div>
-                )}
+                {/* Add form */}
+                <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                  <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>
+                    {editingProductId ? 'Edit Jewelry Details' : 'Add New Jewelry'}
+                  </h3>
 
-                <form onSubmit={handleAddProduct} style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Jewelry Name</label>
-                    <input 
-                      type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder="e.g. Royal Pearl Drops"
-                      style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                    />
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Collection</label>
-                      <select 
-                        value={collection} onChange={(e) => setCollection(e.target.value)}
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', background: '#ffffff' }}
-                      >
-                        {collections.map((coll) => (
-                          <option key={coll.id} value={coll.name}>{coll.name}</option>
-                        ))}
-                      </select>
+                  {formError && (
+                    <div style={{ backgroundColor: '#ffe8d6', color: '#a65d00', padding: '10px 12px', borderRadius: '6px', fontSize: '12px', marginBottom: '16px' }}>
+                      ⚠️ {formError}
                     </div>
+                  )}
+                  {formSuccess && (
+                    <div style={{ backgroundColor: '#e2ece9', color: '#2d5c4d', padding: '10px 12px', borderRadius: '6px', fontSize: '12px', marginBottom: '16px' }}>
+                      ✓ {formSuccess}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleAddProduct} style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Price (₹)</label>
-                      <input 
-                        type="number" value={price} onChange={(e) => setPrice(e.target.value)} required placeholder="899"
+                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Jewelry Name</label>
+                      <input
+                        type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder="e.g. Royal Pearl Drops"
                         style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                       />
                     </div>
-                  </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Highlights</label>
-                    <input 
-                      type="text" value={features} onChange={(e) => setFeatures(e.target.value)} required placeholder="e.g. 925 Sterling Silver • Gold Plated"
-                      style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                    />
-                  </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Collection</label>
+                        <select
+                          value={collection} onChange={(e) => setCollection(e.target.value)}
+                          style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', background: '#ffffff' }}
+                        >
+                          {collections.map((coll) => (
+                            <option key={coll.id} value={coll.name}>{coll.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Price (₹)</label>
+                        <input
+                          type="number" value={price} onChange={(e) => setPrice(e.target.value)} required placeholder="899"
+                          style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                        />
+                      </div>
+                    </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontWeight: '600', color: '#1a1a1a', fontSize: '13px' }}>Product Media Gallery</label>
-                    <p style={{ margin: '0 0 8px 0', fontSize: '11px', color: '#8c8c8c' }}>
-                      Add multiple images. Drag and drop to reorder. The first image will be the primary cover image.
-                    </p>
-                    
-                    {/* Gallery Grid */}
-                    <div style={{ 
-                      display: 'flex', 
-                      flexWrap: 'wrap', 
-                      gap: '12px', 
-                      minHeight: '110px', 
-                      padding: '16px', 
-                      border: '2px dashed #e3e3e3', 
-                      borderRadius: '8px', 
-                      backgroundColor: '#fafafa',
-                      alignItems: 'center'
-                    }}>
-                      {galleryImages.length === 0 ? (
-                        <div style={{ width: '100%', textAlign: 'center', color: '#8c8c8c', fontSize: '12px', padding: '20px 0' }}>
-                          No images selected. Upload files or select from media library.
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Highlights</label>
+                      <input
+                        type="text" value={features} onChange={(e) => setFeatures(e.target.value)} required placeholder="e.g. 925 Sterling Silver • Gold Plated"
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label style={{ fontWeight: '600', color: '#1a1a1a', fontSize: '13px' }}>Product Media Gallery</label>
+                      <p style={{ margin: '0 0 8px 0', fontSize: '11px', color: '#8c8c8c' }}>
+                        Add multiple images. Drag and drop to reorder. The first image will be the primary cover image.
+                      </p>
+
+                      {/* Gallery Grid */}
+                      <div style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '12px',
+                        minHeight: '110px',
+                        padding: '16px',
+                        border: '2px dashed #e3e3e3',
+                        borderRadius: '8px',
+                        backgroundColor: '#fafafa',
+                        alignItems: 'center'
+                      }}>
+                        {galleryImages.length === 0 ? (
+                          <div style={{ width: '100%', textAlign: 'center', color: '#8c8c8c', fontSize: '12px', padding: '20px 0' }}>
+                            No images selected. Upload files or select from media library.
+                          </div>
+                        ) : (
+                          galleryImages.map((imgUrl, index) => (
+                            <div
+                              key={`${imgUrl}-${index}`}
+                              draggable
+                              onDragStart={(e) => {
+                                e.dataTransfer.setData('text/plain', index.toString());
+                                e.currentTarget.style.opacity = '0.5';
+                              }}
+                              onDragEnd={(e) => {
+                                e.currentTarget.style.opacity = '1';
+                              }}
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                e.currentTarget.style.borderColor = '#1a1a1a';
+                              }}
+                              onDragLeave={(e) => {
+                                e.currentTarget.style.borderColor = 'transparent';
+                              }}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                e.currentTarget.style.borderColor = 'transparent';
+                                const sourceIdxStr = e.dataTransfer.getData('text/plain');
+                                if (sourceIdxStr === '') return;
+                                const sourceIdx = parseInt(sourceIdxStr, 10);
+                                if (sourceIdx === index) return;
+
+                                const newImages = [...galleryImages];
+                                const [dragged] = newImages.splice(sourceIdx, 1);
+                                newImages.splice(index, 0, dragged);
+                                setGalleryImages(newImages);
+                              }}
+                              style={{
+                                position: 'relative',
+                                width: '90px',
+                                height: '90px',
+                                borderRadius: '8px',
+                                overflow: 'hidden',
+                                border: '2px solid transparent',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                                cursor: 'grab',
+                                transition: 'all 0.2s ease',
+                                backgroundColor: '#ffffff'
+                              }}
+                            >
+                              <img
+                                src={imgUrl}
+                                alt={`Product image ${index + 1}`}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              />
+
+                              {/* Cover Badge */}
+                              {index === 0 && (
+                                <div style={{
+                                  position: 'absolute',
+                                  bottom: '4px',
+                                  left: '50%',
+                                  transform: 'translateX(-50%)',
+                                  backgroundColor: '#1a1a1a',
+                                  color: '#ffffff',
+                                  fontSize: '8px',
+                                  fontWeight: '700',
+                                  padding: '2px 6px',
+                                  borderRadius: '4px',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.5px',
+                                  pointerEvents: 'none'
+                                }}>
+                                  Cover
+                                </div>
+                              )}
+
+                              {/* Delete overlay */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setGalleryImages((prev) => prev.filter((_, idx) => idx !== index));
+                                }}
+                                style={{
+                                  position: 'absolute',
+                                  top: '4px',
+                                  right: '4px',
+                                  width: '18px',
+                                  height: '18px',
+                                  borderRadius: '50%',
+                                  backgroundColor: 'rgba(0,0,0,0.6)',
+                                  color: '#ffffff',
+                                  border: 'none',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '9px',
+                                  cursor: 'pointer',
+                                  transition: 'background-color 0.2s',
+                                  fontWeight: 'bold'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e03e3e'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.6)'}
+                                title="Remove image"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                      {/* Actions Row */}
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setModalSearchQuery('');
+                            setMediaSelectorMode('product');
+                            setShowMediaModal(true);
+                          }}
+                          style={{
+                            backgroundColor: '#ffffff',
+                            border: '1px solid #cccccc',
+                            borderRadius: '6px',
+                            padding: '8px 14px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = '#1a1a1a';
+                            e.currentTarget.style.backgroundColor = '#fafafa';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = '#cccccc';
+                            e.currentTarget.style.backgroundColor = '#ffffff';
+                          }}
+                        >
+                          <span>🖼️</span> Browse Media
+                        </button>
+                        <label
+                          style={{
+                            backgroundColor: '#1a1a1a',
+                            color: '#ffffff',
+                            borderRadius: '6px',
+                            padding: '8px 14px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            textAlign: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#333333'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                        >
+                          <span>📤</span> Upload File
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                const file = e.target.files[0];
+                                try {
+                                  const data = await uploadMediaFile(file);
+                                  setGalleryImages((prev) => [...prev.filter(img => img !== '/images/category_banner_jewelry.png'), data.url]);
+                                  await fetchMediaFiles();
+                                } catch (err) {
+                                  alert(err instanceof Error ? err.message : 'Error uploading file.');
+                                } finally {
+                                  e.target.value = '';
+                                }
+                              }
+                            }}
+                            style={{ display: 'none' }}
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Description</label>
+                      <textarea
+                        value={description} onChange={(e) => setDescription(e.target.value)} required rows={4} placeholder="Describe the jewelry design and details..."
+                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'none' }}
+                      />
+                    </div>
+
+                    {/* Specifications Section */}
+                    <div style={{ borderTop: '1px solid #eee', paddingTop: '12px', marginTop: '6px' }}>
+                      <h4 style={{ margin: '0 0 10px 0', fontSize: '12px', fontWeight: '700', color: '#1a1a1a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Specifications & Details</h4>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Subtitle / Highlights Tagline</label>
+                          <input
+                            type="text" value={tagline} onChange={(e) => setTagline(e.target.value)} required placeholder="e.g. 100% tarnish-free — 925 sterling silver — premium cubic zirconia"
+                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                          />
                         </div>
-                      ) : (
-                        galleryImages.map((imgUrl, index) => (
-                          <div 
-                            key={`${imgUrl}-${index}`}
-                            draggable
-                            onDragStart={(e) => {
-                              e.dataTransfer.setData('text/plain', index.toString());
-                              e.currentTarget.style.opacity = '0.5';
-                            }}
-                            onDragEnd={(e) => {
-                              e.currentTarget.style.opacity = '1';
-                            }}
-                            onDragOver={(e) => {
-                              e.preventDefault();
-                              e.currentTarget.style.borderColor = '#1a1a1a';
-                            }}
-                            onDragLeave={(e) => {
-                              e.currentTarget.style.borderColor = 'transparent';
-                            }}
-                            onDrop={(e) => {
-                              e.preventDefault();
-                              e.currentTarget.style.borderColor = 'transparent';
-                              const sourceIdxStr = e.dataTransfer.getData('text/plain');
-                              if (sourceIdxStr === '') return;
-                              const sourceIdx = parseInt(sourceIdxStr, 10);
-                              if (sourceIdx === index) return;
-                              
-                              const newImages = [...galleryImages];
-                              const [dragged] = newImages.splice(sourceIdx, 1);
-                              newImages.splice(index, 0, dragged);
-                              setGalleryImages(newImages);
-                            }}
-                            style={{ 
-                              position: 'relative', 
-                              width: '90px', 
-                              height: '90px', 
-                              borderRadius: '8px', 
-                              overflow: 'hidden', 
-                              border: '2px solid transparent',
-                              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                              cursor: 'grab',
-                              transition: 'all 0.2s ease',
-                              backgroundColor: '#ffffff'
-                            }}
-                          >
-                            <img 
-                              src={imgUrl} 
-                              alt={`Product image ${index + 1}`} 
-                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            />
-                            
-                            {/* Cover Badge */}
-                            {index === 0 && (
-                              <div style={{ 
-                                position: 'absolute', 
-                                bottom: '4px', 
-                                left: '50%', 
-                                transform: 'translateX(-50%)',
-                                backgroundColor: '#1a1a1a', 
-                                color: '#ffffff', 
-                                fontSize: '8px', 
-                                fontWeight: '700', 
-                                padding: '2px 6px', 
-                                borderRadius: '4px',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px',
-                                pointerEvents: 'none'
-                              }}>
-                                Cover
-                              </div>
-                            )}
 
-                            {/* Delete overlay */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Materials (Comma separated)</label>
+                            <input
+                              type="text" value={fragrances} onChange={(e) => setFragrances(e.target.value)} required placeholder="925 Sterling Silver, Gold Plated, Cubic Zirconia"
+                              style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                            />
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Dimensions</label>
+                            <input
+                              type="text" value={dimensions} onChange={(e) => setDimensions(e.target.value)} required placeholder="Adjustable Ring Size / Standard Size"
+                              style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                            />
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Jewelry Weight</label>
+                            <input
+                              type="text" value={weight} onChange={(e) => setWeight(e.target.value)} required placeholder="15 gms"
+                              style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                            />
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Durability / Polish</label>
+                            <input
+                              type="text" value={burnHours} onChange={(e) => setBurnHours(e.target.value)} required placeholder="Tarnish-Free Polish"
+                              style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Accordions */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Durability & Lifetime Polish</label>
+                          <input
+                            type="text" value={accBurnTime} onChange={(e) => setAccBurnTime(e.target.value)} required placeholder="Tarnish-free polish lifetime durability"
+                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Materials & Craftsmanship</label>
+                          <textarea
+                            value={accIngredients} onChange={(e) => setAccIngredients(e.target.value)} required rows={2} placeholder="Materials and craftsmanship details..."
+                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'none' }}
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Care Instructions</label>
+                          <textarea
+                            value={accInstructions} onChange={(e) => setAccInstructions(e.target.value)} required rows={2} placeholder="Cleaning and storage instructions..."
+                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'none' }}
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Shipping & Returns</label>
+                          <textarea
+                            value={accShipping} onChange={(e) => setAccShipping(e.target.value)} required rows={2} placeholder="Shipping info..."
+                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'none' }}
+                          />
+                        </div>
+
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                      <button
+                        type="submit" disabled={submitting}
+                        style={{ flexGrow: 1, backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                      >
+                        {submitting ? 'Saving...' : editingProductId ? 'Update Product' : 'Add Product'}
+                      </button>
+                      {editingProductId && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingProductId(null);
+                            setName('');
+                            setPrice('');
+                            setDescription('');
+                            setFeatures('');
+                            setImageUrl('/images/hero_candle.png');
+                            setTagline('100% natural soy wax — wooden wick — 30-40 hours burn time');
+                            setFragrances('Oud, Jasmin, Rose, Vanilla');
+                            setDimensions('W: 2.5 inch x H: 3 inch');
+                            setWeight('350 gms');
+                            setBurnHours('32 Hrs');
+                            setAccBurnTime('32 Hours average');
+                            setAccIngredients("100% natural soy wax, phthalate-free premium fragrance oils, cotton-core crackling wooden wicks, reusable amber glass jars. No paraffin, no artificial dyes. Every jar is hand-poured and cured for 48 hours before it ships.");
+                            setAccInstructions("Trim the wooden wick to 1/4 inch before each burn. Allow the wax to melt to the edges on first burn to avoid tunneling. Never burn for more than 4 hours at a time. Keep away from drafts, children, and pets.");
+                            setAccShipping("Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the candle is completely unburned and in its original packaging.");
+                          }}
+                          style={{ backgroundColor: 'transparent', border: '1px solid #ccc', borderRadius: '6px', padding: '10px', fontSize: '13px', cursor: 'pointer' }}
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                </div>
+
+                {/* Product list */}
+                <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                  <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>
+                    Catalog Listing {catalogView === 'trash' ? 'Trash' : ''}
+                  </h3>
+
+                  {/* Search & Filter Bar OR Bulk Actions Bar */}
+                  {selectedCatalogProductIds.length > 0 ? (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      backgroundColor: '#f4f6f8',
+                      border: '1px solid #1a1a1a',
+                      borderRadius: '6px',
+                      padding: '8px 16px',
+                      marginBottom: '16px',
+                      height: '48px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: '#1a1a1a' }}>
+                          {selectedCatalogProductIds.length} product{selectedCatalogProductIds.length > 1 ? 's' : ''} selected
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedCatalogProductIds([])}
+                          style={{ background: 'transparent', border: 'none', color: '#6d6d6d', textDecoration: 'underline', fontSize: '12px', cursor: 'pointer' }}
+                        >
+                          Clear selection
+                        </button>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        {catalogView === 'active' ? (
+                          <>
                             <button
                               type="button"
                               onClick={() => {
-                                setGalleryImages((prev) => prev.filter((_, idx) => idx !== index));
+                                setBulkPrice('');
+                                setBulkCollection('');
+                                setShowBulkEditModal(true);
                               }}
                               style={{
-                                position: 'absolute',
-                                top: '4px',
-                                right: '4px',
-                                width: '18px',
-                                height: '18px',
-                                borderRadius: '50%',
-                                backgroundColor: 'rgba(0,0,0,0.6)',
-                                color: '#ffffff',
-                                border: 'none',
+                                backgroundColor: '#ffffff',
+                                border: '1px solid #cccccc',
+                                borderRadius: '6px',
+                                padding: '6px 12px',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '9px',
+                                gap: '6px',
+                                transition: 'all 0.2s',
+                                height: '32px'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.borderColor = '#1a1a1a'}
+                              onMouseLeave={(e) => e.currentTarget.style.borderColor = '#cccccc'}
+                            >
+                              Bulk Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleBulkDelete}
+                              style={{
+                                backgroundColor: '#ffebe9',
+                                color: '#ff4d4d',
+                                border: 'none',
+                                borderRadius: '6px',
+                                padding: '6px 12px',
+                                fontSize: '12px',
+                                fontWeight: '600',
                                 cursor: 'pointer',
                                 transition: 'background-color 0.2s',
-                                fontWeight: 'bold'
+                                height: '32px'
                               }}
-                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e03e3e'}
-                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.6)'}
-                              title="Remove image"
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ffdcd9'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ffebe9'}
                             >
-                              ✕
+                              Move to Trash
                             </button>
-                          </div>
-                        ))
-                      )}
+                          </>
+                        ) : (
+                          <>
+                            <button type="button" onClick={handleBulkRestore} style={{ backgroundColor: '#e2ece9', color: '#2d5c4d', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', height: '32px' }}>
+                              Restore
+                            </button>
+                            <button type="button" onClick={handleBulkPermanentDelete} style={{ backgroundColor: '#ffebe9', color: '#ff4d4d', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', height: '32px' }}>
+                              Delete Forever
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
-
-                    {/* Actions Row */}
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-                      <button 
+                  ) : (
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px' }}>
+                      <button
                         type="button"
                         onClick={() => {
-                          setModalSearchQuery('');
-                          setMediaSelectorMode('product');
-                          setShowMediaModal(true);
+                          setCatalogView('active');
+                          setSelectedCatalogProductIds([]);
                         }}
-                        style={{ 
-                          backgroundColor: '#ffffff', 
-                          border: '1px solid #cccccc', 
-                          borderRadius: '6px', 
-                          padding: '8px 14px', 
-                          fontSize: '12px', 
-                          fontWeight: '600',
-                          cursor: 'pointer',
+                        style={{
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '6px',
-                          transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.borderColor = '#1a1a1a';
-                          e.currentTarget.style.backgroundColor = '#fafafa';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.borderColor = '#cccccc';
-                          e.currentTarget.style.backgroundColor = '#ffffff';
-                        }}
-                      >
-                        <span>🖼️</span> Browse Media
-                      </button>
-                      <label 
-                        style={{ 
-                          backgroundColor: '#1a1a1a', 
-                          color: '#ffffff', 
-                          borderRadius: '6px', 
-                          padding: '8px 14px', 
-                          fontSize: '12px', 
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          textAlign: 'center',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#333333'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
-                      >
-                        <span>📤</span> Upload File
-                        <input 
-                          type="file" 
-                          accept="image/*"
-                          onChange={async (e) => {
-                            if (e.target.files && e.target.files[0]) {
-                              const file = e.target.files[0];
-                              try {
-                                const data = await uploadMediaFile(file);
-                                setGalleryImages((prev) => [...prev.filter(img => img !== '/images/category_banner_jewelry.png'), data.url]);
-                                await fetchMediaFiles();
-                              } catch (err) {
-                                alert(err instanceof Error ? err.message : 'Error uploading file.');
-                              } finally {
-                                e.target.value = '';
-                              }
-                            }
-                          }}
-                          style={{ display: 'none' }}
-                        />
-                      </label>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Description</label>
-                    <textarea 
-                      value={description} onChange={(e) => setDescription(e.target.value)} required rows={4} placeholder="Describe the jewelry design and details..."
-                      style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'none' }}
-                    />
-                  </div>
-
-                  {/* Specifications Section */}
-                  <div style={{ borderTop: '1px solid #eee', paddingTop: '12px', marginTop: '6px' }}>
-                    <h4 style={{ margin: '0 0 10px 0', fontSize: '12px', fontWeight: '700', color: '#1a1a1a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Specifications & Details</h4>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Subtitle / Highlights Tagline</label>
-                        <input 
-                          type="text" value={tagline} onChange={(e) => setTagline(e.target.value)} required placeholder="e.g. 100% tarnish-free — 925 sterling silver — premium cubic zirconia"
-                          style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                        />
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Materials (Comma separated)</label>
-                          <input 
-                            type="text" value={fragrances} onChange={(e) => setFragrances(e.target.value)} required placeholder="925 Sterling Silver, Gold Plated, Cubic Zirconia"
-                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                          />
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Dimensions</label>
-                          <input 
-                            type="text" value={dimensions} onChange={(e) => setDimensions(e.target.value)} required placeholder="Adjustable Ring Size / Standard Size"
-                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                          />
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Jewelry Weight</label>
-                          <input 
-                            type="text" value={weight} onChange={(e) => setWeight(e.target.value)} required placeholder="15 gms"
-                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                          />
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Durability / Polish</label>
-                          <input 
-                            type="text" value={burnHours} onChange={(e) => setBurnHours(e.target.value)} required placeholder="Tarnish-Free Polish"
-                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Accordions */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Durability & Lifetime Polish</label>
-                        <input 
-                          type="text" value={accBurnTime} onChange={(e) => setAccBurnTime(e.target.value)} required placeholder="Tarnish-free polish lifetime durability"
-                          style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                        />
-                      </div>
-
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Materials & Craftsmanship</label>
-                        <textarea 
-                          value={accIngredients} onChange={(e) => setAccIngredients(e.target.value)} required rows={2} placeholder="Materials and craftsmanship details..."
-                          style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'none' }}
-                        />
-                      </div>
-
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Care Instructions</label>
-                        <textarea 
-                          value={accInstructions} onChange={(e) => setAccInstructions(e.target.value)} required rows={2} placeholder="Cleaning and storage instructions..."
-                          style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'none' }}
-                        />
-                      </div>
-
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Shipping & Returns</label>
-                        <textarea 
-                          value={accShipping} onChange={(e) => setAccShipping(e.target.value)} required rows={2} placeholder="Shipping info..."
-                          style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'none' }}
-                        />
-                      </div>
-
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-                    <button 
-                      type="submit" disabled={submitting}
-                      style={{ flexGrow: 1, backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
-                    >
-                      {submitting ? 'Saving...' : editingProductId ? 'Update Product' : 'Add Product'}
-                    </button>
-                    {editingProductId && (
-                      <button 
-                        type="button"
-                        onClick={() => {
-                          setEditingProductId(null);
-                          setName('');
-                          setPrice('');
-                          setDescription('');
-                          setFeatures('');
-                          setImageUrl('/images/hero_candle.png');
-                          setTagline('100% natural soy wax — wooden wick — 30-40 hours burn time');
-                          setFragrances('Oud, Jasmin, Rose, Vanilla');
-                          setDimensions('W: 2.5 inch x H: 3 inch');
-                          setWeight('350 gms');
-                          setBurnHours('32 Hrs');
-                          setAccBurnTime('32 Hours average');
-                          setAccIngredients("100% natural soy wax, phthalate-free premium fragrance oils, cotton-core crackling wooden wicks, reusable amber glass jars. No paraffin, no artificial dyes. Every jar is hand-poured and cured for 48 hours before it ships.");
-                          setAccInstructions("Trim the wooden wick to 1/4 inch before each burn. Allow the wax to melt to the edges on first burn to avoid tunneling. Never burn for more than 4 hours at a time. Keep away from drafts, children, and pets.");
-                          setAccShipping("Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the candle is completely unburned and in its original packaging.");
-                        }}
-                        style={{ backgroundColor: 'transparent', border: '1px solid #ccc', borderRadius: '6px', padding: '10px', fontSize: '13px', cursor: 'pointer' }}
-                      >
-                        Cancel
-                      </button>
-                    )}
-                  </div>
-                </form>
-              </div>
-
-              {/* Product list */}
-              <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-                <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>
-                  Catalog Listing {catalogView === 'trash' ? 'Trash' : ''}
-                </h3>
-
-                {/* Search & Filter Bar OR Bulk Actions Bar */}
-                {selectedCatalogProductIds.length > 0 ? (
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'space-between', 
-                    backgroundColor: '#f4f6f8', 
-                    border: '1px solid #1a1a1a', 
-                    borderRadius: '6px', 
-                    padding: '8px 16px', 
-                    marginBottom: '16px',
-                    height: '48px'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#1a1a1a' }}>
-                        {selectedCatalogProductIds.length} product{selectedCatalogProductIds.length > 1 ? 's' : ''} selected
-                      </span>
-                      <button 
-                        type="button" 
-                        onClick={() => setSelectedCatalogProductIds([])}
-                        style={{ background: 'transparent', border: 'none', color: '#6d6d6d', textDecoration: 'underline', fontSize: '12px', cursor: 'pointer' }}
-                      >
-                        Clear selection
-                      </button>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      {catalogView === 'active' ? (
-                        <>
-                          <button 
-                            type="button"
-                            onClick={() => {
-                              setBulkPrice('');
-                              setBulkCollection('');
-                              setShowBulkEditModal(true);
-                            }}
-                            style={{ 
-                              backgroundColor: '#ffffff', 
-                              border: '1px solid #cccccc', 
-                              borderRadius: '6px', 
-                              padding: '6px 12px', 
-                              fontSize: '12px', 
-                              fontWeight: '600', 
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              transition: 'all 0.2s',
-                              height: '32px'
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.borderColor = '#1a1a1a'}
-                            onMouseLeave={(e) => e.currentTarget.style.borderColor = '#cccccc'}
-                          >
-                            Bulk Edit
-                          </button>
-                          <button 
-                            type="button"
-                            onClick={handleBulkDelete}
-                            style={{ 
-                              backgroundColor: '#ffebe9', 
-                              color: '#ff4d4d',
-                              border: 'none', 
-                              borderRadius: '6px', 
-                              padding: '6px 12px', 
-                              fontSize: '12px', 
-                              fontWeight: '600', 
-                              cursor: 'pointer',
-                              transition: 'background-color 0.2s',
-                              height: '32px'
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ffdcd9'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ffebe9'}
-                          >
-                            Move to Trash
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button type="button" onClick={handleBulkRestore} style={{ backgroundColor: '#e2ece9', color: '#2d5c4d', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', height: '32px' }}>
-                            Restore
-                          </button>
-                          <button type="button" onClick={handleBulkPermanentDelete} style={{ backgroundColor: '#ffebe9', color: '#ff4d4d', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', height: '32px' }}>
-                            Delete Forever
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px' }}>
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        setCatalogView('active');
-                        setSelectedCatalogProductIds([]);
-                      }}
-                      style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '8px', 
-                        padding: '8px 14px', 
-                        border: catalogView === 'active' ? '1px solid #1a1a1a' : '1px solid #cccccc', 
-                        borderRadius: '6px', 
-                        fontSize: '13px', 
-                        fontWeight: '600', 
-                        backgroundColor: catalogView === 'active' ? '#f4f6f8' : '#ffffff', 
-                        cursor: 'pointer',
-                        color: '#1a1a1a',
-                        transition: 'all 0.2s',
-                        height: '36px'
-                      }}
-                    >
-                      <span>Active ({activeProductsCount})</span>
-                    </button>
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        setCatalogView('trash');
-                        setSelectedCatalogProductIds([]);
-                      }}
-                      style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '8px', 
-                        padding: '8px 14px', 
-                        border: catalogView === 'trash' ? '1px solid #1a1a1a' : '1px solid #cccccc', 
-                        borderRadius: '6px', 
-                        fontSize: '13px', 
-                        fontWeight: '600', 
-                        backgroundColor: catalogView === 'trash' ? '#f4f6f8' : '#ffffff', 
-                        cursor: 'pointer',
-                        color: '#1a1a1a',
-                        height: '36px'
-                      }}
-                    >
-                      Trash ({trashedProductsCount})
-                    </button>
-
-                    <div style={{ position: 'relative', width: '320px', maxWidth: '100%' }}>
-                      <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#8c8c8c', fontSize: '13px' }}>🔍</span>
-                      <input 
-                        type="text" 
-                        placeholder="Search and filter" 
-                        value={productSearchQuery}
-                        onChange={(e) => setProductSearchQuery(e.target.value)}
-                        style={{ 
-                          width: '100%', 
-                          padding: '8px 12px 8px 36px', 
-                          border: '1px solid #cccccc', 
-                          borderRadius: '6px', 
+                          gap: '8px',
+                          padding: '8px 14px',
+                          border: catalogView === 'active' ? '1px solid #1a1a1a' : '1px solid #cccccc',
+                          borderRadius: '6px',
                           fontSize: '13px',
-                          outline: 'none',
+                          fontWeight: '600',
+                          backgroundColor: catalogView === 'active' ? '#f4f6f8' : '#ffffff',
+                          cursor: 'pointer',
+                          color: '#1a1a1a',
+                          transition: 'all 0.2s',
+                          height: '36px'
+                        }}
+                      >
+                        <span>Active ({activeProductsCount})</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCatalogView('trash');
+                          setSelectedCatalogProductIds([]);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '8px 14px',
+                          border: catalogView === 'trash' ? '1px solid #1a1a1a' : '1px solid #cccccc',
+                          borderRadius: '6px',
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          backgroundColor: catalogView === 'trash' ? '#f4f6f8' : '#ffffff',
+                          cursor: 'pointer',
                           color: '#1a1a1a',
                           height: '36px'
                         }}
-                      />
+                      >
+                        Trash ({trashedProductsCount})
+                      </button>
+
+                      <div style={{ position: 'relative', width: '320px', maxWidth: '100%' }}>
+                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#8c8c8c', fontSize: '13px' }}>🔍</span>
+                        <input
+                          type="text"
+                          placeholder="Search and filter"
+                          value={productSearchQuery}
+                          onChange={(e) => setProductSearchQuery(e.target.value)}
+                          style={{
+                            width: '100%',
+                            padding: '8px 12px 8px 36px',
+                            border: '1px solid #cccccc',
+                            borderRadius: '6px',
+                            fontSize: '13px',
+                            outline: 'none',
+                            color: '#1a1a1a',
+                            height: '36px'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {loadingProducts ? (
+                    <p style={{ color: '#9e9e9e', fontSize: '13px' }}>Loading catalog...</p>
+                  ) : filteredProducts.length === 0 ? (
+                    <p style={{ color: '#9e9e9e', fontSize: '13px' }}>{catalogView === 'trash' ? 'No products in trash.' : 'No products found in store catalog.'}</p>
+                  ) : (
+                    <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', overflow: 'hidden' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
+                        <thead>
+                          <tr style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #e3e3e3', color: '#6d6d6d', fontWeight: '600' }}>
+                            <th style={{ padding: '12px 16px', width: '48px' }}>
+                              <input
+                                type="checkbox"
+                                checked={isAllSelected}
+                                onChange={handleSelectAll}
+                                style={{ cursor: 'pointer' }}
+                              />
+                            </th>
+                            <th style={{ padding: '12px 16px' }}>Product</th>
+                            <th style={{ padding: '12px 16px' }}>Status</th>
+                            <th style={{ padding: '12px 16px' }}>Inventory</th>
+                            <th style={{ padding: '12px 16px' }}>Category</th>
+                            <th style={{ padding: '12px 16px' }}>Price</th>
+                            <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredProducts.map((prod) => {
+                            const isSelected = selectedCatalogProductIds.includes(prod.id);
+                            return (
+                              <tr key={prod.id} style={{ borderBottom: '1px solid #e3e3e3', transition: 'background-color 0.2s', backgroundColor: isSelected ? '#f4f6f8' : 'transparent' }}>
+                                <td style={{ padding: '12px 16px' }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => handleSelectRow(prod.id)}
+                                    style={{ cursor: 'pointer' }}
+                                  />
+                                </td>
+                                <td style={{ padding: '12px 16px' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <div style={{ position: 'relative', width: '40px', height: '40px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #e3e3e3', flexShrink: 0 }}>
+                                      <Image src={prod.image_url} alt={prod.name} fill style={{ objectFit: 'cover' }} />
+                                    </div>
+                                    <span style={{ fontWeight: '600', color: '#1a1a1a' }}>{prod.name}</span>
+                                  </div>
+                                </td>
+                                <td style={{ padding: '12px 16px' }}>
+                                  <span style={{
+                                    display: 'inline-block',
+                                    padding: '2px 8px',
+                                    borderRadius: '12px',
+                                    fontSize: '11px',
+                                    fontWeight: '600',
+                                    backgroundColor: prod.deleted_at ? '#f1f1f1' : '#e2ece9',
+                                    color: prod.deleted_at ? '#6d6d6d' : '#2d5c4d'
+                                  }}>
+                                    {prod.deleted_at ? 'Trashed' : 'Active'}
+                                  </span>
+                                </td>
+                                <td style={{ padding: '12px 16px' }}>
+                                  <span style={{ color: '#2e7d32', fontWeight: '500' }}>10 in stock</span>
+                                </td>
+                                <td style={{ padding: '12px 16px', color: '#6d6d6d' }}>
+                                  {prod.collection}
+                                </td>
+                                <td style={{ padding: '12px 16px', fontWeight: '600', color: '#1a1a1a' }}>
+                                  ₹{prod.price}
+                                </td>
+                                <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                                    <button
+                                      onClick={() => setSelectedDetailProduct(prod)}
+                                      style={{ background: 'transparent', border: 'none', color: '#1a1a1a', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
+                                    >
+                                      View
+                                    </button>
+                                    {catalogView === 'active' ? (
+                                      <>
+                                        <button
+                                          onClick={() => handleEditProductClick(prod)}
+                                          style={{ background: 'transparent', border: 'none', color: '#2196f3', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
+                                        >
+                                          Edit
+                                        </button>
+                                        <button
+                                          onClick={() => handleDuplicateProduct(prod)}
+                                          disabled={duplicatingProductId === prod.id}
+                                          style={{
+                                            background: 'transparent',
+                                            border: 'none',
+                                            color: '#2d5c4d',
+                                            cursor: duplicatingProductId === prod.id ? 'not-allowed' : 'pointer',
+                                            fontSize: '12px',
+                                            fontWeight: '600',
+                                            opacity: duplicatingProductId === prod.id ? 0.6 : 1
+                                          }}
+                                        >
+                                          {duplicatingProductId === prod.id ? 'Copying...' : 'Duplicate'}
+                                        </button>
+                                        <button
+                                          onClick={() => handleDeleteProduct(prod.id)}
+                                          style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
+                                        >
+                                          Delete
+                                        </button>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <button
+                                          onClick={() => handleRestoreProduct(prod.id)}
+                                          style={{ background: 'transparent', border: 'none', color: '#2d5c4d', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
+                                        >
+                                          Restore
+                                        </button>
+                                        <button
+                                          onClick={() => handlePermanentDeleteProduct(prod.id)}
+                                          style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
+                                        >
+                                          Delete Forever
+                                        </button>
+                                      </>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
+                {selectedDetailProduct && (
+                  <div
+                    role="dialog"
+                    aria-modal="true"
+                    style={{
+                      position: 'fixed',
+                      inset: 0,
+                      backgroundColor: 'rgba(0,0,0,0.35)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '24px',
+                      zIndex: 1000
+                    }}
+                    onClick={() => setSelectedDetailProduct(null)}
+                  >
+                    <div
+                      style={{ width: 'min(720px, 100%)', maxHeight: '90vh', overflowY: 'auto', backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #e3e3e3', boxShadow: '0 16px 40px rgba(0,0,0,0.18)' }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', padding: '20px 24px', borderBottom: '1px solid #e3e3e3' }}>
+                        <div>
+                          <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', lineHeight: 1.35 }}>{selectedDetailProduct.name}</h3>
+                          <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', backgroundColor: selectedDetailProduct.deleted_at ? '#f1f1f1' : '#e2ece9', color: selectedDetailProduct.deleted_at ? '#6d6d6d' : '#2d5c4d' }}>
+                            {selectedDetailProduct.deleted_at ? 'Trashed' : 'Active'}
+                          </span>
+                        </div>
+                        <button type="button" onClick={() => setSelectedDetailProduct(null)} style={{ width: '32px', height: '32px', border: '1px solid #cccccc', borderRadius: '6px', backgroundColor: '#ffffff', cursor: 'pointer', fontSize: '18px', lineHeight: 1 }}>
+                          x
+                        </button>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '20px', padding: '24px' }}>
+                        <div style={{ position: 'relative', width: '160px', height: '160px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e3e3e3', backgroundColor: '#f6f6f6' }}>
+                          <Image src={selectedDetailProduct.image_url} alt={selectedDetailProduct.name} fill style={{ objectFit: 'cover' }} />
+                        </div>
+                        <div style={{ display: 'grid', gap: '14px', fontSize: '13px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '12px' }}>
+                            <div>
+                              <div style={{ color: '#6d6d6d', marginBottom: '4px' }}>Price</div>
+                              <strong>₹{selectedDetailProduct.price}</strong>
+                            </div>
+                            <div>
+                              <div style={{ color: '#6d6d6d', marginBottom: '4px' }}>Category</div>
+                              <strong>{selectedDetailProduct.collection}</strong>
+                            </div>
+                            <div>
+                              <div style={{ color: '#6d6d6d', marginBottom: '4px' }}>Slug</div>
+                              <strong>{selectedDetailProduct.slug}</strong>
+                            </div>
+                          </div>
+                          <div>
+                            <div style={{ color: '#6d6d6d', marginBottom: '4px' }}>Description</div>
+                            <p style={{ margin: 0, lineHeight: 1.55 }}>{selectedDetailProduct.description}</p>
+                          </div>
+                          <div>
+                            <div style={{ color: '#6d6d6d', marginBottom: '4px' }}>Features</div>
+                            <p style={{ margin: 0, lineHeight: 1.55 }}>{selectedDetailProduct.features}</p>
+                          </div>
+                          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', paddingTop: '4px' }}>
+                            {!selectedDetailProduct.deleted_at && (
+                              <a href={`/products/${selectedDetailProduct.slug}`} target="_blank" rel="noreferrer" style={{ color: '#2196f3', fontSize: '13px', fontWeight: '600', textDecoration: 'none' }}>
+                                Open live product page
+                              </a>
+                            )}
+                            <button type="button" onClick={() => handleEditProductClick(selectedDetailProduct)} disabled={!!selectedDetailProduct.deleted_at} style={{ background: 'transparent', border: 'none', color: selectedDetailProduct.deleted_at ? '#a0a0a0' : '#2d5c4d', cursor: selectedDetailProduct.deleted_at ? 'not-allowed' : 'pointer', padding: 0, fontSize: '13px', fontWeight: '600' }}>
+                              Edit product
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
 
-                {loadingProducts ? (
-                  <p style={{ color: '#9e9e9e', fontSize: '13px' }}>Loading catalog...</p>
-                ) : filteredProducts.length === 0 ? (
-                  <p style={{ color: '#9e9e9e', fontSize: '13px' }}>{catalogView === 'trash' ? 'No products in trash.' : 'No products found in store catalog.'}</p>
-                ) : (
-                  <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', overflow: 'hidden' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
-                      <thead>
-                        <tr style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #e3e3e3', color: '#6d6d6d', fontWeight: '600' }}>
-                          <th style={{ padding: '12px 16px', width: '48px' }}>
-                            <input 
-                              type="checkbox" 
-                              checked={isAllSelected}
-                              onChange={handleSelectAll}
-                              style={{ cursor: 'pointer' }}
-                            />
-                          </th>
-                          <th style={{ padding: '12px 16px' }}>Product</th>
-                          <th style={{ padding: '12px 16px' }}>Status</th>
-                          <th style={{ padding: '12px 16px' }}>Inventory</th>
-                          <th style={{ padding: '12px 16px' }}>Category</th>
-                          <th style={{ padding: '12px 16px' }}>Price</th>
-                          <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredProducts.map((prod) => {
-                          const isSelected = selectedCatalogProductIds.includes(prod.id);
-                          return (
-                            <tr key={prod.id} style={{ borderBottom: '1px solid #e3e3e3', transition: 'background-color 0.2s', backgroundColor: isSelected ? '#f4f6f8' : 'transparent' }}>
-                              <td style={{ padding: '12px 16px' }}>
-                                <input 
-                                  type="checkbox" 
-                                  checked={isSelected}
-                                  onChange={() => handleSelectRow(prod.id)}
-                                  style={{ cursor: 'pointer' }}
-                                />
-                              </td>
-                              <td style={{ padding: '12px 16px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                  <div style={{ position: 'relative', width: '40px', height: '40px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #e3e3e3', flexShrink: 0 }}>
-                                    <Image src={prod.image_url} alt={prod.name} fill style={{ objectFit: 'cover' }} />
-                                  </div>
-                                  <span style={{ fontWeight: '600', color: '#1a1a1a' }}>{prod.name}</span>
-                                </div>
-                              </td>
-                              <td style={{ padding: '12px 16px' }}>
-                                <span style={{ 
-                                  display: 'inline-block', 
-                                  padding: '2px 8px', 
-                                  borderRadius: '12px', 
-                                  fontSize: '11px', 
-                                  fontWeight: '600', 
-                                  backgroundColor: prod.deleted_at ? '#f1f1f1' : '#e2ece9', 
-                                  color: prod.deleted_at ? '#6d6d6d' : '#2d5c4d' 
-                                }}>
-                                  {prod.deleted_at ? 'Trashed' : 'Active'}
-                                </span>
-                              </td>
-                              <td style={{ padding: '12px 16px' }}>
-                                <span style={{ color: '#2e7d32', fontWeight: '500' }}>10 in stock</span>
-                              </td>
-                              <td style={{ padding: '12px 16px', color: '#6d6d6d' }}>
-                                {prod.collection}
-                              </td>
-                              <td style={{ padding: '12px 16px', fontWeight: '600', color: '#1a1a1a' }}>
-                                ₹{prod.price}
-                              </td>
-                              <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                                  <button
-                                    onClick={() => setSelectedDetailProduct(prod)}
-                                    style={{ background: 'transparent', border: 'none', color: '#1a1a1a', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
-                                  >
-                                    View
-                                  </button>
-                                  {catalogView === 'active' ? (
-                                    <>
-                                  <button 
-                                    onClick={() => handleEditProductClick(prod)}
-                                    style={{ background: 'transparent', border: 'none', color: '#2196f3', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
-                                  >
-                                    Edit
-                                  </button>
-                                  <button 
-                                    onClick={() => handleDuplicateProduct(prod)}
-                                    disabled={duplicatingProductId === prod.id}
-                                    style={{
-                                      background: 'transparent',
-                                      border: 'none',
-                                      color: '#2d5c4d',
-                                      cursor: duplicatingProductId === prod.id ? 'not-allowed' : 'pointer',
-                                      fontSize: '12px',
-                                      fontWeight: '600',
-                                      opacity: duplicatingProductId === prod.id ? 0.6 : 1
-                                    }}
-                                  >
-                                    {duplicatingProductId === prod.id ? 'Copying...' : 'Duplicate'}
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteProduct(prod.id)}
-                                    style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
-                                  >
-                                    Delete
-                                  </button>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <button
-                                        onClick={() => handleRestoreProduct(prod.id)}
-                                        style={{ background: 'transparent', border: 'none', color: '#2d5c4d', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
-                                      >
-                                        Restore
-                                      </button>
-                                      <button
-                                        onClick={() => handlePermanentDeleteProduct(prod.id)}
-                                        style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
-                                      >
-                                        Delete Forever
-                                      </button>
-                                    </>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
               </div>
 
-              {selectedDetailProduct && (
-                <div
-                  role="dialog"
-                  aria-modal="true"
-                  style={{
-                    position: 'fixed',
-                    inset: 0,
-                    backgroundColor: 'rgba(0,0,0,0.35)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '24px',
-                    zIndex: 1000
-                  }}
-                  onClick={() => setSelectedDetailProduct(null)}
-                >
-                  <div
-                    style={{ width: 'min(720px, 100%)', maxHeight: '90vh', overflowY: 'auto', backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #e3e3e3', boxShadow: '0 16px 40px rgba(0,0,0,0.18)' }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', padding: '20px 24px', borderBottom: '1px solid #e3e3e3' }}>
-                      <div>
-                        <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', lineHeight: 1.35 }}>{selectedDetailProduct.name}</h3>
-                        <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', backgroundColor: selectedDetailProduct.deleted_at ? '#f1f1f1' : '#e2ece9', color: selectedDetailProduct.deleted_at ? '#6d6d6d' : '#2d5c4d' }}>
-                          {selectedDetailProduct.deleted_at ? 'Trashed' : 'Active'}
-                        </span>
-                      </div>
-                      <button type="button" onClick={() => setSelectedDetailProduct(null)} style={{ width: '32px', height: '32px', border: '1px solid #cccccc', borderRadius: '6px', backgroundColor: '#ffffff', cursor: 'pointer', fontSize: '18px', lineHeight: 1 }}>
-                        x
-                      </button>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '20px', padding: '24px' }}>
-                      <div style={{ position: 'relative', width: '160px', height: '160px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e3e3e3', backgroundColor: '#f6f6f6' }}>
-                        <Image src={selectedDetailProduct.image_url} alt={selectedDetailProduct.name} fill style={{ objectFit: 'cover' }} />
-                      </div>
-                      <div style={{ display: 'grid', gap: '14px', fontSize: '13px' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '12px' }}>
-                          <div>
-                            <div style={{ color: '#6d6d6d', marginBottom: '4px' }}>Price</div>
-                            <strong>₹{selectedDetailProduct.price}</strong>
-                          </div>
-                          <div>
-                            <div style={{ color: '#6d6d6d', marginBottom: '4px' }}>Category</div>
-                            <strong>{selectedDetailProduct.collection}</strong>
-                          </div>
-                          <div>
-                            <div style={{ color: '#6d6d6d', marginBottom: '4px' }}>Slug</div>
-                            <strong>{selectedDetailProduct.slug}</strong>
-                          </div>
-                        </div>
-                        <div>
-                          <div style={{ color: '#6d6d6d', marginBottom: '4px' }}>Description</div>
-                          <p style={{ margin: 0, lineHeight: 1.55 }}>{selectedDetailProduct.description}</p>
-                        </div>
-                        <div>
-                          <div style={{ color: '#6d6d6d', marginBottom: '4px' }}>Features</div>
-                          <p style={{ margin: 0, lineHeight: 1.55 }}>{selectedDetailProduct.features}</p>
-                        </div>
-                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', paddingTop: '4px' }}>
-                          {!selectedDetailProduct.deleted_at && (
-                            <a href={`/products/${selectedDetailProduct.slug}`} target="_blank" rel="noreferrer" style={{ color: '#2196f3', fontSize: '13px', fontWeight: '600', textDecoration: 'none' }}>
-                              Open live product page
-                            </a>
-                          )}
-                          <button type="button" onClick={() => handleEditProductClick(selectedDetailProduct)} disabled={!!selectedDetailProduct.deleted_at} style={{ background: 'transparent', border: 'none', color: selectedDetailProduct.deleted_at ? '#a0a0a0' : '#2d5c4d', cursor: selectedDetailProduct.deleted_at ? 'not-allowed' : 'pointer', padding: 0, fontSize: '13px', fontWeight: '600' }}>
-                            Edit product
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
             </div>
-
-          </div>
           );
         })()}
 
@@ -6132,21 +6132,21 @@ export default function AdminDashboard() {
                 <span style={{ fontSize: '24px' }}>📁</span>
                 <h1 style={{ fontSize: '20px', fontWeight: '700', margin: 0 }}>Files</h1>
               </div>
-              <label 
-                style={{ 
-                  backgroundColor: '#1a1a1a', 
-                  color: '#ffffff', 
-                  borderRadius: '6px', 
-                  padding: '8px 16px', 
-                  fontSize: '13px', 
+              <label
+                style={{
+                  backgroundColor: '#1a1a1a',
+                  color: '#ffffff',
+                  borderRadius: '6px',
+                  padding: '8px 16px',
+                  fontSize: '13px',
                   fontWeight: '600',
                   cursor: 'pointer',
                   textAlign: 'center'
                 }}
               >
                 Upload files
-                <input 
-                  type="file" 
+                <input
+                  type="file"
                   multiple
                   accept="image/*"
                   onChange={async (e) => {
@@ -6180,10 +6180,10 @@ export default function AdminDashboard() {
                 {mediaError}
               </div>
             )}
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
-              gap: '20px' 
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+              gap: '20px'
             }}>
               {loadingMedia ? (
                 <p style={{ color: '#9e9e9e', fontSize: '13px' }}>Loading files...</p>
@@ -6191,30 +6191,30 @@ export default function AdminDashboard() {
                 <p style={{ color: '#9e9e9e', fontSize: '13px' }}>No files uploaded yet.</p>
               ) : (
                 mediaFiles.map((file) => (
-                  <div 
-                    key={file.id} 
-                    style={{ 
-                      backgroundColor: '#ffffff', 
-                      border: '1px solid #e3e3e3', 
-                      borderRadius: '12px', 
+                  <div
+                    key={file.id}
+                    style={{
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e3e3e3',
+                      borderRadius: '12px',
                       overflow: 'hidden',
                       display: 'flex',
                       flexDirection: 'column',
                       boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
                     }}
                   >
-                    <div style={{ 
-                      height: '140px', 
-                      backgroundColor: '#f5f5f5', 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                    <div style={{
+                      height: '140px',
+                      backgroundColor: '#f5f5f5',
+                      display: 'flex',
+                      alignItems: 'center',
                       justifyContent: 'center',
                       borderBottom: '1px solid #e3e3e3',
                       position: 'relative'
                     }}>
-                      <img 
-                        src={file.url} 
-                        alt={file.filename} 
+                      <img
+                        src={file.url}
+                        alt={file.filename}
                         style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
                       />
                     </div>
@@ -6226,25 +6226,25 @@ export default function AdminDashboard() {
                         <span style={{ fontSize: '10px', color: '#8c8c8c' }}>{file.url}</span>
                       </div>
                       <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                        <button 
+                        <button
                           onClick={() => {
                             navigator.clipboard.writeText(window.location.origin + file.url);
                             alert('Link copied to clipboard!');
                           }}
-                          style={{ 
-                            flexGrow: 1, 
-                            backgroundColor: '#ffffff', 
-                            border: '1px solid #cccccc', 
-                            borderRadius: '4px', 
-                            padding: '4px 8px', 
-                            fontSize: '11px', 
-                            fontWeight: '600', 
-                            cursor: 'pointer' 
+                          style={{
+                            flexGrow: 1,
+                            backgroundColor: '#ffffff',
+                            border: '1px solid #cccccc',
+                            borderRadius: '4px',
+                            padding: '4px 8px',
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            cursor: 'pointer'
                           }}
                         >
                           🔗 Link
                         </button>
-                        <button 
+                        <button
                           onClick={async () => {
                             if (confirm('Delete this file? This will remove it from the server.')) {
                               try {
@@ -6257,15 +6257,15 @@ export default function AdminDashboard() {
                               }
                             }
                           }}
-                          style={{ 
-                            backgroundColor: '#ffebe9', 
-                            border: 'none', 
-                            borderRadius: '4px', 
-                            padding: '4px 8px', 
-                            fontSize: '11px', 
-                            fontWeight: '600', 
+                          style={{
+                            backgroundColor: '#ffebe9',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '4px 8px',
+                            fontSize: '11px',
+                            fontWeight: '600',
                             color: '#ff4d4d',
-                            cursor: 'pointer' 
+                            cursor: 'pointer'
                           }}
                         >
                           ✕ Delete
@@ -6281,32 +6281,32 @@ export default function AdminDashboard() {
 
         {/* Media Selector Modal popup */}
         {showMediaModal && (
-          <div style={{ 
-            position: 'fixed', 
-            top: 0, 
-            left: 0, 
-            right: 0, 
-            bottom: 0, 
-            backgroundColor: 'rgba(0, 0, 0, 0.4)', 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
             zIndex: 3000
           }}>
-            <div style={{ 
-              width: '600px', 
-              backgroundColor: '#ffffff', 
-              borderRadius: '12px', 
-              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.2)', 
-              display: 'flex', 
-              flexDirection: 'column', 
+            <div style={{
+              width: '600px',
+              backgroundColor: '#ffffff',
+              borderRadius: '12px',
+              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.2)',
+              display: 'flex',
+              flexDirection: 'column',
               maxHeight: '85vh',
               overflow: 'hidden'
             }}>
               {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid #e3e3e3' }}>
                 <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#1a1a1a' }}>{mediaSelectorMode === 'hero' ? 'Select Hero Slider Image' : 'Select Media Asset'}</h3>
-                <button 
+                <button
                   onClick={() => {
                     setShowMediaModal(false);
                     setHeroMediaTargetIndex(null);
@@ -6321,35 +6321,35 @@ export default function AdminDashboard() {
               <div style={{ padding: '12px 20px', borderBottom: '1px solid #e3e3e3', backgroundColor: '#f9f9f9', display: 'flex', gap: '10px', alignItems: 'center' }}>
                 <div style={{ position: 'relative', flexGrow: 1 }}>
                   <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#8c8c8c', fontSize: '14px' }}>🔍</span>
-                  <input 
-                    type="text" 
-                    placeholder="Search media files" 
+                  <input
+                    type="text"
+                    placeholder="Search media files"
                     value={modalSearchQuery}
                     onChange={(e) => setModalSearchQuery(e.target.value)}
-                    style={{ 
-                      width: '100%', 
-                      padding: '8px 12px 8px 36px', 
-                      border: '1px solid #cccccc', 
-                      borderRadius: '6px', 
-                      fontSize: '13px' 
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px 8px 36px',
+                      border: '1px solid #cccccc',
+                      borderRadius: '6px',
+                      fontSize: '13px'
                     }}
                   />
                 </div>
-                <label 
-                  style={{ 
-                    backgroundColor: '#1a1a1a', 
-                    color: '#ffffff', 
-                    borderRadius: '6px', 
-                    padding: '8px 16px', 
-                    fontSize: '13px', 
+                <label
+                  style={{
+                    backgroundColor: '#1a1a1a',
+                    color: '#ffffff',
+                    borderRadius: '6px',
+                    padding: '8px 16px',
+                    fontSize: '13px',
                     fontWeight: '600',
                     cursor: 'pointer',
                     whiteSpace: 'nowrap'
                   }}
                 >
                   Upload File
-                  <input 
-                    type="file" 
+                  <input
+                    type="file"
                     accept="image/*"
                     onChange={async (e) => {
                       if (e.target.files && e.target.files[0]) {
@@ -6376,9 +6376,9 @@ export default function AdminDashboard() {
                             }
                           } else if (mediaSelectorMode === 'slider-collection') {
                             if (editingSliderCollectionId !== null) {
-                              setCollections(prev => prev.map(c => 
-                                c.id === editingSliderCollectionId 
-                                  ? { ...c, image_url: data.url } 
+                              setCollections(prev => prev.map(c =>
+                                c.id === editingSliderCollectionId
+                                  ? { ...c, image_url: data.url }
                                   : c
                               ));
                               setEditingSliderCollectionId(null);
@@ -6421,8 +6421,8 @@ export default function AdminDashboard() {
                     if (!modalSearchQuery) return true;
                     return file.filename.toLowerCase().includes(modalSearchQuery.toLowerCase());
                   }).map((file) => (
-                    <div 
-                      key={file.id} 
+                    <div
+                      key={file.id}
                       onClick={() => {
                         if (mediaSelectorMode === 'product') {
                           setGalleryImages((prev) => {
@@ -6447,9 +6447,9 @@ export default function AdminDashboard() {
                           }
                         } else if (mediaSelectorMode === 'slider-collection') {
                           if (editingSliderCollectionId !== null) {
-                            setCollections(prev => prev.map(c => 
-                              c.id === editingSliderCollectionId 
-                                ? { ...c, image_url: file.url } 
+                            setCollections(prev => prev.map(c =>
+                              c.id === editingSliderCollectionId
+                                ? { ...c, image_url: file.url }
                                 : c
                             ));
                             setEditingSliderCollectionId(null);
@@ -6461,11 +6461,11 @@ export default function AdminDashboard() {
                         }
                         setShowMediaModal(false);
                       }}
-                      style={{ 
-                        border: '1px solid #e3e3e3', 
-                        borderRadius: '8px', 
-                        overflow: 'hidden', 
-                        cursor: 'pointer', 
+                      style={{
+                        border: '1px solid #e3e3e3',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        cursor: 'pointer',
                         transition: 'all 0.2s',
                         display: 'flex',
                         flexDirection: 'column',
@@ -6616,25 +6616,25 @@ export default function AdminDashboard() {
 
         {/* Bulk Edit Modal popup */}
         {showBulkEditModal && (
-          <div style={{ 
-            position: 'fixed', 
-            top: 0, 
-            left: 0, 
-            right: 0, 
-            bottom: 0, 
-            backgroundColor: 'rgba(0, 0, 0, 0.4)', 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
             zIndex: 3000
           }}>
-            <div style={{ 
-              width: '450px', 
-              backgroundColor: '#ffffff', 
-              borderRadius: '12px', 
-              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.2)', 
-              display: 'flex', 
-              flexDirection: 'column', 
+            <div style={{
+              width: '450px',
+              backgroundColor: '#ffffff',
+              borderRadius: '12px',
+              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.2)',
+              display: 'flex',
+              flexDirection: 'column',
               overflow: 'hidden'
             }}>
               {/* Header */}
@@ -6642,7 +6642,7 @@ export default function AdminDashboard() {
                 <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#1a1a1a' }}>
                   Bulk Edit {selectedCatalogProductIds.length} Products
                 </h3>
-                <button 
+                <button
                   onClick={() => setShowBulkEditModal(false)}
                   style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#8c8c8c' }}
                 >
@@ -6654,8 +6654,8 @@ export default function AdminDashboard() {
               <form onSubmit={handleBulkUpdate} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '13px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Update Price (₹) for selected products</label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     placeholder="Leave blank to keep existing prices"
                     value={bulkPrice}
                     onChange={(e) => setBulkPrice(e.target.value)}
@@ -6665,7 +6665,7 @@ export default function AdminDashboard() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Update Collection for selected products</label>
-                  <select 
+                  <select
                     value={bulkCollection}
                     onChange={(e) => setBulkCollection(e.target.value)}
                     style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', backgroundColor: '#ffffff' }}
@@ -6678,29 +6678,29 @@ export default function AdminDashboard() {
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px', marginTop: '10px', justifyContent: 'flex-end' }}>
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setShowBulkEditModal(false)}
-                    style={{ 
-                      padding: '8px 16px', 
-                      borderRadius: '6px', 
-                      border: '1px solid #cccccc', 
-                      backgroundColor: '#ffffff', 
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '6px',
+                      border: '1px solid #cccccc',
+                      backgroundColor: '#ffffff',
                       cursor: 'pointer',
                       fontWeight: '600'
                     }}
                   >
                     Cancel
                   </button>
-                  <button 
+                  <button
                     type="submit"
                     disabled={bulkUpdating}
-                    style={{ 
-                      padding: '8px 16px', 
-                      borderRadius: '6px', 
-                      border: 'none', 
-                      backgroundColor: '#1a1a1a', 
-                      color: '#ffffff', 
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      backgroundColor: '#1a1a1a',
+                      color: '#ffffff',
                       cursor: 'pointer',
                       fontWeight: '600'
                     }}
@@ -6713,7 +6713,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        </main>
-      </div>
+      </main>
+    </div>
   );
 }

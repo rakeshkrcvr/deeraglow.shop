@@ -19,9 +19,9 @@ export async function generateStaticParams() {
 export default async function ProductPage({ params }: PageProps) {
   const { slug } = await params;
   const products = await getProducts();
-  
+
   const product = products.find(p => p.slug === slug);
-  
+
   if (!product) {
     notFound();
   }
@@ -29,7 +29,7 @@ export default async function ProductPage({ params }: PageProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Header />
-      <main style={{ flexGrow: 1, backgroundColor: '#3E0030' }}>
+      <main style={{ flexGrow: 1, backgroundColor: '#3e0030' }}>
         <ProductDetail product={product} allProducts={products} />
       </main>
       <Footer />

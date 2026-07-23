@@ -4,12 +4,12 @@ import Footer from '@/components/Footer';
 
 export default function AboutPage() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#3E0030' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#3e0030' }}>
       <Header />
-      
+
       <main style={{ flexGrow: 1, padding: '100px 0', color: '#FAF8F5' }}>
         <div className="container" style={{ maxWidth: '800px' }}>
-          
+
           <div style={{ textAlign: 'center', marginBottom: '60px' }}>
             <span style={{ fontSize: '12px', fontWeight: '600', letterSpacing: '0.2em', color: 'var(--accent)', textTransform: 'uppercase' }}>
               Our Story
@@ -20,9 +20,9 @@ export default function AboutPage() {
             <div style={{ width: '60px', height: '1.5px', backgroundColor: 'var(--accent)', margin: '0 auto' }}></div>
           </div>
 
-          <div style={{ 
-            background: 'rgba(62, 0, 48, 0.35)', 
-            backdropFilter: 'blur(16px)', 
+          <div style={{
+            background: 'rgba(62, 0, 48, 0.35)',
+            backdropFilter: 'blur(16px)',
             border: '1px solid rgba(250, 248, 245, 0.08)',
             padding: '48px',
             borderRadius: '24px',
@@ -34,18 +34,18 @@ export default function AboutPage() {
             <p style={{ marginBottom: '24px' }}>
               Welcome to <strong>Deera Glow</strong>. Our journey began with a passion for creating elegant and affordable artificial jewelry that helps every woman express her unique style. From timeless classics to modern trends, each piece in our collection is carefully selected to bring confidence, beauty, and sophistication to your everyday look.
 
-At Deera Glow, we believe jewelry is more than just an accessory—it's a reflection of your personality. Whether you're dressing up for a wedding, festival, party, or adding a touch of elegance to your daily outfit, our thoughtfully curated collection is designed to make every moment shine.
+              At Deera Glow, we believe jewelry is more than just an accessory—it's a reflection of your personality. Whether you're dressing up for a wedding, festival, party, or adding a touch of elegance to your daily outfit, our thoughtfully curated collection is designed to make every moment shine.
 
             </p>
-            
+
             <p style={{ marginBottom: '24px' }}>
-             Unlike mass-produced fashion accessories, every piece at <strong>Deera Glow</strong> is carefully selected for its quality, style, and craftsmanship. Our collection features premium artificial jewelry made with high-quality materials, elegant finishes, and trend-inspired designs, ensuring every piece adds beauty, confidence, and timeless charm to your look.
+              Unlike mass-produced fashion accessories, every piece at <strong>Deera Glow</strong> is carefully selected for its quality, style, and craftsmanship. Our collection features premium artificial jewelry made with high-quality materials, elegant finishes, and trend-inspired designs, ensuring every piece adds beauty, confidence, and timeless charm to your look.
             </p>
 
-            <blockquote style={{ 
-              borderLeft: '2px solid var(--accent)', 
-              paddingLeft: '20px', 
-              margin: '32px 0', 
+            <blockquote style={{
+              borderLeft: '2px solid var(--accent)',
+              paddingLeft: '20px',
+              margin: '32px 0',
               fontStyle: 'italic',
               color: '#ffffff',
               fontSize: '18px'

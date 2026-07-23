@@ -267,7 +267,21 @@
 
 @media (max-width: 900px) {
   .logoContainer {
-    min-width: 150px;
+    min-width: auto;
+    max-width: 210px;
+  }
+
+  .logoTitle {
+    font-size: 17px;
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+  }
+
+  .logoSubtitle {
+    font-size: 7.5px;
+    letter-spacing: 0.18em;
+    white-space: nowrap;
+    margin-top: 2px;
   }
 
   .logoImage {
@@ -312,6 +326,22 @@
 
   .dropdown:hover .dropdownMenu {
     transform: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .logoContainer {
+    max-width: 170px;
+  }
+
+  .logoTitle {
+    font-size: 14px;
+    letter-spacing: 0.08em;
+  }
+
+  .logoSubtitle {
+    font-size: 6.5px;
+    letter-spacing: 0.12em;
   }
 }
 
@@ -673,7 +703,7 @@
 
 .crossSellAddBtn:hover {
   background-color: var(--accent);
-  color: #3E0030;
+  color: #3e0030;
 }
 
 /* Redesigned active cart elements */

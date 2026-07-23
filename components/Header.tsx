@@ -56,7 +56,7 @@ export default function Header() {
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
   const [abandonedCheckoutReference, setAbandonedCheckoutReference] = useState('');
-  
+
   // Delivery address fields
   const [deliveryEmail, setDeliveryEmail] = useState('');
   const [deliveryFirstName, setDeliveryFirstName] = useState('');
@@ -68,9 +68,9 @@ export default function Header() {
   const [deliveryPincode, setDeliveryPincode] = useState('');
   const [deliveryPhone, setDeliveryPhone] = useState('');
   const [saveInfo, setSaveInfo] = useState(false);
-  
+
   const automaticCoupon = 'BUY 2 GET 2 FREE';
-  
+
   React.useEffect(() => {
     if (!isCartOpen) return;
     const timer = setInterval(() => {
@@ -87,7 +87,7 @@ export default function Header() {
   React.useEffect(() => {
     // Check if script is already present
     if (document.getElementById('razorpay-checkout-script')) return;
-    
+
     const script = document.createElement('script');
     script.id = 'razorpay-checkout-script';
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
@@ -269,7 +269,7 @@ export default function Header() {
       const settingsRes = await fetch('/api/admin/settings');
       const settingsData = await settingsRes.json();
       const keyId = settingsData.razorpayKeyId;
-      
+
       if (!keyId) {
         alert("Razorpay Key ID is not configured in Admin Dashboard > Settings.");
         setIsProcessingCheckout(false);
@@ -298,7 +298,7 @@ export default function Header() {
           address: deliveryAddressText
         },
         theme: {
-          color: "#3E0030"
+          color: "#3e0030"
         },
         modal: {
           ondismiss: function () {
@@ -422,11 +422,10 @@ export default function Header() {
 
     setAppliedDiscount(discount);
     setCouponCode(discount.title);
-    setCouponMessage(`${discount.title} applied. You saved ${
-      discount.value_type === 'percentage'
+    setCouponMessage(`${discount.title} applied. You saved ${discount.value_type === 'percentage'
         ? `${valueAmount}%`
         : `₹${valueAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
-    }.`);
+      }.`);
   };
 
   const removeAppliedCoupon = () => {
@@ -520,11 +519,11 @@ export default function Header() {
             <span>Buy 2 Get 2 Free</span>
           </div>
           <div className={styles.promoItem}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
             <span>100% Secure Checkout</span>
           </div>
           <div className={styles.promoItem}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
             <span>Premium Handcrafted Jewelry</span>
           </div>
         </div>
@@ -533,10 +532,10 @@ export default function Header() {
       {/* Main Navigation Header */}
       <header className={styles.header}>
         <div className={`container ${styles.headerContainer}`}>
-          
+
           {/* Mobile Menu Button */}
-          <button 
-            className={styles.menuToggle} 
+          <button
+            className={styles.menuToggle}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -562,12 +561,12 @@ export default function Header() {
           {/* Desktop Navigation links */}
           <nav className={`${styles.nav} ${mobileMenuOpen ? styles.navActive : ''}`}>
             <Link href="/" className={styles.navLink} onClick={() => setMobileMenuOpen(false)}>Home</Link>
-            
+
             {/* Shop Dropdown */}
             <div className={styles.dropdown}>
               <span className={styles.navLink}>
                 Shop
-                <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M1 1l4 4 4-4"/></svg>
+                <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M1 1l4 4 4-4" /></svg>
               </span>
               <div className={styles.dropdownMenu}>
                 <Link href="/category/all-jewelry" onClick={() => setMobileMenuOpen(false)}>All Jewelry</Link>
@@ -583,7 +582,7 @@ export default function Header() {
             <div className={styles.dropdown}>
               <span className={styles.navLink}>
                 Material
-                <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M1 1l4 4 4-4"/></svg>
+                <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M1 1l4 4 4-4" /></svg>
               </span>
               <div className={styles.dropdownMenu}>
                 <Link href="/category/sterling-silver" onClick={() => setMobileMenuOpen(false)}>Sterling Silver</Link>
@@ -598,7 +597,7 @@ export default function Header() {
             <div className={styles.dropdown}>
               <span className={styles.navLink}>
                 Occasions
-                <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M1 1l4 4 4-4"/></svg>
+                <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M1 1l4 4 4-4" /></svg>
               </span>
               <div className={styles.dropdownMenu}>
                 <Link href="/category/daily-wear" onClick={() => setMobileMenuOpen(false)}>Daily Wear</Link>
@@ -633,8 +632,8 @@ export default function Header() {
             </button>
 
             {/* Cart Icon with Counter */}
-            <button 
-              className={styles.cartButton} 
+            <button
+              className={styles.cartButton}
               onClick={() => setIsCartOpen(true)}
               aria-label={`Open shopping cart with ${cartCount} items`}
             >
@@ -662,8 +661,8 @@ export default function Header() {
 
             <div className={styles.drawerHeader}>
               <h2>Your Shopping Cart</h2>
-              <button 
-                className={styles.closeDrawer} 
+              <button
+                className={styles.closeDrawer}
                 onClick={() => setIsCartOpen(false)}
                 aria-label="Close cart"
               >
@@ -680,12 +679,12 @@ export default function Header() {
                 <div className={styles.tierProgressBarLine}>
                   <div className={styles.tierProgressBarFill} style={{ width: `${progressPercent}%` }}></div>
                 </div>
-                
+
                 <div className={styles.milestoneTick} style={{ left: '0%' }}>
                   <div className={`${styles.milestoneCircle} ${styles.activeCircle}`}>%</div>
                   <div className={styles.milestoneLabelPrice}>₹0</div>
                 </div>
-                
+
                 <div className={styles.milestoneTick} style={{ left: '33.3%' }}>
                   <div className={`${styles.milestoneCircle} ${cartCount >= 1 ? styles.activeCircle : ''}`}>
                     {cartCount >= 1 ? '✓' : '%'}
@@ -734,13 +733,13 @@ export default function Header() {
                       const itemSubtotal = itemBasePrice * item.quantity;
                       const itemGiftValue = getItemFreeGiftValue(item.product.id, item.selectedFragrance);
                       const itemEstimatedTotal = itemSubtotal - itemGiftValue;
-                      
+
                       return (
                         <div key={`${item.product.id}-${item.selectedFragrance}`} className={styles.cartItem}>
                           <div className={styles.itemImageContainer}>
                             <img src={item.product.image_url} alt={item.product.name} className={styles.itemImg} />
                           </div>
-                          
+
                           <div className={styles.itemContentArea}>
                             {/* Row 1: Title and Final Price */}
                             <div className={styles.itemRowAlignTop}>
@@ -749,7 +748,7 @@ export default function Header() {
                                 ₹ {itemEstimatedTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               </div>
                             </div>
-                            
+
                             {/* Row 2: Fragrance selection (subtle) and Compare Price */}
                             <div className={styles.itemRowAlignTop}>
                               <span className={styles.itemMeta}>Option: {item.selectedFragrance}</span>
@@ -759,28 +758,28 @@ export default function Header() {
                                 </div>
                               )}
                             </div>
-                            
+
                             {/* Row 3: Quantity selector */}
                             <div className={styles.itemRowAlignCenter}>
                               <div className={styles.qtyBox}>
-                                <button 
+                                <button
                                   type="button"
-                                  className={styles.qtyBtn} 
+                                  className={styles.qtyBtn}
                                   onClick={() => updateQuantity(item.product.id, item.selectedFragrance, item.quantity - 1)}
                                 >
                                   −
                                 </button>
                                 <span className={styles.qtyVal}>{item.quantity}</span>
-                                <button 
+                                <button
                                   type="button"
-                                  className={styles.qtyBtn} 
+                                  className={styles.qtyBtn}
                                   onClick={() => updateQuantity(item.product.id, item.selectedFragrance, item.quantity + 1)}
                                 >
                                   +
                                 </button>
                               </div>
                             </div>
-                            
+
                             {/* Row 4: Coupon Applied Badge & Tier Savings */}
                             {itemGiftValue > 0 && (
                               <div className={styles.itemRowAlignCenter} style={{ marginTop: '10px' }}>
@@ -804,50 +803,50 @@ export default function Header() {
 
                   {/* Related Products Cross-sell Slider */}
                   {displayedCrossSells.length > 0 && (
-                  <div className={styles.crossSellSection}>
-                    <div className={styles.crossSellHeader}>
-                      <h3>Complete Your Ritual</h3>
-                      <div className={styles.crossSellArrows}>
-                        <button 
-                          type="button"
-                          onClick={() => setSlideIndex(prev => (prev === 0 ? crossSellPages - 1 : prev - 1))} 
-                          className={styles.arrowBtn}
-                          aria-label="Previous suggestions"
-                          disabled={crossSellPages <= 1}
-                        >
-                          ‹
-                        </button>
-                        <button 
-                          type="button"
-                          onClick={() => setSlideIndex(prev => (prev + 1) % crossSellPages)} 
-                          className={styles.arrowBtn}
-                          aria-label="Next suggestions"
-                          disabled={crossSellPages <= 1}
-                        >
-                          ›
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className={styles.crossSellGrid}>
-                      {displayedCrossSells.map((prod) => (
-                        <div key={prod.id} className={styles.crossSellCard}>
-                          <div className={styles.crossSellImageContainer}>
-                            <img src={prod.image_url} alt={prod.name} className={styles.crossSellImage} />
-                          </div>
-                          <h4 className={styles.crossSellName}>{prod.name}</h4>
-                          <span className={styles.crossSellPrice}>₹{prod.price}</span>
-                          <button 
+                    <div className={styles.crossSellSection}>
+                      <div className={styles.crossSellHeader}>
+                        <h3>Complete Your Ritual</h3>
+                        <div className={styles.crossSellArrows}>
+                          <button
                             type="button"
-                            className={styles.crossSellAddBtn}
-                            onClick={() => addToCart(prod, 1, 'Standard')}
+                            onClick={() => setSlideIndex(prev => (prev === 0 ? crossSellPages - 1 : prev - 1))}
+                            className={styles.arrowBtn}
+                            aria-label="Previous suggestions"
+                            disabled={crossSellPages <= 1}
                           >
-                            + Add
+                            ‹
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSlideIndex(prev => (prev + 1) % crossSellPages)}
+                            className={styles.arrowBtn}
+                            aria-label="Next suggestions"
+                            disabled={crossSellPages <= 1}
+                          >
+                            ›
                           </button>
                         </div>
-                      ))}
+                      </div>
+
+                      <div className={styles.crossSellGrid}>
+                        {displayedCrossSells.map((prod) => (
+                          <div key={prod.id} className={styles.crossSellCard}>
+                            <div className={styles.crossSellImageContainer}>
+                              <img src={prod.image_url} alt={prod.name} className={styles.crossSellImage} />
+                            </div>
+                            <h4 className={styles.crossSellName}>{prod.name}</h4>
+                            <span className={styles.crossSellPrice}>₹{prod.price}</span>
+                            <button
+                              type="button"
+                              className={styles.crossSellAddBtn}
+                              onClick={() => addToCart(prod, 1, 'Standard')}
+                            >
+                              + Add
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
                   )}
 
                   <div className={styles.couponBox}>
@@ -902,14 +901,14 @@ export default function Header() {
                       Save ₹{totalSaved.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} ({savePercent}% OFF)
                     </div>
                   </div>
-                  
+
                   <div className={styles.originalTotalRow}>
                     <span></span>
                     <span className={styles.originalTotalPriceText}>
                       ₹{offerCompareTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
-                  
+
                   <div className={styles.estimatedTotalRow}>
                     <div className={styles.estimatedTotalLabelWrapper}>
                       <div className={styles.rupeeBadgeIcon}>₹</div>
@@ -929,10 +928,10 @@ export default function Header() {
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Secure Checkout Rounded pill button */}
-                  <button 
-                    className={styles.checkoutBtnPill} 
+                  <button
+                    className={styles.checkoutBtnPill}
                     onClick={() => {
                       setCheckoutSuccess(false);
                       setAbandonedCheckoutReference(createCheckoutReference());
@@ -946,7 +945,7 @@ export default function Header() {
                       <div className={`${styles.paymentLogoCircle} ${styles.paytmCircle}`}>Paytm</div>
                     </div>
                   </button>
-                  
+
                   <button
                     className={styles.clearBtn}
                     onClick={() => {
@@ -963,7 +962,7 @@ export default function Header() {
         </div>
       )}      {/* Checkout Drawer Overlay Modal */}
       {isCheckoutOpen && (() => {
-        const isFormValid = 
+        const isFormValid =
           deliveryEmail.trim().includes('@') &&
           deliveryFirstName.trim() !== '' &&
           deliveryLastName.trim() !== '' &&
@@ -1022,7 +1021,7 @@ export default function Header() {
                 <p style={{ fontSize: '14px', color: '#6d6d6d', margin: '0 0 24px 0', lineHeight: '1.5' }}>
                   Thank you for your order, <strong>{deliveryFirstName} {deliveryLastName}</strong>. Your order has been registered, and payment is completed.
                 </p>
-                
+
                 <div style={{ width: '100%', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '16px', marginBottom: '24px', textAlign: 'left', fontSize: '13px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                     <span style={{ color: '#6d6d6d' }}>Total Paid:</span>
@@ -1038,7 +1037,7 @@ export default function Header() {
                   </div>
                 </div>
 
-                <button 
+                <button
                   onClick={() => {
                     clearCart();
                     setIsCheckoutOpen(false);
@@ -1076,7 +1075,7 @@ export default function Header() {
                 position: 'relative',
                 animation: 'fadeIn 0.3s ease-out'
               }}>
-                
+
                 {/* Spinner Overlay */}
                 {isProcessingCheckout && (
                   <div style={{
@@ -1119,7 +1118,7 @@ export default function Header() {
                   alignItems: 'center',
                   justifyContent: 'space-between'
                 }}>
-                  <button 
+                  <button
                     onClick={() => setIsCheckoutOpen(false)}
                     style={{
                       background: 'transparent',
@@ -1138,12 +1137,12 @@ export default function Header() {
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                    <div style={{ 
-                      fontSize: '10px', 
-                      fontWeight: '700', 
-                      color: 'var(--primary)', 
-                      backgroundColor: 'var(--accent-light)', 
-                      borderRadius: '4px', 
+                    <div style={{
+                      fontSize: '10px',
+                      fontWeight: '700',
+                      color: 'var(--primary)',
+                      backgroundColor: 'var(--accent-light)',
+                      borderRadius: '4px',
                       padding: '2px 6px',
                       marginBottom: '2px'
                     }}>
@@ -1164,7 +1163,7 @@ export default function Header() {
 
                 {/* Scrollable Container */}
                 <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  
+
                   {/* Champagne/Gold Savings Message */}
                   <div style={{
                     backgroundColor: 'var(--accent-light)',
@@ -1187,17 +1186,17 @@ export default function Header() {
                         Already have an account? <span style={{ color: '#ff4d4d', cursor: 'pointer', textDecoration: 'underline' }}>Sign in</span>
                       </span>
                     </div>
-                    <input 
-                      type="email" 
-                      placeholder="Email Address" 
+                    <input
+                      type="email"
+                      placeholder="Email Address"
                       value={deliveryEmail}
                       onChange={(e) => setDeliveryEmail(e.target.value)}
-                      style={{ 
-                        width: '100%', 
+                      style={{
+                        width: '100%',
                         boxSizing: 'border-box',
-                        padding: '10px 12px', 
-                        border: '1px solid #cccccc', 
-                        borderRadius: '8px', 
+                        padding: '10px 12px',
+                        border: '1px solid #cccccc',
+                        borderRadius: '8px',
                         fontSize: '13px',
                         outline: 'none',
                         color: '#1a1a1a'
@@ -1208,38 +1207,38 @@ export default function Header() {
                   {/* Delivery Address Section */}
                   <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e3e3e3', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <h4 style={{ margin: '0', fontSize: '14px', fontWeight: '600', color: '#1a1a1a' }}>Delivery Details</h4>
-                    
+
                     {/* First & Last Name row */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px' }}>
-                      <input 
-                        type="text" 
-                        placeholder="First Name" 
+                      <input
+                        type="text"
+                        placeholder="First Name"
                         value={deliveryFirstName}
                         onChange={(e) => setDeliveryFirstName(e.target.value)}
-                        style={{ 
+                        style={{
                           width: '100%',
                           minWidth: 0,
                           boxSizing: 'border-box',
-                          padding: '10px 12px', 
-                          border: '1px solid #cccccc', 
-                          borderRadius: '8px', 
+                          padding: '10px 12px',
+                          border: '1px solid #cccccc',
+                          borderRadius: '8px',
                           fontSize: '13px',
                           outline: 'none',
                           color: '#1a1a1a'
                         }}
                       />
-                      <input 
-                        type="text" 
-                        placeholder="Last Name" 
+                      <input
+                        type="text"
+                        placeholder="Last Name"
                         value={deliveryLastName}
                         onChange={(e) => setDeliveryLastName(e.target.value)}
-                        style={{ 
+                        style={{
                           width: '100%',
                           minWidth: 0,
                           boxSizing: 'border-box',
-                          padding: '10px 12px', 
-                          border: '1px solid #cccccc', 
-                          borderRadius: '8px', 
+                          padding: '10px 12px',
+                          border: '1px solid #cccccc',
+                          borderRadius: '8px',
                           fontSize: '13px',
                           outline: 'none',
                           color: '#1a1a1a'
@@ -1248,17 +1247,17 @@ export default function Header() {
                     </div>
 
                     {/* Address */}
-                    <input 
-                      type="text" 
-                      placeholder="Address (Area and Street)" 
+                    <input
+                      type="text"
+                      placeholder="Address (Area and Street)"
                       value={deliveryAddress}
                       onChange={(e) => setDeliveryAddress(e.target.value)}
-                      style={{ 
-                        width: '100%', 
+                      style={{
+                        width: '100%',
                         boxSizing: 'border-box',
-                        padding: '10px 12px', 
-                        border: '1px solid #cccccc', 
-                        borderRadius: '8px', 
+                        padding: '10px 12px',
+                        border: '1px solid #cccccc',
+                        borderRadius: '8px',
                         fontSize: '13px',
                         outline: 'none',
                         color: '#1a1a1a'
@@ -1266,17 +1265,17 @@ export default function Header() {
                     />
 
                     {/* Apartment / Suite */}
-                    <input 
-                      type="text" 
-                      placeholder="Apartment, suite, unit, etc. (optional)" 
+                    <input
+                      type="text"
+                      placeholder="Apartment, suite, unit, etc. (optional)"
                       value={deliveryApartment}
                       onChange={(e) => setDeliveryApartment(e.target.value)}
-                      style={{ 
-                        width: '100%', 
+                      style={{
+                        width: '100%',
                         boxSizing: 'border-box',
-                        padding: '10px 12px', 
-                        border: '1px solid #cccccc', 
-                        borderRadius: '8px', 
+                        padding: '10px 12px',
+                        border: '1px solid #cccccc',
+                        borderRadius: '8px',
                         fontSize: '13px',
                         outline: 'none',
                         color: '#1a1a1a'
@@ -1285,52 +1284,52 @@ export default function Header() {
 
                     {/* City, State & PIN code row */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px' }}>
-                      <input 
-                        type="text" 
-                        placeholder="City" 
+                      <input
+                        type="text"
+                        placeholder="City"
                         value={deliveryCity}
                         onChange={(e) => setDeliveryCity(e.target.value)}
-                        style={{ 
+                        style={{
                           width: '100%',
                           minWidth: 0,
                           boxSizing: 'border-box',
-                          padding: '10px 12px', 
-                          border: '1px solid #cccccc', 
-                          borderRadius: '8px', 
+                          padding: '10px 12px',
+                          border: '1px solid #cccccc',
+                          borderRadius: '8px',
                           fontSize: '13px',
                           outline: 'none',
                           color: '#1a1a1a'
                         }}
                       />
-                      <input 
-                        type="text" 
-                        placeholder="State" 
+                      <input
+                        type="text"
+                        placeholder="State"
                         value={deliveryState}
                         onChange={(e) => setDeliveryState(e.target.value)}
-                        style={{ 
+                        style={{
                           width: '100%',
                           minWidth: 0,
                           boxSizing: 'border-box',
-                          padding: '10px 12px', 
-                          border: '1px solid #cccccc', 
-                          borderRadius: '8px', 
+                          padding: '10px 12px',
+                          border: '1px solid #cccccc',
+                          borderRadius: '8px',
                           fontSize: '13px',
                           outline: 'none',
                           color: '#1a1a1a'
                         }}
                       />
-                      <input 
-                        type="text" 
-                        placeholder="PIN code" 
+                      <input
+                        type="text"
+                        placeholder="PIN code"
                         value={deliveryPincode}
                         onChange={(e) => setDeliveryPincode(e.target.value)}
-                        style={{ 
+                        style={{
                           width: '100%',
                           minWidth: 0,
                           boxSizing: 'border-box',
-                          padding: '10px 12px', 
-                          border: '1px solid #cccccc', 
-                          borderRadius: '8px', 
+                          padding: '10px 12px',
+                          border: '1px solid #cccccc',
+                          borderRadius: '8px',
                           fontSize: '13px',
                           outline: 'none',
                           color: '#1a1a1a'
@@ -1343,26 +1342,26 @@ export default function Header() {
                       <span style={{ fontSize: '13px', color: '#6d6d6d', borderRight: '1px solid #e3e3e3', paddingRight: '8px', marginRight: '8px' }}>
                         +91
                       </span>
-                      <input 
-                        type="tel" 
-                        placeholder="Phone Number (10 digits)" 
+                      <input
+                        type="tel"
+                        placeholder="Phone Number (10 digits)"
                         value={deliveryPhone}
                         onChange={(e) => setDeliveryPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                        style={{ 
-                          border: 'none', 
-                          outline: 'none', 
-                          fontSize: '13px', 
-                          color: '#1a1a1a', 
-                          width: '100%' 
+                        style={{
+                          border: 'none',
+                          outline: 'none',
+                          fontSize: '13px',
+                          color: '#1a1a1a',
+                          width: '100%'
                         }}
                       />
                     </div>
 
                     {/* Save info Checkbox */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                      <input 
-                        type="checkbox" 
-                        id="saveInfo" 
+                      <input
+                        type="checkbox"
+                        id="saveInfo"
                         checked={saveInfo}
                         onChange={(e) => setSaveInfo(e.target.checked)}
                         style={{ cursor: 'pointer' }}
@@ -1456,7 +1455,7 @@ export default function Header() {
                   </div>
 
                   {/* Continue button */}
-                  <button 
+                  <button
                     onClick={handleProceedToRazorpay}
                     disabled={!isFormValid}
                     style={{

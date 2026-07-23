@@ -25,21 +25,21 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#3E0030' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#3e0030' }}>
       <Header />
-      
+
       <main style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', color: '#FAF8F5' }}>
-        <div style={{ 
+        <div style={{
           width: '100%',
           maxWidth: '420px',
-          background: 'rgba(62, 0, 48, 0.35)', 
-          backdropFilter: 'blur(16px)', 
+          background: 'rgba(62, 0, 48, 0.35)',
+          backdropFilter: 'blur(16px)',
           border: '1px solid rgba(197, 168, 128, 0.25)',
           padding: '40px',
           borderRadius: '24px',
           boxShadow: '0 24px 48px rgba(0,0,0,0.4)'
         }}>
-          
+
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
             <span style={{ fontSize: '10px', fontWeight: '600', letterSpacing: '0.25em', color: 'var(--accent)', textTransform: 'uppercase' }}>
               Deera Glow
@@ -50,8 +50,8 @@ export default function AdminLoginPage() {
           </div>
 
           {error && (
-            <div style={{ 
-              backgroundColor: 'rgba(197, 74, 74, 0.15)', 
+            <div style={{
+              backgroundColor: 'rgba(197, 74, 74, 0.15)',
               border: '1px solid rgba(197, 74, 74, 0.3)',
               color: '#ff8888',
               fontSize: '13px',
@@ -69,21 +69,21 @@ export default function AdminLoginPage() {
               <label style={{ fontSize: '12px', fontWeight: '600', letterSpacing: '0.05em', color: 'rgba(250, 248, 245, 0.6)', textTransform: 'uppercase' }}>
                 Username
               </label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 placeholder="Enter username"
-                style={{ 
-                  background: 'rgba(250, 248, 245, 0.04)', 
-                  border: '1px solid rgba(250, 248, 245, 0.1)', 
+                style={{
+                  background: 'rgba(250, 248, 245, 0.04)',
+                  border: '1px solid rgba(250, 248, 245, 0.1)',
                   borderRadius: '8px',
                   padding: '12px 16px',
                   color: '#ffffff',
                   fontSize: '14px',
                   outline: 'none'
-                }} 
+                }}
               />
             </div>
 
@@ -91,31 +91,31 @@ export default function AdminLoginPage() {
               <label style={{ fontSize: '12px', fontWeight: '600', letterSpacing: '0.05em', color: 'rgba(250, 248, 245, 0.6)', textTransform: 'uppercase' }}>
                 Password
               </label>
-              <input 
-                type="password" 
+              <input
+                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="Enter password"
-                style={{ 
-                  background: 'rgba(250, 248, 245, 0.04)', 
-                  border: '1px solid rgba(250, 248, 245, 0.1)', 
+                style={{
+                  background: 'rgba(250, 248, 245, 0.04)',
+                  border: '1px solid rgba(250, 248, 245, 0.1)',
                   borderRadius: '8px',
                   padding: '12px 16px',
                   color: '#ffffff',
                   fontSize: '14px',
                   outline: 'none'
-                }} 
+                }}
               />
             </div>
 
-            <button 
+            <button
               type="submit"
-              style={{ 
-                background: 'var(--accent)', 
-                color: '#3E0030', 
-                border: 'none', 
-                borderRadius: '8px', 
+              style={{
+                background: 'var(--accent)',
+                color: '#3e0030',
+                border: 'none',
+                borderRadius: '8px',
                 padding: '14px',
                 fontSize: '14px',
                 fontWeight: '600',

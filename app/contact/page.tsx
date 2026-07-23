@@ -6,12 +6,12 @@ import Footer from '@/components/Footer';
 
 export default function ContactPage() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#3E0030' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#3e0030' }}>
       <Header />
-      
+
       <main style={{ flexGrow: 1, padding: '100px 0', color: '#FAF8F5' }}>
         <div className="container" style={{ maxWidth: '800px' }}>
-          
+
           <div style={{ textAlign: 'center', marginBottom: '60px' }}>
             <span style={{ fontSize: '12px', fontWeight: '600', letterSpacing: '0.2em', color: 'var(--accent)', textTransform: 'uppercase' }}>
               Connect With Us
@@ -22,9 +22,9 @@ export default function ContactPage() {
             <div style={{ width: '60px', height: '1.5px', backgroundColor: 'var(--accent)', margin: '0 auto' }}></div>
           </div>
 
-          <div style={{ 
-            background: 'rgba(62, 0, 48, 0.35)', 
-            backdropFilter: 'blur(16px)', 
+          <div style={{
+            background: 'rgba(62, 0, 48, 0.35)',
+            backdropFilter: 'blur(16px)',
             border: '1px solid rgba(250, 248, 245, 0.08)',
             padding: '48px',
             borderRadius: '24px',
@@ -59,8 +59,8 @@ export default function ContactPage() {
               <h3 style={{ color: '#ffffff', fontSize: '18px', fontWeight: '500', marginBottom: '20px', fontFamily: 'var(--font-serif)' }}>
                 Send a Message
               </h3>
-              
-              <form 
+
+              <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   alert("Message sent successfully! We will contact you soon.");
@@ -68,55 +68,55 @@ export default function ContactPage() {
                 style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
               >
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <input 
-                    type="text" 
-                    placeholder="Your Name" 
+                  <input
+                    type="text"
+                    placeholder="Your Name"
                     required
-                    style={{ 
-                      background: 'rgba(250, 248, 245, 0.04)', 
-                      border: '1px solid rgba(250, 248, 245, 0.1)', 
+                    style={{
+                      background: 'rgba(250, 248, 245, 0.04)',
+                      border: '1px solid rgba(250, 248, 245, 0.1)',
                       borderRadius: '8px',
                       padding: '12px 16px',
                       color: '#ffffff',
                       fontSize: '14px'
-                    }} 
+                    }}
                   />
-                  <input 
-                    type="email" 
-                    placeholder="Your Email" 
+                  <input
+                    type="email"
+                    placeholder="Your Email"
                     required
-                    style={{ 
-                      background: 'rgba(250, 248, 245, 0.04)', 
-                      border: '1px solid rgba(250, 248, 245, 0.1)', 
+                    style={{
+                      background: 'rgba(250, 248, 245, 0.04)',
+                      border: '1px solid rgba(250, 248, 245, 0.1)',
                       borderRadius: '8px',
                       padding: '12px 16px',
                       color: '#ffffff',
                       fontSize: '14px'
-                    }} 
+                    }}
                   />
                 </div>
-                <textarea 
-                  placeholder="Your Message" 
+                <textarea
+                  placeholder="Your Message"
                   rows={5}
                   required
-                  style={{ 
-                    background: 'rgba(250, 248, 245, 0.04)', 
-                    border: '1px solid rgba(250, 248, 245, 0.1)', 
+                  style={{
+                    background: 'rgba(250, 248, 245, 0.04)',
+                    border: '1px solid rgba(250, 248, 245, 0.1)',
                     borderRadius: '8px',
                     padding: '12px 16px',
                     color: '#ffffff',
                     fontSize: '14px',
                     resize: 'none'
-                  }} 
+                  }}
                 ></textarea>
-                
-                <button 
+
+                <button
                   type="submit"
-                  style={{ 
-                    background: 'var(--accent)', 
-                    color: '#3E0030', 
-                    border: 'none', 
-                    borderRadius: '8px', 
+                  style={{
+                    background: 'var(--accent)',
+                    color: '#3e0030',
+                    border: 'none',
+                    borderRadius: '8px',
                     padding: '14px 28px',
                     fontSize: '13px',
                     fontWeight: '600',

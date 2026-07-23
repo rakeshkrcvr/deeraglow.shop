@@ -459,31 +459,33 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
               </div>
             </div>
 
-            {/* Quantity and Actions row */}
-            <div className={`${styles.actionsSection} ${showStickyActions ? styles.stickyActionsVisible : ''}`}>
-              
-              {/* Qty Selector */}
-              <div className={styles.qtyContainer}>
-                <button className={styles.qtyBtn} onClick={handleDecrement} aria-label="Decrease quantity">−</button>
-                <span className={styles.qtyVal}>{quantity}</span>
-                <button className={styles.qtyBtn} onClick={handleIncrement} aria-label="Increase quantity">+</button>
+            {/* Quantity and Actions Container */}
+            <div className={`${styles.stickyActionsContainer} ${showStickyActions ? styles.stickyActionsVisible : ''}`}>
+              <div className={styles.actionsSection}>
+                
+                {/* Qty Selector */}
+                <div className={styles.qtyContainer}>
+                  <button className={styles.qtyBtn} onClick={handleDecrement} aria-label="Decrease quantity">−</button>
+                  <span className={styles.qtyVal}>{quantity}</span>
+                  <button className={styles.qtyBtn} onClick={handleIncrement} aria-label="Increase quantity">+</button>
+                </div>
+
+                {/* Add to Cart button */}
+                <button 
+                  className={`${styles.addBtn} ${adding ? styles.btnAdding : ''}`}
+                  onClick={handleAddToCart}
+                  disabled={adding}
+                >
+                  {adding ? "Added ✓" : `Add to cart — ₹${currentPrice * quantity}`}
+                </button>
+
               </div>
 
-              {/* Add to Cart button */}
-              <button 
-                className={`${styles.addBtn} ${adding ? styles.btnAdding : ''}`}
-                onClick={handleAddToCart}
-                disabled={adding}
-              >
-                {adding ? "Added to Cart ✓" : `Add to cart — ₹${currentPrice * quantity}`}
+              {/* Buy it Now Button */}
+              <button className={styles.buyNowBtn} onClick={handleBuyNow}>
+                Buy it now
               </button>
-
             </div>
-
-            {/* Buy it Now Button */}
-            <button className={`${styles.buyNowBtn} ${showStickyActions ? styles.stickyActionsVisible : ''}`} onClick={handleBuyNow}>
-              Buy it now
-            </button>
 
             {/* Core Trust Grid (As requested by the user) */}
             <div className={styles.trustGrid}>
