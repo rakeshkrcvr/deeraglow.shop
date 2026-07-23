@@ -77,6 +77,12 @@ export default function ShopByCollection({ categoriesJson }: ShopByCollectionPro
             </Link>
           ))}
         </div>
+
+        <div className={styles.btnWrapper}>
+          <Link href="/collections" className={styles.allCollectionsBtn}>
+            ALL COLLECTIONS
+          </Link>
+        </div>
       </div>
     </section>
   );

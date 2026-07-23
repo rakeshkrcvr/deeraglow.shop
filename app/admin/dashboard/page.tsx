@@ -4775,39 +4775,83 @@ export default function AdminDashboard() {
                 {/* Website Branding (Logos) */}
                 <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                   <div style={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px', marginBottom: '16px' }}>
-                    <h3 style={{ fontSize: '15px', fontWeight: '700', margin: 0 }}>Website Branding</h3>
+                    <h3 style={{ fontSize: '15px', fontWeight: '700', margin: 0 }}>Website Branding & Logo</h3>
                     <span style={{ backgroundColor: '#ff9800', color: '#ffffff', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '12px', textTransform: 'uppercase' }}>Logos</span>
                   </div>
-                  <form onSubmit={e => { e.preventDefault(); handleSaveSettings({ logoHeaderUrl, logoFooterUrl }); }} style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
+                  <form onSubmit={e => { e.preventDefault(); handleSaveSettings({ logoHeaderUrl, logoFooterUrl }); }} style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '13px' }}>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Header Logo URL</label>
-                      <input
-                        type="text"
-                        value={logoHeaderUrl}
-                        onChange={e => setLogoHeaderUrl(e.target.value)}
-                        placeholder="https://example.com/logo-header.png"
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                      />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label style={{ fontWeight: '600', color: '#333' }}>Header Logo</label>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <input
+                          type="text"
+                          value={logoHeaderUrl}
+                          onChange={e => setLogoHeaderUrl(e.target.value)}
+                          placeholder="https://example.com/logo-header.png"
+                          style={{ flex: 1, padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                        />
+                        <label style={{ backgroundColor: '#1a1a1a', color: '#ffffff', borderRadius: '6px', padding: '8px 14px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
+                          📁 Upload Logo
+                          <input
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              try {
+                                const data = await uploadMediaFile(file);
+                                setLogoHeaderUrl(data.url);
+                                handleSaveSettings({ logoHeaderUrl: data.url, logoFooterUrl });
+                              } catch (err) {
+                                alert(err instanceof Error ? err.message : 'Error uploading header logo.');
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
                       {logoHeaderUrl && (
-                        <div style={{ marginTop: '6px', border: '1px dashed #ccc', padding: '6px', borderRadius: '4px', textAlign: 'center', backgroundColor: '#fafafa' }}>
-                          <img src={logoHeaderUrl} alt="Header Preview" style={{ maxHeight: '35px', objectFit: 'contain' }} />
+                        <div style={{ marginTop: '6px', border: '1px dashed #ccc', padding: '10px', borderRadius: '6px', textAlign: 'center', backgroundColor: '#3e0030' }}>
+                          <span style={{ display: 'block', fontSize: '11px', color: '#ccc', marginBottom: '4px' }}>Header Logo Preview:</span>
+                          <img src={logoHeaderUrl} alt="Header Preview" style={{ maxHeight: '42px', objectFit: 'contain' }} />
                         </div>
                       )}
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Footer Logo URL</label>
-                      <input
-                        type="text"
-                        value={logoFooterUrl}
-                        onChange={e => setLogoFooterUrl(e.target.value)}
-                        placeholder="https://example.com/logo-footer.png"
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                      />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label style={{ fontWeight: '600', color: '#333' }}>Footer Logo</label>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <input
+                          type="text"
+                          value={logoFooterUrl}
+                          onChange={e => setLogoFooterUrl(e.target.value)}
+                          placeholder="https://example.com/logo-footer.png"
+                          style={{ flex: 1, padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                        />
+                        <label style={{ backgroundColor: '#1a1a1a', color: '#ffffff', borderRadius: '6px', padding: '8px 14px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
+                          📁 Upload Logo
+                          <input
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              try {
+                                const data = await uploadMediaFile(file);
+                                setLogoFooterUrl(data.url);
+                                handleSaveSettings({ logoHeaderUrl, logoFooterUrl: data.url });
+                              } catch (err) {
+                                alert(err instanceof Error ? err.message : 'Error uploading footer logo.');
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
                       {logoFooterUrl && (
-                        <div style={{ marginTop: '6px', border: '1px dashed #ccc', padding: '6px', borderRadius: '4px', textAlign: 'center', backgroundColor: '#fafafa' }}>
-                          <img src={logoFooterUrl} alt="Footer Preview" style={{ maxHeight: '35px', objectFit: 'contain' }} />
+                        <div style={{ marginTop: '6px', border: '1px dashed #ccc', padding: '10px', borderRadius: '6px', textAlign: 'center', backgroundColor: '#3e0030' }}>
+                          <span style={{ display: 'block', fontSize: '11px', color: '#ccc', marginBottom: '4px' }}>Footer Logo Preview:</span>
+                          <img src={logoFooterUrl} alt="Footer Preview" style={{ maxHeight: '42px', objectFit: 'contain' }} />
                         </div>
                       )}
                     </div>

@@ -1,6 +1,16 @@
 import { sql } from './db';
 import { getProducts, Product } from './products';
 
+export interface CollectionItem {
+  id: number;
+  name: string;
+  slug: string;
+  description: string;
+  image_url: string;
+  show_in_slider?: boolean;
+  slider_subtitle?: string;
+}
+
 export interface SliderCollectionItem {
   id: number;
   name: string;
@@ -106,6 +116,106 @@ export async function getSliderCollections(): Promise<SliderCollectionItem[]> {
       show_in_slider: true,
       slider_subtitle: 'Luminous Elegance for Everyday',
       products: bracelets.length >= 3 ? bracelets.slice(0, 3) : allProducts.slice(2, 5)
+    }
+  ];
+}
+
+export async function getAllCollections(): Promise<CollectionItem[]> {
+  try {
+    const rows = await sql`
+      SELECT * FROM collections 
+      ORDER BY id ASC
+    ` as unknown as CollectionItem[];
+
+    if (rows && rows.length > 0) {
+      return rows.map(coll => {
+        let imageUrl = coll.image_url;
+        if (!imageUrl || imageUrl.trim() === '') {
+          const lowerName = coll.name.toLowerCase();
+          if (lowerName.includes('ring')) {
+            imageUrl = '/images/rings_category.png';
+          } else if (lowerName.includes('necklace') || lowerName.includes('choker') || lowerName.includes('pendant')) {
+            imageUrl = '/images/necklaces_category.png';
+          } else if (lowerName.includes('earring') || lowerName.includes('jhumka') || lowerName.includes('stud') || lowerName.includes('hoop')) {
+            imageUrl = '/images/earrings_category.png';
+          } else if (lowerName.includes('bracelet') || lowerName.includes('bangle') || lowerName.includes('cuff')) {
+            imageUrl = '/images/bracelets_category.png';
+          } else if (lowerName.includes('charm')) {
+            imageUrl = '/images/charm_category.png';
+          } else if (lowerName.includes('silver')) {
+            imageUrl = '/images/hero_slide_1.png';
+          } else if (lowerName.includes('gold') || lowerName.includes('royal')) {
+            imageUrl = '/images/hero_slide_2.png';
+          } else {
+            imageUrl = '/images/category_banner_jewelry.png';
+          }
+        }
+        return {
+          ...coll,
+          image_url: imageUrl
+        };
+      });
+    }
+  } catch (err) {
+    console.error('Error fetching all collections from DB:', err);
+  }
+
+  return [
+    {
+      id: 1,
+      name: 'Rings',
+      slug: 'rings',
+      description: 'Aesthetic and premium daily rings, statement rings, and adjustable bands.',
+      image_url: '/images/rings_category.png'
+    },
+    {
+      id: 2,
+      name: 'Necklaces',
+      slug: 'necklaces',
+      description: 'Graceful necklaces, chokers, pendants, and layering chains.',
+      image_url: '/images/necklaces_category.png'
+    },
+    {
+      id: 3,
+      name: 'Earrings',
+      slug: 'earrings',
+      description: 'Stunning earrings ranging from daily studs to elegant drops.',
+      image_url: '/images/earrings_category.png'
+    },
+    {
+      id: 4,
+      name: 'Bracelets & Bangles',
+      slug: 'bracelets',
+      description: 'Dainty chains, gemstone cuffs, and statement wrist accessories.',
+      image_url: '/images/bracelets_category.png'
+    },
+    {
+      id: 5,
+      name: 'Charms',
+      slug: 'charms',
+      description: 'Dainty clip-on charms for chains, bracelets, and bangles.',
+      image_url: '/images/charm_category.png'
+    },
+    {
+      id: 6,
+      name: 'Sterling Silver',
+      slug: 'sterling-silver',
+      description: 'Genuine 925 sterling silver rings & jewelry crafted with sparkling cubic zirconia.',
+      image_url: '/images/hero_slide_1.png'
+    },
+    {
+      id: 7,
+      name: '18k Gold Plated',
+      slug: 'gold-plated',
+      description: 'Luxurious warm gold finishes over sterling silver and brass.',
+      image_url: '/images/hero_slide_2.png'
+    },
+    {
+      id: 8,
+      name: 'Best Sellers',
+      slug: 'best-sellers',
+      description: 'The most popular and loved jewelry pieces chosen by our customers.',
+      image_url: '/images/hero_slide_3.png'
     }
   ];
 }

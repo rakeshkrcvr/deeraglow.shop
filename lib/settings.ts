@@ -17,8 +17,8 @@ export const defaultStoreSettings: Record<string, string> = {
   pinterestUrl: 'https://pinterest.com/deeraglow',
   twitterUrl: '',
   youtubeUrl: '',
-  logoHeaderUrl: '',
-  logoFooterUrl: '',
+  logoHeaderUrl: '/api/media/1784834143580-991fe81e-0ee7-4dfd-a9f3-4ebf7f064265-logowhite.png',
+  logoFooterUrl: '/api/media/1784834143580-991fe81e-0ee7-4dfd-a9f3-4ebf7f064265-logowhite.png',
   heroEyebrow: 'TIMELESS BEAUTY',
   heroTitle: 'Shine Brighter',
   heroItalicTitle: 'Every Day',
@@ -99,5 +99,8 @@ export async function getStoreSettings() {
     }
   }
 
-  return { ...defaultStoreSettings, ...settings };
+  const mergedSettings = { ...defaultStoreSettings, ...settings };
+  if (!mergedSettings.logoHeaderUrl) mergedSettings.logoHeaderUrl = defaultStoreSettings.logoHeaderUrl;
+  if (!mergedSettings.logoFooterUrl) mergedSettings.logoFooterUrl = defaultStoreSettings.logoFooterUrl;
+  return mergedSettings;
 }

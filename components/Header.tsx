@@ -570,6 +570,7 @@ export default function Header() {
               </span>
               <div className={styles.dropdownMenu}>
                 <Link href="/category/all-jewelry" onClick={() => setMobileMenuOpen(false)}>All Jewelry</Link>
+                <Link href="/collections" onClick={() => setMobileMenuOpen(false)}>All Collections</Link>
                 <Link href="/category/best-sellers" onClick={() => setMobileMenuOpen(false)}>Best Sellers</Link>
                 <Link href="/category/new-arrivals" onClick={() => setMobileMenuOpen(false)}>New Arrivals</Link>
                 <Link href="/category/rings" onClick={() => setMobileMenuOpen(false)}>Rings</Link>
@@ -577,6 +578,8 @@ export default function Header() {
                 <Link href="/category/earrings" onClick={() => setMobileMenuOpen(false)}>Earrings</Link>
               </div>
             </div>
+
+            <Link href="/collections" className={styles.navLink} onClick={() => setMobileMenuOpen(false)}>All Collections</Link>
 
             {/* Material Dropdown */}
             <div className={styles.dropdown}>
