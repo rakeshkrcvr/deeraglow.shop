@@ -120,6 +120,13 @@ interface Discount {
   get_discount_type?: 'free' | 'percentage' | 'fixed';
 }
 
+interface AnnouncementItem {
+  id: string;
+  text: string;
+  icon?: string;
+  link?: string;
+}
+
 interface Campaign {
   name: string;
   impressions: string;
@@ -382,8 +389,40 @@ export default function AdminDashboard() {
   const [heroSecondaryButtonHref, setHeroSecondaryButtonHref] = useState('#story');
   const [heroFloatingTag, setHeroFloatingTag] = useState('New Drop / Royal Pearl Drops');
   const [heroSliderSlides, setHeroSliderSlides] = useState<HeroSlide[]>([]);
+  const [announcementItems, setAnnouncementItems] = useState<AnnouncementItem[]>([
+    { id: '1', text: 'Buy 2 Get 2 Free', icon: 'gift', link: '/collections' },
+    { id: '2', text: '100% Secure Checkout', icon: 'shield', link: '' },
+    { id: '3', text: 'Premium Handcrafted Jewelry', icon: 'star', link: '' }
+  ]);
   const [contentSuccess, setContentSuccess] = useState('');
   const [contentError, setContentError] = useState('');
+
+  const addAnnouncementItem = () => {
+    setAnnouncementItems(prev => [
+      ...prev,
+      { id: Date.now().toString(), text: '', icon: 'gift', link: '' }
+    ]);
+  };
+
+  const removeAnnouncementItem = (id: string) => {
+    setAnnouncementItems(prev => prev.filter(item => item.id !== id));
+  };
+
+  const updateAnnouncementItem = (id: string, field: keyof AnnouncementItem, value: string) => {
+    setAnnouncementItems(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
+  };
+
+  const moveAnnouncementItem = (index: number, direction: 'up' | 'down') => {
+    setAnnouncementItems(prev => {
+      const copy = [...prev];
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= copy.length) return prev;
+      const temp = copy[index];
+      copy[index] = copy[targetIndex];
+      copy[targetIndex] = temp;
+      return copy;
+    });
+  };
 
   // Campaigns Mock Data (Growth)
   const campaigns: Campaign[] = [
@@ -968,6 +1007,16 @@ export default function AdminDashboard() {
         setPromoBanner2Image(data.contentPromoBanner2Image || '/images/jewelry_category_banner.png');
         setPromoBanner2Link(data.contentPromoBanner2Link || '/category/earrings');
         setHeroSliderSlides(normalizeHeroSlides(data.heroSliderImages));
+        if (data.heroAnnouncementItems) {
+          try {
+            const parsedAnnouncements = JSON.parse(data.heroAnnouncementItems);
+            if (Array.isArray(parsedAnnouncements) && parsedAnnouncements.length > 0) {
+              setAnnouncementItems(parsedAnnouncements);
+            }
+          } catch (e) {
+            console.error('Error parsing hero announcement items:', e);
+          }
+        }
         try {
           const parsedPosts = JSON.parse(data.contentBlogPosts || '[]');
           if (Array.isArray(parsedPosts)) {
@@ -1206,7 +1255,8 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
       heroSecondaryButtonText,
       heroSecondaryButtonHref,
       heroFloatingTag,
-      heroSliderImages: JSON.stringify(heroSliderSlides)
+      heroSliderImages: JSON.stringify(heroSliderSlides),
+      heroAnnouncementItems: JSON.stringify(announcementItems)
     };
 
     try {
@@ -4344,6 +4394,101 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
             )}
 
             <form onSubmit={handleSaveHeroContent} style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+              {/* Top Announcement Marquee Bar Section */}
+              <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #e3e3e3', paddingBottom: '12px' }}>
+                  <div>
+                    <h3 style={{ fontSize: '15px', fontWeight: '700', margin: 0, color: '#1c1e21' }}>📢 Top Announcement / Marquee Bar</h3>
+                    <p style={{ fontSize: '12px', color: '#666', margin: '4px 0 0 0' }}>
+                      Add & manage scrolling announcement texts shown at the top marquee bar. You can add as many items as you want.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addAnnouncementItem}
+                    style={{ padding: '8px 16px', backgroundColor: '#3e0030', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}
+                  >
+                    + Add Text Item
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {announcementItems.map((item, idx) => (
+                    <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px', backgroundColor: '#f9f9f9', border: '1px solid #e3e3e3', borderRadius: '8px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '12px', fontWeight: '700', color: '#888', minWidth: '24px' }}>#{idx + 1}</span>
+
+                      <div style={{ flex: '2', minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Announcement Text</label>
+                        <input
+                          type="text"
+                          value={item.text}
+                          onChange={e => updateAnnouncementItem(item.id, 'text', e.target.value)}
+                          placeholder="e.g. Buy 2 Get 2 Free"
+                          style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px', backgroundColor: '#ffffff' }}
+                        />
+                      </div>
+
+                      <div style={{ flex: '1', minWidth: '140px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Icon</label>
+                        <select
+                          value={item.icon || 'gift'}
+                          onChange={e => updateAnnouncementItem(item.id, 'icon', e.target.value)}
+                          style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px', backgroundColor: '#ffffff' }}
+                        >
+                          <option value="gift">🎁 Gift Box</option>
+                          <option value="shield">🛡️ Secure / Shield</option>
+                          <option value="star">⭐ Premium / Star</option>
+                          <option value="truck">🚚 Free Shipping / Truck</option>
+                          <option value="diamond">💎 Diamond</option>
+                          <option value="fire">🔥 Hot Offer / Fire</option>
+                          <option value="none">None</option>
+                        </select>
+                      </div>
+
+                      <div style={{ flex: '1.5', minWidth: '160px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Target Link (Optional)</label>
+                        <input
+                          type="text"
+                          value={item.link || ''}
+                          onChange={e => updateAnnouncementItem(item.id, 'link', e.target.value)}
+                          placeholder="e.g. /collections"
+                          style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px', backgroundColor: '#ffffff' }}
+                        />
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '18px' }}>
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => moveAnnouncementItem(idx, 'up')}
+                          style={{ padding: '6px 10px', border: '1px solid #ccc', background: '#fff', borderRadius: '4px', cursor: idx === 0 ? 'not-allowed' : 'pointer', fontSize: '11px' }}
+                          title="Move Up"
+                        >
+                          ▲
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === announcementItems.length - 1}
+                          onClick={() => moveAnnouncementItem(idx, 'down')}
+                          style={{ padding: '6px 10px', border: '1px solid #ccc', background: '#fff', borderRadius: '4px', cursor: idx === announcementItems.length - 1 ? 'not-allowed' : 'pointer', fontSize: '11px' }}
+                          title="Move Down"
+                        >
+                          ▼
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeAnnouncementItem(item.id)}
+                          style={{ padding: '6px 10px', border: '1px solid #ff4d4f', color: '#ff4d4f', background: '#fff', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}
+                          title="Delete Item"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px' }}>
                 <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>Home Hero Content</h3>
 

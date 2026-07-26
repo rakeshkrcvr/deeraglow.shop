@@ -40,7 +40,8 @@ export const defaultStoreSettings: Record<string, string> = {
   contentPromoBannerImage: '/images/category_banner_jewelry.png',
   contentPromoBannerLink: '/category/necklaces',
   contentPromoBanner2Image: '/images/jewelry_category_banner.png',
-  contentPromoBanner2Link: '/category/earrings'
+  contentPromoBanner2Link: '/category/earrings',
+  heroAnnouncementItems: '[{"id":"1","text":"Buy 2 Get 2 Free","icon":"gift","link":"/collections"},{"id":"2","text":"100% Secure Checkout","icon":"shield","link":""},{"id":"3","text":"Premium Handcrafted Jewelry","icon":"star","link":""}]'
 };
 
 export async function ensureStoreSettingsTable() {

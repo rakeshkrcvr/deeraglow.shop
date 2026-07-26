@@ -1,6 +1,7 @@
 .hero {
   position: relative;
-  height: 600px;
+  width: 100%;
+  height: clamp(480px, 41.5vw, 840px);
   overflow: hidden;
   background-color: var(--background);
 }
@@ -30,16 +31,18 @@
   position: relative;
   width: 100%;
   height: 100%;
+  cursor: pointer;
 }
 
 .heroImg {
   object-fit: cover;
-  transition: transform 6s cubic-bezier(0.25, 1, 0.5, 1);
-  transform: scale(1.01);
+  object-position: center top;
+  transform: none !important;
+  transition: opacity 0.8s ease !important;
 }
 
 .slideActive .heroImg {
-  transform: scale(1.05);
+  transform: none !important;
 }
 
 .desktopImg {
@@ -241,7 +244,7 @@
 /* Tablet Layout */
 @media (max-width: 1024px) {
   .hero {
-    height: 520px;
+    height: clamp(440px, 44vw, 650px);
   }
 
   .title {
@@ -252,7 +255,7 @@
 /* Mobile Layout */
 @media (max-width: 768px) {
   .hero {
-    height: 480px;
+    height: clamp(500px, 150vw, 820px);
   }
 
   .overlay {

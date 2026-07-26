@@ -9,6 +9,8 @@ description: "Discover the latest collection of premium artificial jewelry at De
 metadataBase: new URL("https://deeraglow.shop"),
 };
 
+import RecentSalesPopup from "@/components/RecentSalesPopup";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -78,6 +80,7 @@ export default async function RootLayout({
       <body>
         <CartProvider>
           {children}
+          <RecentSalesPopup />
         </CartProvider>
       </body>
     </html>

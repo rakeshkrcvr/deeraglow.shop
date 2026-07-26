@@ -6,35 +6,53 @@
   letter-spacing: 0.05em;
   padding: 8px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  position: relative;
+  white-space: nowrap;
 }
 
-.promoContainer {
+.marqueeTrack {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 48px;
+  width: max-content;
+  animation: marqueeScroll 25s linear infinite;
+}
+
+.promoBar:hover .marqueeTrack {
+  animation-play-state: paused;
+}
+
+@keyframes marqueeScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .promoItem {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   color: #ffffff;
+  flex-shrink: 0;
 }
 
 .promoItem svg {
   color: var(--accent);
+  flex-shrink: 0;
 }
 
-@media (max-width: 768px) {
-  .promoContainer {
-    flex-direction: column;
-    gap: 4px;
-  }
+.promoLink {
+  color: #ffffff;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
 
-  .promoItem:not(:first-child) {
-    display: none;
-    /* Show only first promo on mobile */
-  }
+.promoLink:hover {
+  color: var(--accent);
 }
 
 .header {

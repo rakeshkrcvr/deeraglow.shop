@@ -49,6 +49,13 @@ const defaultHeroSettings: HeroSettings = {
   sliderImages: '["/images/hero_slide_1.png", "/images/hero_slide_2.png", "/images/hero_slide_3.png"]'
 };
 
+const getValidLink = (href?: string, fallback: string = '/collections'): string => {
+  if (!href || !href.trim() || href === '#' || href === '#products' || href === '#shop-by-collection') {
+    return fallback;
+  }
+  return href.trim();
+};
+
 const defaultSlides: HeroSlide[] = [
   {
     image: '/images/hero_slide_1.png',
@@ -59,7 +66,7 @@ const defaultSlides: HeroSlide[] = [
     title: 'Shine Brighter Every Day',
     description: 'Discover handcrafted jewelry that celebrates your unique style and every special moment.',
     btnText: 'Shop Collection',
-    btnHref: '#shop-by-collection'
+    btnHref: '/collections'
   },
   {
     image: '/images/hero_slide_2.png',
@@ -70,7 +77,7 @@ const defaultSlides: HeroSlide[] = [
     title: 'Elegance in Every Detail',
     description: 'Adorn yourself with masterfully crafted necklaces, bracelets, and charms made to last.',
     btnText: 'Explore New Arrivals',
-    btnHref: '/category/new-arrivals'
+    btnHref: '/collections'
   },
   {
     image: '/images/hero_slide_3.png',
@@ -81,7 +88,7 @@ const defaultSlides: HeroSlide[] = [
     title: 'Modern Classics',
     description: 'Find the perfect signature pieces that seamlessly transitions from day to night.',
     btnText: 'Shop Best Sellers',
-    btnHref: '/category/best-sellers'
+    btnHref: '/collections'
   }
 ];
 
@@ -103,7 +110,7 @@ const parseHeroSlides = (sliderImages?: string, heroSettings?: HeroSettings): He
             title: `${heroSettings?.title || 'Shine Brighter'} ${heroSettings?.italicTitle || ''}`.trim(),
             description: heroSettings?.description || '',
             btnText: heroSettings?.primaryButtonText || 'Shop Collection',
-            btnHref: heroSettings?.primaryButtonHref || '#shop-by-collection'
+            btnHref: getValidLink(heroSettings?.primaryButtonHref, '/collections')
           };
         }
         return {
@@ -115,12 +122,12 @@ const parseHeroSlides = (sliderImages?: string, heroSettings?: HeroSettings): He
           title: item.title ?? '',
           description: item.description ?? '',
           btnText: item.btnText ?? '',
-          btnHref: item.btnHref ?? '',
+          btnHref: getValidLink(item.btnHref, '/collections'),
           mobileEyebrow: item.mobileEyebrow ?? '',
           mobileTitle: item.mobileTitle ?? '',
           mobileDescription: item.mobileDescription ?? '',
           mobileBtnText: item.mobileBtnText ?? '',
-          mobileBtnHref: item.mobileBtnHref ?? ''
+          mobileBtnHref: getValidLink(item.mobileBtnHref, getValidLink(item.btnHref, '/collections'))
         };
       });
     }
@@ -242,12 +249,27 @@ export default function Hero({
             hasDesktopText
           );
 
+          const desktopLink = getValidLink(slide.btnHref, '/collections');
+          const mobileLink = getValidLink(slide.mobileBtnHref, desktopLink);
+
+          const handleBannerClick = () => {
+            if (typeof window === 'undefined') return;
+            const isMobile = window.innerWidth <= 768;
+            const targetLink = isMobile ? mobileLink : desktopLink;
+            if (targetLink) {
+              window.location.href = targetLink;
+            }
+          };
+
           return (
             <div
               key={`${slide.image}-${index}`}
               className={`${styles.slide} ${index === activeSlide ? styles.slideActive : ''}`}
             >
-              <div className={`${styles.imageWrapper} ${hasMobileImg ? styles.hasMobileImg : ''}`}>
+              <div
+                onClick={handleBannerClick}
+                className={`${styles.imageWrapper} ${hasMobileImg ? styles.hasMobileImg : ''}`}
+              >
                 {/* Desktop Image */}
                 <Image
                   src={slide.image}
@@ -299,6 +321,9 @@ export default function Hero({
             const mobileDescText = slide.mobileDescription || descText;
             const btnText = slide.btnText;
             const mobileBtnText = slide.mobileBtnText || btnText;
+
+            const desktopHref = getValidLink(slide.btnHref, '/collections');
+            const mobileHref = getValidLink(slide.mobileBtnHref, desktopHref);
 
             return (
               <div
@@ -357,15 +382,15 @@ export default function Hero({
                   <div className={styles.ctaGroup}>
                     {slide.mobileBtnHref ? (
                       <>
-                        <a href={slide.btnHref || '#'} className={`${styles.primaryBtn} ${styles.desktopOnly}`}>
+                        <a href={desktopHref} className={`${styles.primaryBtn} ${styles.desktopOnly}`}>
                           {btnText} <span className={styles.arrow}>→</span>
                         </a>
-                        <a href={slide.mobileBtnHref} className={`${styles.primaryBtn} ${styles.mobileOnly}`}>
+                        <a href={mobileHref} className={`${styles.primaryBtn} ${styles.mobileOnly}`}>
                           {mobileBtnText} <span className={styles.arrow}>→</span>
                         </a>
                       </>
                     ) : (
-                      <a href={slide.btnHref || '#'} className={styles.primaryBtn}>
+                      <a href={desktopHref} className={styles.primaryBtn}>
                         {slide.mobileBtnText ? (
                           <>
                             <span className={styles.desktopOnly}>{btnText}</span>

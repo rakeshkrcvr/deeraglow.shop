@@ -45,12 +45,46 @@ declare global {
   }
 }
 
+type AnnouncementItem = {
+  id: string;
+  text: string;
+  icon?: string;
+  link?: string;
+};
+
+const defaultAnnouncements: AnnouncementItem[] = [
+  { id: '1', text: 'Buy 2 Get 2 Free', icon: 'gift', link: '/collections' },
+  { id: '2', text: '100% Secure Checkout', icon: 'shield', link: '' },
+  { id: '3', text: 'Premium Handcrafted Jewelry', icon: 'star', link: '' }
+];
+
+const renderAnnouncementIcon = (icon?: string) => {
+  switch (icon) {
+    case 'shield':
+      return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>;
+    case 'star':
+      return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>;
+    case 'truck':
+      return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="3" width="15" height="13" /><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" /></svg>;
+    case 'diamond':
+      return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="6 3 18 3 22 9 12 22 2 9 6 3" /></svg>;
+    case 'fire':
+      return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3.5z" /></svg>;
+    case 'none':
+      return null;
+    case 'gift':
+    default:
+      return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12" /><rect x="2" y="7" width="20" height="5" /><line x1="12" y1="22" x2="12" y2="7" /><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" /><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" /></svg>;
+  }
+};
+
 export default function Header() {
   const { cartItems, cartCount, cartSubtotal, isCartOpen, setIsCartOpen, clearCart, addToCart, updateQuantity } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [slideIndex, setSlideIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(179); // 2m 59s
   const [headerLogoUrl, setHeaderLogoUrl] = useState('');
+  const [announcements, setAnnouncements] = useState<AnnouncementItem[]>(defaultAnnouncements);
   const [crossSellProducts, setCrossSellProducts] = useState<Product[]>([]);
   const [discounts, setDiscounts] = useState<Discount[]>([]);
   const [couponCode, setCouponCode] = useState('');
@@ -111,6 +145,16 @@ export default function Header() {
         const settings = await res.json();
         if (typeof settings.logoHeaderUrl === 'string') {
           setHeaderLogoUrl(settings.logoHeaderUrl);
+        }
+        if (settings.heroAnnouncementItems) {
+          try {
+            const parsed = JSON.parse(settings.heroAnnouncementItems);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setAnnouncements(parsed);
+            }
+          } catch (e) {
+            console.error('Error parsing hero announcement items:', e);
+          }
         }
       } catch (err) {
         console.error('Error loading header logo:', err);
@@ -547,20 +591,21 @@ export default function Header() {
 
   return (
     <>
-      {/* Top Banner Bar */}
+      {/* Top Banner Marquee Bar */}
       <div className={styles.promoBar}>
-        <div className={`container ${styles.promoContainer}`}>
-          <div className={styles.promoItem}>
-            <span>Buy 2 Get 2 Free</span>
-          </div>
-          <div className={styles.promoItem}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
-            <span>100% Secure Checkout</span>
-          </div>
-          <div className={styles.promoItem}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
-            <span>Premium Handcrafted Jewelry</span>
-          </div>
+        <div className={styles.marqueeTrack}>
+          {[...announcements, ...announcements, ...announcements, ...announcements].map((item, index) => (
+            <div key={`${item.id}-${index}`} className={styles.promoItem}>
+              {renderAnnouncementIcon(item.icon)}
+              {item.link ? (
+                <Link href={item.link} className={styles.promoLink}>
+                  {item.text}
+                </Link>
+              ) : (
+                <span>{item.text}</span>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
