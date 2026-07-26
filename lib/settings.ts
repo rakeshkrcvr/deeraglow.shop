@@ -61,30 +61,9 @@ export async function getStoreSettings() {
     settings[row.key] = row.value;
   });
 
-  // Auto-migration check: if table contains candle data, overwrite in database
-  let needsMigration = false;
-  if (rows.length > 0) {
-    for (const row of rows) {
-      if (row.key === 'heroEyebrow' && row.value === 'DEEKSHA RITUALS') {
-        needsMigration = true;
-        break;
-      }
-      if (row.key === 'heroTitle' && row.value === 'The Art of') {
-        needsMigration = true;
-        break;
-      }
-      if (row.value && (row.value.includes('DEEKSHA') || row.value.includes('candle') || row.value.includes('Candle'))) {
-        needsMigration = true;
-        break;
-      }
-    }
-  } else {
-    // Empty settings table, we will populate defaults on demand
-    needsMigration = true;
-  }
-
-  if (needsMigration) {
-    console.log('Migrating store settings from candle to jewelry theme in database...');
+  // Populate defaults only if settings table is empty
+  if (rows.length === 0) {
+    console.log('Populating initial store settings in database...');
     try {
       for (const [key, val] of Object.entries(defaultStoreSettings)) {
         await sql`
@@ -100,7 +79,7 @@ export async function getStoreSettings() {
       });
       return { ...defaultStoreSettings, ...freshSettings };
     } catch (e) {
-      console.error('Error migrating store settings:', e);
+      console.error('Error populating initial store settings:', e);
     }
   }
 

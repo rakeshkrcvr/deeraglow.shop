@@ -1,6 +1,6 @@
 .hero {
   position: relative;
-  height: 580px;
+  height: 600px;
   overflow: hidden;
   background-color: var(--background);
 }
@@ -40,6 +40,64 @@
 
 .slideActive .heroImg {
   transform: scale(1.05);
+}
+
+.desktopImg {
+  display: block;
+}
+
+.mobileImg {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .hasMobileImg .desktopImg {
+    display: none !important;
+  }
+
+  .hasMobileImg .mobileImg {
+    display: block !important;
+  }
+}
+
+.desktopOnly {
+  display: inline;
+}
+
+.mobileOnly {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktopOnly {
+    display: none !important;
+  }
+
+  .mobileOnly {
+    display: inline !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .hideTextDesktop {
+    display: none !important;
+  }
+
+  .noOverlayDesktop {
+    background: transparent !important;
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .hideTextMobile {
+    display: none !important;
+  }
+
+  .noOverlayMobile {
+    background: transparent !important;
+    display: none !important;
+  }
 }
 
 .overlay {

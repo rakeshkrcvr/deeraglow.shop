@@ -21,31 +21,19 @@ export default function CategoryPageClient({ slug, title, products }: CategoryPa
 
   const toggleWishlist = (id: number) => {
     setWishlist(prev =>
-      prev.includes(id) ? prev.filter(item => item.id !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     );
   };
 
   const handleAddToCart = (product: Product, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image_url: product.image_url,
-      collection: product.collection
-    });
+    addToCart(product);
     setIsCartOpen(true);
   };
 
   const handleBuyNow = (product: Product, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image_url: product.image_url,
-      collection: product.collection
-    });
+    addToCart(product);
     setIsCartOpen(true);
   };
 

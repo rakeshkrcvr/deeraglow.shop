@@ -21,6 +21,7 @@ import {
   defaultCustomerVideos,
   normalizeCustomerVideos
 } from '@/lib/customerVideos';
+import { HeroSlide } from '@/components/Hero';
 
 interface Product {
   id: number;
@@ -317,8 +318,10 @@ export default function AdminDashboard() {
   const [loadingMedia, setLoadingMedia] = useState(true);
   const [mediaError, setMediaError] = useState('');
   const [showMediaModal, setShowMediaModal] = useState(false);
-  const [mediaSelectorMode, setMediaSelectorMode] = useState<'product' | 'hero' | 'general' | 'collection' | 'category' | 'slider-collection' | 'promo-banner' | 'promo-banner-2'>('product');
+  const [mediaSelectorMode, setMediaSelectorMode] = useState<'product' | 'hero' | 'hero-mobile' | 'general' | 'collection' | 'category' | 'slider-collection' | 'promo-banner' | 'promo-banner-2'>('product');
   const [heroMediaTargetIndex, setHeroMediaTargetIndex] = useState<number | null>(null);
+  const [heroMediaTargetType, setHeroMediaTargetType] = useState<'desktop' | 'mobile'>('desktop');
+  const [editingHeroSlideIndex, setEditingHeroSlideIndex] = useState<number | null>(0);
 
   // Settings States
   const [storeName, setStoreName] = useState('Deera Glow');
@@ -378,7 +381,7 @@ export default function AdminDashboard() {
   const [heroSecondaryButtonText, setHeroSecondaryButtonText] = useState('Our Philosophy');
   const [heroSecondaryButtonHref, setHeroSecondaryButtonHref] = useState('#story');
   const [heroFloatingTag, setHeroFloatingTag] = useState('New Drop / Royal Pearl Drops');
-  const [heroSliderImages, setHeroSliderImages] = useState<string[]>(['/images/jewelry_category_banner.png']);
+  const [heroSliderSlides, setHeroSliderSlides] = useState<HeroSlide[]>([]);
   const [contentSuccess, setContentSuccess] = useState('');
   const [contentError, setContentError] = useState('');
 
@@ -964,12 +967,7 @@ export default function AdminDashboard() {
         setPromoBannerLink(data.contentPromoBannerLink || '/category/necklaces');
         setPromoBanner2Image(data.contentPromoBanner2Image || '/images/jewelry_category_banner.png');
         setPromoBanner2Link(data.contentPromoBanner2Link || '/category/earrings');
-        try {
-          const parsedImages = JSON.parse(data.heroSliderImages || '[]');
-          setHeroSliderImages(Array.isArray(parsedImages) && parsedImages.length > 0 ? parsedImages.filter((image): image is string => typeof image === 'string') : ['/images/hero_slide_1.png']);
-        } catch {
-          setHeroSliderImages(['/images/hero_slide_1.png']);
-        }
+        setHeroSliderSlides(normalizeHeroSlides(data.heroSliderImages));
         try {
           const parsedPosts = JSON.parse(data.contentBlogPosts || '[]');
           if (Array.isArray(parsedPosts)) {
@@ -1071,18 +1069,119 @@ export default function AdminDashboard() {
     }
   };
 
-  const applyHeroImageSelection = (imageUrl: string) => {
-    setHeroSliderImages((prev) => {
-      const nextImages = [...prev.filter(Boolean)];
-      if (heroMediaTargetIndex === null) {
-        if (!nextImages.includes(imageUrl)) {
-          nextImages.push(imageUrl);
+const normalizeHeroSlides = (raw: any): HeroSlide[] => {
+  const defaults: HeroSlide[] = [
+    {
+      image: '/images/hero_slide_1.png',
+      mobileImage: '',
+      showText: true,
+      showMobileText: true,
+      eyebrow: 'TIMELESS BEAUTY',
+      title: 'Shine Brighter Every Day',
+      description: 'Discover handcrafted jewelry that celebrates your unique style and every special moment.',
+      btnText: 'Shop Collection',
+      btnHref: '#shop-by-collection'
+    },
+    {
+      image: '/images/hero_slide_2.png',
+      mobileImage: '',
+      showText: true,
+      showMobileText: true,
+      eyebrow: 'LUXURY CRAFTSMANSHIP',
+      title: 'Elegance in Every Detail',
+      description: 'Adorn yourself with masterfully crafted necklaces, bracelets, and charms made to last.',
+      btnText: 'Explore New Arrivals',
+      btnHref: '/category/new-arrivals'
+    },
+    {
+      image: '/images/hero_slide_3.png',
+      mobileImage: '',
+      showText: true,
+      showMobileText: true,
+      eyebrow: 'THE GOLDEN HOUR',
+      title: 'Modern Classics',
+      description: 'Find the perfect signature pieces that seamlessly transitions from day to night.',
+      btnText: 'Shop Best Sellers',
+      btnHref: '/category/best-sellers'
+    }
+  ];
+
+  if (!raw) return defaults;
+
+  try {
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed.map((item, idx) => {
+        if (typeof item === 'string') {
+          const match = defaults.find(d => d.image === item);
+          if (match) return match;
+          return {
+            image: item,
+            mobileImage: '',
+            showText: true,
+            showMobileText: true,
+            eyebrow: idx === 0 ? 'TIMELESS BEAUTY' : idx === 1 ? 'LUXURY CRAFTSMANSHIP' : 'THE GOLDEN HOUR',
+            title: idx === 0 ? 'Shine Brighter Every Day' : idx === 1 ? 'Elegance in Every Detail' : 'Modern Classics',
+            description: idx === 0 ? 'Discover handcrafted jewelry that celebrates your unique style and every special moment.' : idx === 1 ? 'Adorn yourself with masterfully crafted necklaces, bracelets, and charms made to last.' : 'Find the perfect signature pieces that seamlessly transitions from day to night.',
+            btnText: idx === 0 ? 'Shop Collection' : idx === 1 ? 'Explore New Arrivals' : 'Shop Best Sellers',
+            btnHref: idx === 0 ? '#shop-by-collection' : idx === 1 ? '/category/new-arrivals' : '/category/best-sellers'
+          };
         }
-        return nextImages.length > 0 ? nextImages : ['/images/hero_candle.png'];
+        return {
+          image: item.image || '/images/hero_slide_1.png',
+          mobileImage: item.mobileImage || '',
+          showText: item.showText !== undefined ? Boolean(item.showText) : true,
+          showMobileText: item.showMobileText !== undefined ? Boolean(item.showMobileText) : true,
+          eyebrow: item.eyebrow ?? '',
+          title: item.title ?? '',
+          description: item.description ?? '',
+          btnText: item.btnText ?? '',
+          btnHref: item.btnHref ?? '',
+          mobileEyebrow: item.mobileEyebrow ?? '',
+          mobileTitle: item.mobileTitle ?? '',
+          mobileDescription: item.mobileDescription ?? '',
+          mobileBtnText: item.mobileBtnText ?? '',
+          mobileBtnHref: item.mobileBtnHref ?? ''
+        };
+      });
+    }
+  } catch (e) {
+    console.error("Error parsing hero slides:", e);
+  }
+
+  return defaults;
+};
+
+  const applyHeroImageSelection = (imageUrl: string) => {
+    setHeroSliderSlides((prev) => {
+      const next = [...prev];
+      if (heroMediaTargetIndex === null) {
+        next.push({
+          image: imageUrl,
+          mobileImage: '',
+          showText: true,
+          showMobileText: true,
+          eyebrow: 'NEW ARRIVAL',
+          title: 'Special Collection',
+          description: 'Handcrafted luxury jewelry.',
+          btnText: 'Shop Now',
+          btnHref: '#products'
+        });
+        return next;
       }
 
-      nextImages[heroMediaTargetIndex] = imageUrl;
-      return nextImages.length > 0 ? nextImages : ['/images/hero_candle.png'];
+      if (heroMediaTargetType === 'mobile') {
+        next[heroMediaTargetIndex] = {
+          ...next[heroMediaTargetIndex],
+          mobileImage: imageUrl
+        };
+      } else {
+        next[heroMediaTargetIndex] = {
+          ...next[heroMediaTargetIndex],
+          image: imageUrl
+        };
+      }
+      return next;
     });
     setHeroMediaTargetIndex(null);
   };
@@ -1092,7 +1191,7 @@ export default function AdminDashboard() {
     setContentSuccess('');
     setContentError('');
 
-    if (heroSliderImages.length === 0) {
+    if (heroSliderSlides.length === 0) {
       setContentError('Please add at least one slider image.');
       return;
     }
@@ -1107,7 +1206,7 @@ export default function AdminDashboard() {
       heroSecondaryButtonText,
       heroSecondaryButtonHref,
       heroFloatingTag,
-      heroSliderImages: JSON.stringify(heroSliderImages.filter(Boolean))
+      heroSliderImages: JSON.stringify(heroSliderSlides)
     };
 
     try {
@@ -4244,7 +4343,7 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            <form onSubmit={handleSaveHeroContent} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 420px', gap: '32px', alignItems: 'start' }}>
+            <form onSubmit={handleSaveHeroContent} style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
               <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px' }}>
                 <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>Home Hero Content</h3>
 
@@ -4259,7 +4358,7 @@ export default function AdminDashboard() {
                   </div>
                 )}
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', fontSize: '13px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', fontSize: '13px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Eyebrow</label>
                     <input value={heroEyebrow} onChange={e => setHeroEyebrow(e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
@@ -4278,7 +4377,7 @@ export default function AdminDashboard() {
                   </div>
                   <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Description</label>
-                    <textarea value={heroDescription} onChange={e => setHeroDescription(e.target.value)} rows={4} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'vertical', fontFamily: 'inherit' }} />
+                    <textarea value={heroDescription} onChange={e => setHeroDescription(e.target.value)} rows={3} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'vertical', fontFamily: 'inherit' }} />
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Primary Button Text</label>
@@ -4298,42 +4397,476 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', marginTop: '18px' }}>
+                <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 18px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', marginTop: '18px' }}>
                   Save Page Content
                 </button>
               </div>
 
+              {/* Full Width Hero Image Slider Section */}
               <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px' }}>
-                <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>Hero Image Slider</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {heroSliderImages.map((imageUrl, index) => (
-                    <div key={`${imageUrl}-${index}`} style={{ display: 'grid', gridTemplateColumns: '88px 1fr', gap: '12px', padding: '10px', border: '1px solid #e3e3e3', borderRadius: '8px', alignItems: 'center' }}>
-                      <div style={{ position: 'relative', width: '88px', height: '88px', borderRadius: '6px', overflow: 'hidden', backgroundColor: '#f6f6f6' }}>
-                        <Image src={imageUrl} alt={`Hero slider image ${index + 1}`} fill style={{ objectFit: 'cover' }} />
-                      </div>
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: '12px', color: '#6d6d6d', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '8px' }}>{imageUrl}</div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                          <button type="button" onClick={() => { setModalSearchQuery(''); setMediaSelectorMode('hero'); setHeroMediaTargetIndex(index); setShowMediaModal(true); }} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
-                            Change
-                          </button>
-                          <button type="button" disabled={index === 0} onClick={() => setHeroSliderImages(prev => { const next = [...prev];[next[index - 1], next[index]] = [next[index], next[index - 1]]; return next; })} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: index === 0 ? 'not-allowed' : 'pointer', opacity: index === 0 ? 0.5 : 1 }}>
-                            Up
-                          </button>
-                          <button type="button" disabled={index === heroSliderImages.length - 1} onClick={() => setHeroSliderImages(prev => { const next = [...prev];[next[index + 1], next[index]] = [next[index], next[index + 1]]; return next; })} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: index === heroSliderImages.length - 1 ? 'not-allowed' : 'pointer', opacity: index === heroSliderImages.length - 1 ? 0.5 : 1 }}>
-                            Down
-                          </button>
-                          <button type="button" disabled={heroSliderImages.length === 1} onClick={() => setHeroSliderImages(prev => prev.filter((_, imageIndex) => imageIndex !== index))} style={{ backgroundColor: '#ffebe9', color: '#ff4d4d', border: 'none', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: heroSliderImages.length === 1 ? 'not-allowed' : 'pointer', opacity: heroSliderImages.length === 1 ? 0.5 : 1 }}>
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #e3e3e3', paddingBottom: '12px' }}>
+                  <div>
+                    <h3 style={{ fontSize: '16px', fontWeight: '700', margin: 0, color: '#1a1a1a' }}>🖼️ Hero Image Slider (Desktop & Mobile)</h3>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#6d6d6d' }}>Manage Desktop/Mobile images, text overlays, and target links for each home page slide.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setHeroSliderSlides(prev => [
+                        ...prev,
+                        {
+                          image: '/images/hero_slide_1.png',
+                          mobileImage: '',
+                          showText: true,
+                          showMobileText: true,
+                          eyebrow: 'NEW ARRIVAL',
+                          title: 'New Collection',
+                          description: 'Handcrafted luxury jewelry.',
+                          btnText: 'Explore Now',
+                          btnHref: '#products',
+                          mobileBtnHref: ''
+                        }
+                      ]);
+                      setEditingHeroSlideIndex(heroSliderSlides.length);
+                    }}
+                    style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                  >
+                    + Add New Slide
+                  </button>
                 </div>
-                <button type="button" onClick={() => { setModalSearchQuery(''); setMediaSelectorMode('hero'); setHeroMediaTargetIndex(null); setShowMediaModal(true); }} style={{ width: '100%', marginTop: '14px', backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-                  Add Slider Image
-                </button>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {heroSliderSlides.map((slide, index) => {
+                    const isEditing = editingHeroSlideIndex === index;
+                    const isTextHidden = slide.showText === false && slide.showMobileText === false;
+
+                    return (
+                      <div key={`slide-${index}`} style={{ border: '1px solid #e3e3e3', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#fafafa', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+                        {/* Card Header Bar */}
+                        <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#ffffff', borderBottom: isEditing ? '1px solid #e3e3e3' : 'none' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                            {/* Image Previews */}
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                              <div style={{ position: 'relative', width: '60px', height: '60px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #ccc', backgroundColor: '#eee' }}>
+                                <img src={slide.image} alt={`Desktop ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <span style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '9px', textAlign: 'center', padding: '1px 0' }}>Desktop</span>
+                              </div>
+                              {slide.mobileImage ? (
+                                <div style={{ position: 'relative', width: '38px', height: '60px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #ccc', backgroundColor: '#eee' }}>
+                                  <img src={slide.mobileImage} alt={`Mobile ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                  <span style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '8px', textAlign: 'center', padding: '1px 0' }}>Mobile</span>
+                                </div>
+                              ) : (
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '38px', height: '60px', borderRadius: '6px', border: '1px dashed #ccc', color: '#888', fontSize: '10px', textAlign: 'center', padding: '2px' }}>
+                                  Same
+                                </div>
+                              )}
+                            </div>
+
+                            <div>
+                              <strong style={{ fontSize: '14px', color: '#1a1a1a', display: 'block' }}>Slide {index + 1}: {slide.title || 'Untitled Slide'}</strong>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '6px', fontSize: '12px' }}>
+                                <span style={{ color: isTextHidden ? '#d72c0d' : '#2d5c4d', fontWeight: '600', backgroundColor: isTextHidden ? '#ffebe9' : '#e2ece9', padding: '2px 8px', borderRadius: '4px' }}>
+                                  {isTextHidden ? '🚫 Text Hidden' : slide.showText === false ? '📱 Mobile Text Only' : slide.showMobileText === false ? '💻 Desktop Text Only' : '👁️ Text Visible'}
+                                </span>
+                                {slide.mobileImage ? (
+                                  <span style={{ color: '#0066cc', fontWeight: '600', backgroundColor: '#e8f2ff', padding: '2px 8px', borderRadius: '4px' }}>📱 Mobile Image Set</span>
+                                ) : (
+                                  <span style={{ color: '#6d6d6d', backgroundColor: '#f0f0f0', padding: '2px 8px', borderRadius: '4px' }}>📱 Desktop Image Used</span>
+                                )}
+                                {slide.mobileBtnHref && (
+                                  <span style={{ color: '#6610f2', fontWeight: '600', backgroundColor: '#f3ebff', padding: '2px 8px', borderRadius: '4px' }}>🔗 Mobile Link Set</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => setEditingHeroSlideIndex(isEditing ? null : index)}
+                              style={{ backgroundColor: isEditing ? '#1a1a1a' : '#ffffff', color: isEditing ? '#ffffff' : '#1a1a1a', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 14px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                            >
+                              {isEditing ? 'Close Editor ✕' : '✏️ Edit Slide'}
+                            </button>
+                            <button
+                              type="button"
+                              disabled={index === 0}
+                              onClick={() => {
+                                setHeroSliderSlides(prev => {
+                                  const next = [...prev];
+                                  [next[index - 1], next[index]] = [next[index], next[index - 1]];
+                                  return next;
+                                });
+                              }}
+                              style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 12px', fontSize: '12px', fontWeight: '600', cursor: index === 0 ? 'not-allowed' : 'pointer', opacity: index === 0 ? 0.5 : 1 }}
+                            >
+                              Up
+                            </button>
+                            <button
+                              type="button"
+                              disabled={index === heroSliderSlides.length - 1}
+                              onClick={() => {
+                                setHeroSliderSlides(prev => {
+                                  const next = [...prev];
+                                  [next[index + 1], next[index]] = [next[index], next[index + 1]];
+                                  return next;
+                                });
+                              }}
+                              style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 12px', fontSize: '12px', fontWeight: '600', cursor: index === heroSliderSlides.length - 1 ? 'not-allowed' : 'pointer', opacity: index === heroSliderSlides.length - 1 ? 0.5 : 1 }}
+                            >
+                              Down
+                            </button>
+                            <button
+                              type="button"
+                              disabled={heroSliderSlides.length === 1}
+                              onClick={() => {
+                                setHeroSliderSlides(prev => prev.filter((_, imageIndex) => imageIndex !== index));
+                                if (editingHeroSlideIndex === index) setEditingHeroSlideIndex(null);
+                              }}
+                              style={{ backgroundColor: '#ffebe9', color: '#ff4d4d', border: '1px solid #ffd0cc', borderRadius: '6px', padding: '8px 12px', fontSize: '12px', fontWeight: '600', cursor: heroSliderSlides.length === 1 ? 'not-allowed' : 'pointer', opacity: heroSliderSlides.length === 1 ? 0.5 : 1 }}
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Expanded Slide Detail Form */}
+                        {isEditing && (
+                          <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', fontSize: '13px' }}>
+                            
+                            {/* 1. Images Selection */}
+                            <div style={{ backgroundColor: '#ffffff', padding: '16px', borderRadius: '8px', border: '1px solid #e3e3e3' }}>
+                              <h4 style={{ margin: '0 0 14px 0', fontSize: '14px', fontWeight: '700', color: '#1a1a1a' }}>🖼️ Slide Images (Desktop & Mobile)</h4>
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+                                
+                                {/* Desktop Image */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                  <label style={{ fontWeight: '600', color: '#1a1a1a' }}>Desktop Image URL</label>
+                                  <div style={{ display: 'flex', gap: '8px' }}>
+                                    <input
+                                      value={slide.image}
+                                      onChange={e => {
+                                        const val = e.target.value;
+                                        setHeroSliderSlides(prev => {
+                                          const next = [...prev];
+                                          next[index] = { ...next[index], image: val };
+                                          return next;
+                                        });
+                                      }}
+                                      style={{ flexGrow: 1, padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }}
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setModalSearchQuery('');
+                                        setMediaSelectorMode('hero');
+                                        setHeroMediaTargetType('desktop');
+                                        setHeroMediaTargetIndex(index);
+                                        setShowMediaModal(true);
+                                      }}
+                                      style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 14px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                    >
+                                      Browse
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Mobile Image */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                  <label style={{ fontWeight: '600', color: '#1a1a1a' }}>
+                                    Mobile Image URL <span style={{ fontWeight: 'normal', color: '#6d6d6d' }}>(Optional - mobile ke liye alag image)</span>
+                                  </label>
+                                  <div style={{ display: 'flex', gap: '8px' }}>
+                                    <input
+                                      value={slide.mobileImage || ''}
+                                      placeholder="Khali chhodne par desktop image dikhegi"
+                                      onChange={e => {
+                                        const val = e.target.value;
+                                        setHeroSliderSlides(prev => {
+                                          const next = [...prev];
+                                          next[index] = { ...next[index], mobileImage: val };
+                                          return next;
+                                        });
+                                      }}
+                                      style={{ flexGrow: 1, padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }}
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setModalSearchQuery('');
+                                        setMediaSelectorMode('hero-mobile');
+                                        setHeroMediaTargetType('mobile');
+                                        setHeroMediaTargetIndex(index);
+                                        setShowMediaModal(true);
+                                      }}
+                                      style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 14px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                    >
+                                      Browse
+                                    </button>
+                                    {slide.mobileImage && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setHeroSliderSlides(prev => {
+                                            const next = [...prev];
+                                            next[index] = { ...next[index], mobileImage: '' };
+                                            return next;
+                                          });
+                                        }}
+                                        style={{ backgroundColor: '#ffebe9', color: '#d72c0d', border: '1px solid #ffd0cc', borderRadius: '6px', padding: '8px 12px', fontWeight: '600', cursor: 'pointer' }}
+                                        title="Clear Mobile Image"
+                                      >
+                                        Clear
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+
+                              </div>
+                            </div>
+
+                            {/* 2. Text Display Controls (Hide / Show Text) */}
+                            <div style={{ backgroundColor: '#ffffff', padding: '16px', borderRadius: '8px', border: '1px solid #e3e3e3' }}>
+                              <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '700', color: '#1a1a1a' }}>👁️ Text Overlay Visibility Options</h4>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: '600' }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={slide.showText !== false}
+                                    onChange={e => {
+                                      const checked = e.target.checked;
+                                      setHeroSliderSlides(prev => {
+                                        const next = [...prev];
+                                        next[index] = { ...next[index], showText: checked };
+                                        return next;
+                                      });
+                                    }}
+                                    style={{ width: '16px', height: '16px', accentColor: '#1a1a1a' }}
+                                  />
+                                  <span>Show Text Overlay on Desktop (Desktop Par Text Dikhao)</span>
+                                </label>
+
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: '600' }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={slide.showMobileText !== false}
+                                    onChange={e => {
+                                      const checked = e.target.checked;
+                                      setHeroSliderSlides(prev => {
+                                        const next = [...prev];
+                                        next[index] = { ...next[index], showMobileText: checked };
+                                        return next;
+                                      });
+                                    }}
+                                    style={{ width: '16px', height: '16px', accentColor: '#1a1a1a' }}
+                                  />
+                                  <span>Show Text Overlay on Mobile (Mobile Par Text Dikhao)</span>
+                                </label>
+                              </div>
+                            </div>
+
+                            {/* 3. Text Content & Links (Desktop & Mobile) */}
+                            <div style={{ backgroundColor: '#ffffff', padding: '16px', borderRadius: '8px', border: '1px solid #e3e3e3' }}>
+                              <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '700', color: '#1a1a1a' }}>✍️ Text Content & Links</h4>
+                              
+                              {/* Desktop Text Fields */}
+                              <div style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px dashed #e3e3e3' }}>
+                                <h5 style={{ margin: '0 0 12px 0', fontSize: '13px', fontWeight: '700', color: '#2d5c4d', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  💻 Desktop Text & Link
+                                </h5>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ fontWeight: '600', color: '#555' }}>Eyebrow</label>
+                                    <input
+                                      value={slide.eyebrow || ''}
+                                      placeholder="e.g. THE GOLDEN HOUR"
+                                      onChange={e => {
+                                        const val = e.target.value;
+                                        setHeroSliderSlides(prev => {
+                                          const next = [...prev];
+                                          next[index] = { ...next[index], eyebrow: val };
+                                          return next;
+                                        });
+                                      }}
+                                      style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                                    />
+                                  </div>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ fontWeight: '600', color: '#555' }}>Title</label>
+                                    <input
+                                      value={slide.title || ''}
+                                      placeholder="e.g. Modern Classics"
+                                      onChange={e => {
+                                        const val = e.target.value;
+                                        setHeroSliderSlides(prev => {
+                                          const next = [...prev];
+                                          next[index] = { ...next[index], title: val };
+                                          return next;
+                                        });
+                                      }}
+                                      style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                                    />
+                                  </div>
+                                  <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ fontWeight: '600', color: '#555' }}>Description</label>
+                                    <textarea
+                                      value={slide.description || ''}
+                                      rows={2}
+                                      placeholder="Find the perfect signature pieces..."
+                                      onChange={e => {
+                                        const val = e.target.value;
+                                        setHeroSliderSlides(prev => {
+                                          const next = [...prev];
+                                          next[index] = { ...next[index], description: val };
+                                          return next;
+                                        });
+                                      }}
+                                      style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'vertical' }}
+                                    />
+                                  </div>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ fontWeight: '600', color: '#555' }}>Button Text</label>
+                                    <input
+                                      value={slide.btnText || ''}
+                                      placeholder="e.g. SHOP BEST SELLERS"
+                                      onChange={e => {
+                                        const val = e.target.value;
+                                        setHeroSliderSlides(prev => {
+                                          const next = [...prev];
+                                          next[index] = { ...next[index], btnText: val };
+                                          return next;
+                                        });
+                                      }}
+                                      style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                                    />
+                                  </div>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ fontWeight: '600', color: '#555' }}>Button Link (Desktop)</label>
+                                    <input
+                                      value={slide.btnHref || ''}
+                                      placeholder="e.g. /category/best-sellers"
+                                      onChange={e => {
+                                        const val = e.target.value;
+                                        setHeroSliderSlides(prev => {
+                                          const next = [...prev];
+                                          next[index] = { ...next[index], btnHref: val };
+                                          return next;
+                                        });
+                                      }}
+                                      style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Mobile Text & Link Fields (Optional) */}
+                              <div>
+                                <h5 style={{ margin: '0 0 12px 0', fontSize: '13px', fontWeight: '700', color: '#0066cc', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  📱 Mobile Specific Text & Link <span style={{ fontWeight: 'normal', color: '#6d6d6d' }}>(Optional - khali chhodne par desktop values use hongi)</span>
+                                </h5>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ fontWeight: '600', color: '#555' }}>Mobile Eyebrow</label>
+                                    <input
+                                      value={slide.mobileEyebrow || ''}
+                                      placeholder="Same as desktop"
+                                      onChange={e => {
+                                        const val = e.target.value;
+                                        setHeroSliderSlides(prev => {
+                                          const next = [...prev];
+                                          next[index] = { ...next[index], mobileEyebrow: val };
+                                          return next;
+                                        });
+                                      }}
+                                      style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                                    />
+                                  </div>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ fontWeight: '600', color: '#555' }}>Mobile Title</label>
+                                    <input
+                                      value={slide.mobileTitle || ''}
+                                      placeholder="Same as desktop"
+                                      onChange={e => {
+                                        const val = e.target.value;
+                                        setHeroSliderSlides(prev => {
+                                          const next = [...prev];
+                                          next[index] = { ...next[index], mobileTitle: val };
+                                          return next;
+                                        });
+                                      }}
+                                      style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                                    />
+                                  </div>
+                                  <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ fontWeight: '600', color: '#555' }}>Mobile Description</label>
+                                    <textarea
+                                      value={slide.mobileDescription || ''}
+                                      rows={2}
+                                      placeholder="Same as desktop"
+                                      onChange={e => {
+                                        const val = e.target.value;
+                                        setHeroSliderSlides(prev => {
+                                          const next = [...prev];
+                                          next[index] = { ...next[index], mobileDescription: val };
+                                          return next;
+                                        });
+                                      }}
+                                      style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'vertical' }}
+                                    />
+                                  </div>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ fontWeight: '600', color: '#555' }}>Mobile Button Text</label>
+                                    <input
+                                      value={slide.mobileBtnText || ''}
+                                      placeholder="Same as desktop"
+                                      onChange={e => {
+                                        const val = e.target.value;
+                                        setHeroSliderSlides(prev => {
+                                          const next = [...prev];
+                                          next[index] = { ...next[index], mobileBtnText: val };
+                                          return next;
+                                        });
+                                      }}
+                                      style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                                    />
+                                  </div>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ fontWeight: '600', color: '#555' }}>Mobile Button Link</label>
+                                    <input
+                                      value={slide.mobileBtnHref || ''}
+                                      placeholder="Same as desktop (e.g. /category/earrings-mobile)"
+                                      onChange={e => {
+                                        const val = e.target.value;
+                                        setHeroSliderSlides(prev => {
+                                          const next = [...prev];
+                                          next[index] = { ...next[index], mobileBtnHref: val };
+                                          return next;
+                                        });
+                                      }}
+                                      style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #e3e3e3', display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    type="submit"
+                    style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '12px 24px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}
+                  >
+                    💾 Save Hero Slider Settings
+                  </button>
+                </div>
+
               </div>
             </form>
 
@@ -6905,7 +7438,7 @@ export default function AdminDashboard() {
                           const data = await uploadMediaFile(file);
                           if (mediaSelectorMode === 'product') {
                             setGalleryImages((prev) => [...prev.filter(img => img !== '/images/hero_candle.png'), data.url]);
-                          } else if (mediaSelectorMode === 'hero') {
+                          } else if (mediaSelectorMode === 'hero' || mediaSelectorMode === 'hero-mobile') {
                             applyHeroImageSelection(data.url);
                           } else if (mediaSelectorMode === 'collection') {
                             setCollImageUrl(data.url);
@@ -6976,7 +7509,7 @@ export default function AdminDashboard() {
                             if (prev.includes(file.url)) return prev;
                             return [...prev.filter(img => img !== '/images/hero_candle.png'), file.url];
                           });
-                        } else if (mediaSelectorMode === 'hero') {
+                        } else if (mediaSelectorMode === 'hero' || mediaSelectorMode === 'hero-mobile') {
                           applyHeroImageSelection(file.url);
                         } else if (mediaSelectorMode === 'collection') {
                           setCollImageUrl(file.url);

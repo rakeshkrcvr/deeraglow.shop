@@ -103,11 +103,8 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
   const handleAddToCart = () => {
     setAdding(true);
     addToCart({
-      id: product.id,
+      ...product,
       name: `${product.name} (${selectedFinish})`,
-      price: product.price,
-      image_url: product.image_url,
-      collection: product.collection
     }, quantity);
     setIsCartOpen(true);
     setTimeout(() => setAdding(false), 1200);
@@ -115,11 +112,8 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
 
   const handleBuyNow = () => {
     addToCart({
-      id: product.id,
+      ...product,
       name: `${product.name} (${selectedFinish})`,
-      price: product.price,
-      image_url: product.image_url,
-      collection: product.collection
     }, quantity);
     setIsCartOpen(true);
   };
