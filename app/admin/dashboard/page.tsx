@@ -110,6 +110,13 @@ interface Discount {
   value_type?: 'fixed' | 'percentage';
   value_amount?: string | number;
   minimum_order_value?: string | number;
+  method?: 'automatic' | 'code';
+  applies_to?: 'all' | 'collections' | 'products';
+  target_collections?: string;
+  target_products?: string;
+  buy_qty?: number;
+  get_qty?: number;
+  get_discount_type?: 'free' | 'percentage' | 'fixed';
 }
 
 interface Campaign {
@@ -262,13 +269,19 @@ export default function AdminDashboard() {
   // Discount Modal & Creation States
   const [showDiscountTypeModal, setShowDiscountTypeModal] = useState(false);
   const [showCreateDiscountForm, setShowCreateDiscountForm] = useState(false);
-  const [selectedDiscountType, setSelectedDiscountType] = useState('Amount off products');
+  const [selectedDiscountType, setSelectedDiscountType] = useState('Buy X get Y');
   const [newDiscountTitle, setNewDiscountTitle] = useState('');
   const [newDiscountSummary, setNewDiscountSummary] = useState('');
   const [newDiscountValueType, setNewDiscountValueType] = useState<'fixed' | 'percentage'>('fixed');
   const [newDiscountValue, setNewDiscountValue] = useState('');
   const [newDiscountMinimumOrder, setNewDiscountMinimumOrder] = useState('');
   const [newDiscountStatus, setNewDiscountStatus] = useState<'Active' | 'Expired'>('Active');
+  const [newDiscountMethod, setNewDiscountMethod] = useState<'automatic' | 'code'>('automatic');
+  const [newDiscountAppliesTo, setNewDiscountAppliesTo] = useState<'all' | 'collections' | 'products'>('all');
+  const [newDiscountTargetCollections, setNewDiscountTargetCollections] = useState<string>('Rings, Earrings, Necklaces, Bracelets, Bangles');
+  const [newDiscountBuyQty, setNewDiscountBuyQty] = useState<number>(2);
+  const [newDiscountGetQty, setNewDiscountGetQty] = useState<number>(2);
+  const [newDiscountGetDiscountType, setNewDiscountGetDiscountType] = useState<'free' | 'percentage' | 'fixed'>('free');
   const [editingDiscountId, setEditingDiscountId] = useState<number | null>(null);
 
   // Collections CRUD Form States
@@ -1715,21 +1728,33 @@ export default function AdminDashboard() {
     setNewDiscountTitle('');
     setNewDiscountSummary('');
     setNewDiscountValueType('fixed');
-    setNewDiscountValue('');
-    setNewDiscountMinimumOrder('');
+    setNewDiscountValue('0');
+    setNewDiscountMinimumOrder('0');
     setNewDiscountStatus('Active');
+    setNewDiscountMethod('automatic');
+    setNewDiscountAppliesTo('all');
+    setNewDiscountTargetCollections('Rings, Earrings, Necklaces, Bracelets, Bangles');
+    setNewDiscountBuyQty(2);
+    setNewDiscountGetQty(2);
+    setNewDiscountGetDiscountType('free');
     setEditingDiscountId(null);
   };
 
   const handleEditDiscount = (discount: Discount) => {
     setEditingDiscountId(discount.id);
-    setSelectedDiscountType(discount.discount_type || 'Amount off products');
+    setSelectedDiscountType(discount.discount_type || 'Buy X get Y');
     setNewDiscountTitle(discount.title);
     setNewDiscountSummary(discount.summary);
     setNewDiscountValueType(discount.value_type === 'percentage' ? 'percentage' : 'fixed');
-    setNewDiscountValue(String(discount.value_amount ?? ''));
-    setNewDiscountMinimumOrder(String(discount.minimum_order_value ?? ''));
+    setNewDiscountValue(String(discount.value_amount ?? '0'));
+    setNewDiscountMinimumOrder(String(discount.minimum_order_value ?? '0'));
     setNewDiscountStatus(discount.status === 'Expired' ? 'Expired' : 'Active');
+    setNewDiscountMethod(discount.method === 'code' ? 'code' : 'automatic');
+    setNewDiscountAppliesTo(discount.applies_to || 'all');
+    setNewDiscountTargetCollections(discount.target_collections || 'Rings, Earrings, Necklaces, Bracelets, Bangles');
+    setNewDiscountBuyQty(discount.buy_qty ?? 2);
+    setNewDiscountGetQty(discount.get_qty ?? 2);
+    setNewDiscountGetDiscountType(discount.get_discount_type || 'free');
     setShowDiscountTypeModal(false);
     setShowCreateDiscountForm(true);
   };
@@ -1737,7 +1762,7 @@ export default function AdminDashboard() {
   // Create or update Discount Code
   const handleCreateDiscount = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newDiscountTitle || !newDiscountSummary || !newDiscountValue) return;
+    if (!newDiscountTitle || !newDiscountSummary) return;
 
     try {
       const isEditingDiscount = editingDiscountId !== null;
@@ -1751,9 +1776,15 @@ export default function AdminDashboard() {
           summary: newDiscountSummary,
           discount_type: selectedDiscountType,
           value_type: newDiscountValueType,
-          value_amount: newDiscountValue,
+          value_amount: newDiscountValue || '0',
           minimum_order_value: newDiscountMinimumOrder || '0',
-          status: newDiscountStatus
+          status: newDiscountStatus,
+          method: newDiscountMethod,
+          applies_to: newDiscountAppliesTo,
+          target_collections: newDiscountTargetCollections,
+          buy_qty: newDiscountBuyQty,
+          get_qty: newDiscountGetQty,
+          get_discount_type: newDiscountGetDiscountType
         })
       });
 
@@ -1761,7 +1792,7 @@ export default function AdminDashboard() {
         resetDiscountForm();
         setShowCreateDiscountForm(false);
         fetchDiscounts();
-        alert(isEditingDiscount ? 'Discount code successfully updated!' : 'Discount code successfully created!');
+        alert(isEditingDiscount ? 'Discount rule successfully updated!' : 'Discount rule successfully created!');
       }
     } catch (err) {
       console.error(err);
@@ -3500,44 +3531,116 @@ export default function AdminDashboard() {
             {/* Custom create form if type selected */}
             {showCreateDiscountForm && (
               <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', marginBottom: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: '700', margin: '0 0 16px 0' }}>{editingDiscountId ? 'Edit' : 'Configure'}: {selectedDiscountType}</h3>
-                <form onSubmit={handleCreateDiscount} style={{ display: 'flex', gap: '16px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Discount Code Title</label>
-                    <input type="text" value={newDiscountTitle} onChange={e => setNewDiscountTitle(e.target.value)} required placeholder="e.g. FESTIVE30" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }} />
+                <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', color: '#1a1a1a' }}>
+                  {editingDiscountId ? 'Edit' : 'Configure'}: {selectedDiscountType}
+                </h3>
+                
+                <form onSubmit={handleCreateDiscount} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  
+                  {/* Row 1: Method & Title */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Discount Application Method</label>
+                      <select value={newDiscountMethod} onChange={e => setNewDiscountMethod(e.target.value as 'automatic' | 'code')} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px', fontWeight: '600' }}>
+                        <option value="automatic">⚡ Automatic (No code required)</option>
+                        <option value="code">🎟️ Discount Code (Customer enters code)</option>
+                      </select>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>{newDiscountMethod === 'automatic' ? 'Rule Title / Offer Name' : 'Discount Code Title'}</label>
+                      <input type="text" value={newDiscountTitle} onChange={e => setNewDiscountTitle(e.target.value)} required placeholder="e.g. BUY2GET2FREE" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px', textTransform: 'uppercase' }} />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Status</label>
+                      <select value={newDiscountStatus} onChange={e => setNewDiscountStatus(e.target.value as 'Active' | 'Expired')} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }}>
+                        <option value="Active">Active</option>
+                        <option value="Expired">Expired</option>
+                      </select>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Discount Value Type</label>
-                    <select value={newDiscountValueType} onChange={e => setNewDiscountValueType(e.target.value as 'fixed' | 'percentage')} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }}>
-                      <option value="fixed">Fixed amount</option>
-                      <option value="percentage">Percentage</option>
-                    </select>
+
+                  {/* Row 2: Applies To Scope & Collections */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '16px', backgroundColor: '#f9f9f9', padding: '12px 16px', borderRadius: '6px', border: '1px solid #eee' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Applies To (Target Scope)</label>
+                      <select value={newDiscountAppliesTo} onChange={e => setNewDiscountAppliesTo(e.target.value as 'all' | 'collections' | 'products')} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }}>
+                        <option value="all">📦 All Products</option>
+                        <option value="collections">🏷️ Specific Collections</option>
+                        <option value="products">✨ Specific Products</option>
+                      </select>
+                    </div>
+
+                    {newDiscountAppliesTo === 'collections' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Select Collections (Comma Separated)</label>
+                        <input type="text" value={newDiscountTargetCollections} onChange={e => setNewDiscountTargetCollections(e.target.value)} placeholder="Rings, Earrings, Necklaces, Bracelets, Bangles" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }} />
+                      </div>
+                    )}
+
+                    {newDiscountAppliesTo === 'all' && (
+                      <div style={{ display: 'flex', alignItems: 'center', fontSize: '12px', color: '#2e7d32', fontWeight: '500' }}>
+                        ✓ Offer applies to every product item across all categories in the store.
+                      </div>
+                    )}
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>{newDiscountValueType === 'percentage' ? 'Percent Off' : 'Amount Off'}</label>
-                    <input type="number" min="0" step="0.01" value={newDiscountValue} onChange={e => setNewDiscountValue(e.target.value)} required placeholder={newDiscountValueType === 'percentage' ? 'e.g. 10' : 'e.g. 50'} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px', width: '110px' }} />
+
+                  {/* Row 3: Buy X Get Y Settings */}
+                  {selectedDiscountType.toLowerCase().includes('buy') && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', backgroundColor: '#fff8e1', padding: '12px 16px', borderRadius: '6px', border: '1px solid #ffe082' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ fontSize: '11px', fontWeight: '600', color: '#8d6e63' }}>Customer Buys (Quantity X)</label>
+                        <input type="number" min="1" value={newDiscountBuyQty} onChange={e => setNewDiscountBuyQty(parseInt(e.target.value) || 1)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }} />
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ fontSize: '11px', fontWeight: '600', color: '#8d6e63' }}>Customer Gets (Quantity Y)</label>
+                        <input type="number" min="1" value={newDiscountGetQty} onChange={e => setNewDiscountGetQty(parseInt(e.target.value) || 1)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }} />
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ fontSize: '11px', fontWeight: '600', color: '#8d6e63' }}>Get Discount Value</label>
+                        <select value={newDiscountGetDiscountType} onChange={e => setNewDiscountGetDiscountType(e.target.value as 'free' | 'percentage' | 'fixed')} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px', fontWeight: '600' }}>
+                          <option value="free">🎁 100% Free</option>
+                          <option value="percentage">50% Off</option>
+                          <option value="fixed">Fixed Amount Off</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Row 4: Summary & Values */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '16px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Summary Text (Displayed in Banner / Cart)</label>
+                      <input type="text" value={newDiscountSummary} onChange={e => setNewDiscountSummary(e.target.value)} required placeholder="e.g. Buy 2 items, get 2 items free" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }} />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Discount Value Type</label>
+                      <select value={newDiscountValueType} onChange={e => setNewDiscountValueType(e.target.value as 'fixed' | 'percentage')} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }}>
+                        <option value="fixed">Fixed amount</option>
+                        <option value="percentage">Percentage</option>
+                      </select>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Amount / Value</label>
+                      <input type="number" min="0" step="0.01" value={newDiscountValue} onChange={e => setNewDiscountValue(e.target.value)} placeholder="0" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }} />
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Minimum Cart</label>
-                    <input type="number" min="0" step="0.01" value={newDiscountMinimumOrder} onChange={e => setNewDiscountMinimumOrder(e.target.value)} placeholder="0" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px', width: '110px' }} />
+
+                  {/* Action Buttons */}
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+                    <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', padding: '10px 24px', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                      {editingDiscountId ? 'Update Rule' : 'Save Rule'}
+                    </button>
+                    <button type="button" onClick={() => { resetDiscountForm(); setShowCreateDiscountForm(false); }} style={{ backgroundColor: 'transparent', border: '1px solid #ccc', padding: '10px 16px', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>
+                      Cancel
+                    </button>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Status</label>
-                    <select value={newDiscountStatus} onChange={e => setNewDiscountStatus(e.target.value as 'Active' | 'Expired')} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }}>
-                      <option value="Active">Active</option>
-                      <option value="Expired">Expired</option>
-                    </select>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <label style={{ fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>Summary Text</label>
-                    <input type="text" value={newDiscountSummary} onChange={e => setNewDiscountSummary(e.target.value)} required placeholder="e.g. 30% off select rings" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px', width: '260px' }} />
-                  </div>
-                  <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', padding: '10px 20px', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-                    {editingDiscountId ? 'Update Code' : 'Save Code'}
-                  </button>
-                  <button type="button" onClick={() => { resetDiscountForm(); setShowCreateDiscountForm(false); }} style={{ backgroundColor: 'transparent', border: '1px solid #ccc', padding: '10px 16px', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>
-                    Cancel
-                  </button>
+
                 </form>
               </div>
             )}
@@ -3576,8 +3679,18 @@ export default function AdminDashboard() {
                         <tr key={disc.id} style={{ borderBottom: '1px solid #e3e3e3' }}>
                           <td style={{ padding: '12px 16px' }}><input type="checkbox" /></td>
                           <td style={{ padding: '12px 16px' }}>
-                            <strong style={{ display: 'block', color: '#3e0030' }}>{disc.title}</strong>
-                            <span style={{ fontSize: '11px', color: '#6d6d6d' }}>{disc.summary}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                              <strong style={{ color: '#3e0030', fontSize: '13px' }}>{disc.title}</strong>
+                              <span style={{ fontSize: '10px', fontWeight: '700', padding: '2px 6px', borderRadius: '4px', backgroundColor: disc.method === 'automatic' ? '#e8f5e9' : '#fff3e0', color: disc.method === 'automatic' ? '#1b5e20' : '#e65100' }}>
+                                {disc.method === 'automatic' ? '⚡ Automatic' : '🎟️ Code'}
+                              </span>
+                            </div>
+                            <span style={{ fontSize: '11px', color: '#6d6d6d', display: 'block' }}>{disc.summary}</span>
+                            {disc.applies_to === 'collections' && disc.target_collections && (
+                              <span style={{ fontSize: '10px', color: '#6b21a8', backgroundColor: '#f3e8ff', padding: '2px 6px', borderRadius: '4px', display: 'inline-block', marginTop: '4px' }}>
+                                🏷️ Collections: {disc.target_collections}
+                              </span>
+                            )}
                           </td>
                           <td style={{ padding: '12px 16px' }}>
                             <span style={{

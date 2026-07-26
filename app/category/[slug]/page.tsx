@@ -1,7 +1,7 @@
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import AuraCollection from '@/components/AuraCollection';
+import CategoryPageClient from './CategoryPageClient';
 import { getProducts, Product } from '@/lib/products';
 import styles from './page.module.css';
 
@@ -9,11 +9,23 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+export async function generateMetadata({ params }: PageProps) {
+  const { slug } = await params;
+  const title = slug
+    .split('-')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+
+  return {
+    title: `${title} Collection | Deera Glow Premium Jewelry`,
+    description: `Shop handcrafted ${title} artificial jewelry by Deera Glow. Discover luxury rings, necklaces, earrings, bracelets, sterling silver, gold-plated jewelry and more.`,
+  };
+}
+
 export default async function CategoryPage({ params }: PageProps) {
   const { slug } = await params;
   const products = await getProducts();
 
-  // Helper to format slug to readable title
   const formatTitle = (s: string) => {
     return s
       .split('-')
@@ -26,68 +38,31 @@ export default async function CategoryPage({ params }: PageProps) {
   // Filter products matching category
   let filteredProducts: Product[] = [];
   
-  if (slug === 'all-candles' || slug === 'all-jewelry') {
+  if (slug === 'all-jewelry' || slug === 'all-candles' || slug === 'all') {
     filteredProducts = products;
   } else {
-    // Check if slug matches fragrance features (e.g. 'vanilla' matches 'Amber Vanilla')
     filteredProducts = products.filter(p => {
       const matchTerm = slug.toLowerCase().replace('-', ' ');
+      const normCollection = p.collection ? p.collection.toLowerCase() : '';
+      const normName = p.name ? p.name.toLowerCase() : '';
+      const normFeatures = p.features ? p.features.toLowerCase() : '';
+
       return (
-        p.name.toLowerCase().includes(matchTerm) ||
-        p.features.toLowerCase().includes(matchTerm) ||
-        p.collection.toLowerCase().includes(matchTerm)
+        normCollection.includes(matchTerm) ||
+        normName.includes(matchTerm) ||
+        normFeatures.includes(matchTerm) ||
+        (matchTerm === 'under 499' && p.price <= 499) ||
+        (matchTerm === '500 999' && p.price >= 500 && p.price <= 999)
       );
     });
   }
 
-  // Fallback if no matching products (we display all signature products with a banner)
-  const hasProducts = filteredProducts.length > 0;
-  const displayProducts = hasProducts ? filteredProducts : products;
+  const displayProducts = filteredProducts.length > 0 ? filteredProducts : products;
 
   return (
     <div className={styles.page}>
       <Header />
-      
-      <main className={styles.main}>
-        <div className="container">
-          
-          {/* Category Banner */}
-          <div className={styles.categoryBanner}>
-            <div className={styles.bannerContent}>
-              <span className={styles.bannerTagline}>World Of Jewelry</span>
-              <h1 className={styles.bannerTitle}>
-                {slug === 'rings' || slug === 'all-jewelry' || slug === 'all-candles' 
-                  ? "And She Said YES !!" 
-                  : slug === 'earrings' 
-                  ? "Shine With Every Move"
-                  : slug === 'necklaces'
-                  ? "Grace in Every Detail"
-                  : slug === 'bracelets'
-                  ? "A Touch of Sophistication"
-                  : `Premium ${title} Collection`}
-              </h1>
-              
-              <a href="#products-list" className={styles.bannerBtn}>
-                Buy Now
-              </a>
-            </div>
-
-            {/* Slider Dots */}
-            <div className={styles.bannerDots}>
-              <span className={`${styles.bannerDot} ${styles.active}`}></span>
-              <span className={styles.bannerDot}></span>
-              <span className={styles.bannerDot}></span>
-            </div>
-          </div>
-
-          {/* Product Grid */}
-          <div id="products-list">
-            <AuraCollection products={displayProducts} />
-          </div>
-
-        </div>
-      </main>
-
+      <CategoryPageClient slug={slug} title={title} products={displayProducts} />
       <Footer />
     </div>
   );

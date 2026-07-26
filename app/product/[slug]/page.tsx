@@ -21,27 +21,29 @@ export async function generateMetadata({ params }: PageProps) {
   };
 }
 
-export async function generateStaticParams() {
-  const products = await getProducts();
-  return products.map((product) => ({
-    slug: product.slug,
-  }));
-}
-
-export default async function ProductPage({ params }: PageProps) {
+export default async function ProductPageAlias({ params }: PageProps) {
   const { slug } = await params;
   const products = await getProducts();
 
-  let product = products.find(p => p.slug === slug || String(p.id) === slug || p.slug === `product-${slug}`);
+  const product = products.find(p => p.slug === slug || String(p.id) === slug || p.slug === `product-${slug}`);
 
   if (!product) {
-    product = products.find(p => 
+    // Fallback: try finding by ID or slug match
+    const fallbackProduct = products.find(p => 
       p.name.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-') === slug.toLowerCase()
     );
-  }
-
-  if (!product) {
-    notFound();
+    if (!fallbackProduct) {
+      notFound();
+    }
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <Header />
+        <main style={{ flexGrow: 1, backgroundColor: '#3e0030' }}>
+          <ProductDetail product={fallbackProduct} allProducts={products} />
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
   return (

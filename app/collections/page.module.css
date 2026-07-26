@@ -1,290 +1,916 @@
+/* Luxury Deera Glow Collections Page Styles */
+
 .page {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: #fbf9f6;
+  color: #1a1a1a;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 .main {
-  flex: 1;
-  padding-bottom: 80px;
+  padding-bottom: 60px;
 }
 
-/* Hero Banner */
-.collectionsBanner {
+/* ==========================================================================
+   1. HERO BANNER
+   ========================================================================== */
+.heroBanner {
   position: relative;
-  width: 100%;
-  height: 340px;
-  background-image: url('/images/category_banner_jewelry.png');
-  background-size: cover;
-  background-position: center;
+  min-height: 440px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 50px;
+  text-align: center;
+  color: #ffffff;
+  padding: 80px 20px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
-.bannerOverlay {
+.heroOverlay {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(62, 0, 48, 0.82) 0%,
-    rgba(30, 0, 23, 0.75) 50%,
-    rgba(0, 0, 0, 0.65) 100%
-  );
-  backdrop-filter: blur(2px);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(30, 15, 10, 0.45) 0%, rgba(15, 5, 2, 0.82) 100%),
+              linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%);
+  z-index: 1;
 }
 
-.bannerContent {
+.heroContent {
   position: relative;
   z-index: 2;
-  text-align: center;
-  color: #FAF8F5;
-  max-width: 800px;
-  padding: 0 20px;
-}
-
-.bannerTagline {
-  font-family: var(--font-sans);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.35em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 12px;
-  display: block;
-}
-
-.bannerTitle {
-  font-family: var(--font-serif);
-  font-size: 42px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  margin-bottom: 14px;
-  color: #FFFFFF;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.bannerDescription {
-  font-family: var(--font-sans);
-  font-size: 15px;
-  font-weight: 300;
-  letter-spacing: 0.05em;
-  line-height: 1.6;
-  color: rgba(250, 248, 245, 0.9);
-  max-width: 600px;
+  max-width: 720px;
   margin: 0 auto;
 }
 
-/* Section Header */
-.sectionHeader {
-  text-align: center;
-  margin-bottom: 40px;
-}
-
-.sectionTitle {
-  font-family: var(--font-serif);
-  font-size: 26px;
-  font-weight: 500;
-  letter-spacing: 0.15em;
-  color: var(--primary);
-  text-transform: uppercase;
-  position: relative;
-  display: inline-block;
-}
-
-.sectionTitle::after {
-  content: '';
+.heroEyebrow {
   display: block;
-  width: 60px;
-  height: 2px;
-  background-color: var(--accent);
-  margin: 12px auto 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #dfc297;
+  margin-bottom: 14px;
+}
+
+.heroTitle {
+  font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
+  font-size: 44px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0 0 16px 0;
+  color: #ffffff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.heroDescription {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #e5d8c5;
+  margin: 0 auto 28px auto;
+  max-width: 540px;
+  font-weight: 300;
+}
+
+.heroButton {
+  display: inline-block;
+  padding: 12px 28px;
+  border: 1px solid #c8a77b;
+  color: #f7ede1;
+  background: rgba(20, 10, 5, 0.4);
+  backdrop-filter: blur(4px);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: all 0.3s ease;
   border-radius: 2px;
 }
 
-/* Grid Layout */
-.collectionsGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 28px;
+.heroButton:hover {
+  background: #c8a77b;
+  color: #110804;
+  box-shadow: 0 4px 16px rgba(200, 167, 123, 0.35);
+  transform: translateY(-2px);
 }
 
-/* Collection Card */
-.collectionCard {
+/* ==========================================================================
+   2. SECTION HEADER WITH DIAMOND DIVIDER
+   ========================================================================== */
+.sectionHeader {
+  text-align: center;
+  margin: 60px 0 36px 0;
+}
+
+.dividerLine {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.dividerLine::before,
+.dividerLine::after {
+  content: '';
+  height: 1px;
+  width: 90px;
+  background: linear-gradient(to right, transparent, #cfae7d, transparent);
+}
+
+.dividerDiamond {
+  color: #cfae7d;
+  font-size: 10px;
+}
+
+.sectionTitle {
+  font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #2b221a;
+  margin: 0;
+}
+
+/* ==========================================================================
+   3. FEATURED COLLECTIONS GRID (2x2)
+   ========================================================================== */
+.featuredGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 70px;
+}
+
+.featuredCard {
   position: relative;
-  height: 380px;
-  border-radius: 12px;
+  height: 280px;
+  border-radius: 6px;
   overflow: hidden;
   text-decoration: none;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-  border: 1px solid var(--border-light);
-  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-  background-color: var(--background-secondary);
+  align-items: flex-end;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease;
 }
 
-.collectionCard:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 16px 32px rgba(62, 0, 48, 0.15);
-  border-color: rgba(230, 145, 56, 0.4);
+.featuredCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.16);
 }
 
-.imageWrapper {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.cardImage {
+.featuredCardImage {
   object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 0.6s ease;
 }
 
-.collectionCard:hover .cardImage {
-  transform: scale(1.08);
+.featuredCard:hover .featuredCardImage {
+  transform: scale(1.05);
 }
 
-.cardOverlay {
+.featuredCardOverlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(30, 0, 23, 0.88) 0%,
-    rgba(30, 0, 23, 0.45) 50%,
-    rgba(0, 0, 0, 0.05) 100%
-  );
-  transition: background 0.4s ease;
+  background: linear-gradient(to top, rgba(15, 8, 4, 0.88) 0%, rgba(15, 8, 4, 0.4) 50%, rgba(15, 8, 4, 0.1) 100%);
+  z-index: 1;
 }
 
-.collectionCard:hover .cardOverlay {
-  background: linear-gradient(
-    to top,
-    rgba(62, 0, 48, 0.94) 0%,
-    rgba(40, 0, 30, 0.55) 60%,
-    rgba(0, 0, 0, 0.1) 100%
-  );
-}
-
-.cardContent {
+.featuredCardContent {
   position: relative;
   z-index: 2;
-  padding: 28px;
-  color: #FFFFFF;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  padding: 24px 28px;
+  color: #ffffff;
+  width: 100%;
 }
 
-.cardName {
-  font-family: var(--font-serif);
+.featuredCardTitle {
+  font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
   font-size: 22px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: #FFFFFF;
-  margin: 0;
-  transition: color 0.3s ease;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0 0 6px 0;
+  color: #ffffff;
 }
 
-.collectionCard:hover .cardName {
-  color: var(--accent);
+.featuredCardDesc {
+  font-size: 12px;
+  color: #d8c6b2;
+  margin: 0 0 14px 0;
+  font-weight: 300;
+  font-style: italic;
 }
 
-.cardDesc {
-  font-family: var(--font-sans);
-  font-size: 13px;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.85);
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.cardAction {
+.featuredCardAction {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--accent);
-  margin-top: 8px;
-  transition: gap 0.3s ease;
+  color: #dfc297;
+  transition: color 0.2s ease, transform 0.2s ease;
 }
 
-.collectionCard:hover .cardAction {
-  gap: 12px;
-}
-
-.cardAction svg {
-  transition: transform 0.3s ease;
-}
-
-.collectionCard:hover .cardAction svg {
+.featuredCard:hover .featuredCardAction {
+  color: #ffffff;
   transform: translateX(4px);
 }
 
-/* Responsive Media Queries */
-@media (max-width: 1024px) {
-  .collectionsGrid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-  }
-
-  .bannerTitle {
-    font-size: 34px;
-  }
-
-  .collectionCard {
-    height: 340px;
-  }
+/* ==========================================================================
+   4. CATEGORY FILTER TABS & SORT ROW
+   ========================================================================== */
+.filterBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
 }
 
-@media (max-width: 640px) {
-  .collectionsBanner {
-    height: 260px;
-    margin-bottom: 30px;
-  }
+.filterTabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 
-  .bannerTitle {
-    font-size: 26px;
-    letter-spacing: 0.08em;
-  }
+.tabButton {
+  padding: 7px 16px;
+  border-radius: 4px;
+  border: 1px solid #e5dec3;
+  background: #ffffff;
+  color: #554a3e;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
 
-  .bannerTagline {
-    font-size: 11px;
-    letter-spacing: 0.25em;
-  }
+.tabButton:hover {
+  background: #f4ede2;
+  color: #1a1a1a;
+  border-color: #cfae7d;
+}
 
-  .bannerDescription {
-    font-size: 13px;
-  }
+.tabButtonActive {
+  background: #1f1a17;
+  color: #ffffff;
+  border-color: #1f1a17;
+}
 
-  .collectionsGrid {
-    grid-template-columns: 1fr;
+.sortWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sortSelect {
+  padding: 7px 14px;
+  border-radius: 4px;
+  border: 1px solid #e5dec3;
+  background: #ffffff;
+  color: #332b23;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  outline: none;
+}
+
+/* ==========================================================================
+   5. CATEGORY 4-COLUMN CARDS GRID
+   ========================================================================== */
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.categoryCard {
+  position: relative;
+  height: 260px;
+  border-radius: 6px;
+  overflow: hidden;
+  text-decoration: none;
+  display: flex;
+  align-items: flex-end;
+  background-color: #1a1411;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+  transition: transform 0.35s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.35s ease;
+}
+
+.categoryCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.14);
+}
+
+.categoryCardImage {
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.categoryCard:hover .categoryCardImage {
+  transform: scale(1.06);
+}
+
+.cardBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 3;
+  padding: 4px 10px;
+  border-radius: 2px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.badgeBestseller {
+  background: #c89547;
+  color: #ffffff;
+}
+
+.badgeNew {
+  background: #e8d7be;
+  color: #2b221a;
+}
+
+.categoryCardOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(12, 6, 3, 0.88) 0%, rgba(12, 6, 3, 0.35) 60%, rgba(12, 6, 3, 0.05) 100%);
+  z-index: 1;
+}
+
+.categoryCardContent {
+  position: relative;
+  z-index: 2;
+  padding: 20px;
+  color: #ffffff;
+  width: 100%;
+}
+
+.categoryCardTitle {
+  font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0 0 4px 0;
+  color: #ffffff;
+  line-height: 1.3;
+}
+
+.categoryCardCount {
+  display: block;
+  font-size: 11px;
+  color: #b5a695;
+  margin-bottom: 10px;
+  font-weight: 400;
+}
+
+.categoryCardAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #dfc297;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.categoryCard:hover .categoryCardAction {
+  color: #ffffff;
+  transform: translateX(3px);
+}
+
+.loadMoreWrapper {
+  text-align: center;
+  margin: 24px 0 70px 0;
+}
+
+.loadMoreBtn {
+  padding: 12px 32px;
+  border-radius: 20px;
+  border: 1px solid #d4c4af;
+  background: #ffffff;
+  color: #4a3e33;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.loadMoreBtn:hover {
+  background: #1f1a17;
+  color: #ffffff;
+  border-color: #1f1a17;
+}
+
+/* ==========================================================================
+   6. NEW ARRIVALS WIDE BANNER
+   ========================================================================== */
+.newArrivalsBanner {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 240px;
+  background: linear-gradient(90deg, rgba(20, 8, 12, 0.95) 0%, rgba(35, 12, 18, 0.85) 60%, rgba(20, 8, 12, 0.5) 100%),
+              url('/images/collections_hero_bg.png') center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  padding: 40px 48px;
+  margin-bottom: 80px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.newArrivalsContent {
+  max-width: 500px;
+  color: #ffffff;
+}
+
+.newArrivalsTag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #dfc297;
+  margin-bottom: 8px;
+}
+
+.newArrivalsTitle {
+  font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0 0 10px 0;
+}
+
+.newArrivalsDesc {
+  font-size: 13px;
+  color: #d1c0ae;
+  line-height: 1.5;
+  margin: 0 0 20px 0;
+  font-weight: 300;
+}
+
+.newArrivalsBtn {
+  display: inline-block;
+  padding: 10px 22px;
+  border: 1px solid #c8a77b;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: all 0.25s ease;
+  border-radius: 2px;
+}
+
+.newArrivalsBtn:hover {
+  background: #c8a77b;
+  color: #110804;
+}
+
+/* ==========================================================================
+   7. INSTAGRAM SECTION
+   ========================================================================== */
+.instagramSection {
+  margin-bottom: 70px;
+  text-align: center;
+}
+
+.instagramHeader {
+  margin-bottom: 28px;
+}
+
+.instagramTitle {
+  font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #2b221a;
+  margin: 0 0 4px 0;
+}
+
+.instagramHandle {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: #948270;
+  text-transform: uppercase;
+}
+
+.instagramWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.instagramGrid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 10px;
+  flex-grow: 1;
+}
+
+.instagramItem {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.instagramImg {
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.instagramItem:hover .instagramImg {
+  transform: scale(1.08);
+}
+
+.instagramBtn {
+  padding: 10px 20px;
+  border: 1px solid #cfae7d;
+  color: #4a3e33;
+  text-decoration: none;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.instagramBtn:hover {
+  background: #1f1a17;
+  color: #ffffff;
+  border-color: #1f1a17;
+}
+
+/* ==========================================================================
+   8. TRUST FEATURES BAR
+   ========================================================================== */
+.trustBar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  padding: 24px 0;
+  border-top: 1px solid #ebdccb;
+  border-bottom: 1px solid #ebdccb;
+  margin-top: 40px;
+}
+
+.trustItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.trustIcon {
+  font-size: 24px;
+  color: #9e825e;
+}
+
+.trustTitle {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #2b221a;
+  margin: 0;
+}
+
+.trustSubtitle {
+  font-size: 11px;
+  color: #7a6e62;
+  margin: 2px 0 0 0;
+}
+
+/* RESPONSIVE STYLES */
+@media (max-width: 1024px) {
+  .categoryGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .instagramGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .trustBar {
+    grid-template-columns: repeat(2, 1fr);
     gap: 16px;
   }
+}
 
-  .collectionCard {
-    height: 280px;
+@media (max-width: 768px) {
+  .heroTitle {
+    font-size: 32px;
   }
-
-  .cardContent {
-    padding: 20px;
+  .featuredGrid {
+    grid-template-columns: 1fr;
   }
-
-  .cardName {
-    font-size: 19px;
+  .categoryGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .newArrivalsBanner {
+    padding: 32px 24px;
+  }
+  .instagramGrid {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
+
+/* ==========================================================================
+   9. BUDGET SLIDER SECTION (SHOP MORE, SAVE MORE)
+   ========================================================================== */
+.budgetContainer {
+  position: relative;
+  background: linear-gradient(145deg, #200922 0%, #150516 60%, #1a081a 100%);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 12px;
+  padding: 36px 32px 24px 32px;
+  margin: 50px 0 60px 0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.budgetHeader {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.budgetMotif {
+  display: block;
+  font-size: 14px;
+  color: #dfc297;
+  margin-bottom: 4px;
+}
+
+.budgetTitle {
+  font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #f7ede1;
+  margin: 0 0 6px 0;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+.budgetSubtitle {
+  font-size: 13px;
+  color: #d1beaa;
+  font-weight: 300;
+  margin: 0;
+}
+
+/* Slider Track Wrapper */
+.budgetSliderWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.budgetTrack {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 4px 2px 12px 2px;
+  width: 100%;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.budgetTrack::-webkit-scrollbar {
+  display: none;
+}
+
+.budgetCard {
+  flex: 0 0 calc(25% - 12px);
+  min-width: 210px;
+  background: #f7eee4;
+  border: 1px solid #e2d3be;
+  border-radius: 10px;
+  padding: 20px 16px;
+  text-align: center;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.budgetCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  border-color: #cfae7d;
+}
+
+.budgetCardHeader {
+  margin-bottom: 10px;
+}
+
+.budgetCardTag {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #6b5845;
+  margin-bottom: 2px;
+}
+
+.budgetCardPrice {
+  font-family: 'Cinzel', 'Playfair Display', Georgia, serif;
+  font-size: 34px;
+  font-weight: 600;
+  color: #4a3016;
+  line-height: 1;
+}
+
+.budgetCardDivider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.budgetCardDivider::before,
+.budgetCardDivider::after {
+  content: '';
+  height: 1px;
+  width: 20px;
+  background: #cfae7d;
+}
+
+.budgetCardDiamond {
+  font-size: 8px;
+  color: #cfae7d;
+}
+
+.budgetCardImgWrapper {
+  position: relative;
+  width: 100%;
+  height: 130px;
+  margin: 10px 0 16px 0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.budgetCardImg {
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.budgetCard:hover .budgetCardImg {
+  transform: scale(1.06);
+}
+
+.budgetCardBtn {
+  width: 100%;
+  padding: 9px 0;
+  background: #191218;
+  color: #f7ede1;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  border: 1px solid #3d283b;
+  border-radius: 4px;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.budgetCard:hover .budgetCardBtn {
+  background: #cfae7d;
+  color: #150516;
+  border-color: #cfae7d;
+}
+
+.sliderNavBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(25, 10, 25, 0.9);
+  border: 1px solid #cfae7d;
+  color: #dfc297;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  transition: all 0.2s ease;
+}
+
+.sliderNavBtn:hover {
+  background: #cfae7d;
+  color: #150516;
+}
+
+.sliderNavPrev {
+  left: -16px;
+}
+
+.sliderNavNext {
+  right: -16px;
+}
+
+.budgetBadgesBar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(212, 175, 55, 0.2);
+  text-align: center;
+}
+
+.budgetBadgeItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #ded1be;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.budgetBadgeIcon {
+  font-size: 14px;
+  color: #dfc297;
+}
+
+@media (max-width: 1024px) {
+  .budgetCard {
+    flex: 0 0 calc(33.333% - 12px);
+  }
+}
+
+@media (max-width: 768px) {
+  .budgetCard {
+    flex: 0 0 calc(50% - 10px);
+  }
+  .budgetBadgesBar {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .sliderNavPrev {
+    left: -8px;
+  }
+  .sliderNavNext {
+    right: -8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .budgetCard {
+    flex: 0 0 80%;
+  }
+  .budgetContainer {
+    padding: 24px 16px 16px 16px;
+  }
+}
+

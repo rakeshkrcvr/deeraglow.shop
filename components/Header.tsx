@@ -17,6 +17,13 @@ type Discount = {
   value_type?: 'fixed' | 'percentage';
   value_amount?: string | number;
   minimum_order_value?: string | number;
+  method?: 'automatic' | 'code';
+  applies_to?: 'all' | 'collections' | 'products';
+  target_collections?: string;
+  target_products?: string;
+  buy_qty?: number;
+  get_qty?: number;
+  get_discount_type?: 'free' | 'percentage' | 'fixed';
 };
 type RazorpayOptions = {
   key: string;
@@ -326,20 +333,48 @@ export default function Header() {
     return `${mins.toString().padStart(2, '0')}m : ${secs.toString().padStart(2, '0')}s`;
   };
 
-  const offerLabel = 'Buy 2 Get 2 Free';
-  const isBuy2Get2Unlocked = cartCount >= 2;
-  const unlockedMessage = isBuy2Get2Unlocked
-    ? '🎉 Unlocked Buy 2 Get 2 Free'
-    : cartCount === 1
-      ? 'Add 1 more product to unlock Buy 2 Get 2 Free!'
-      : 'Add 2 products to unlock Buy 2 Get 2 Free!';
-  const progressPercent = Math.min((cartCount / 2) * 100, 100);
-  const eligibleFreeGiftUnits = Math.floor(cartCount / 4) * 2;
+  // Find active automatic discount rule (or fallback to default Buy 2 Get 2 Free)
+  const activeAutoDiscount = discounts.find(d => d.status === 'Active' && (d.method === 'automatic' || d.discount_type === 'Buy X get Y'));
+  const buyX = activeAutoDiscount?.buy_qty ?? 2;
+  const getY = activeAutoDiscount?.get_qty ?? 2;
+  const groupSize = buyX + getY;
+  const offerLabel = activeAutoDiscount?.summary || `${activeAutoDiscount?.title || 'Buy 2 Get 2 Free'}`;
+
+  // Filter items by collection scope if configured
+  const targetCols = (activeAutoDiscount?.target_collections || '')
+    .split(',')
+    .map(c => c.trim().toLowerCase())
+    .filter(Boolean);
+
+  const eligibleItems = cartItems.filter(item => {
+    if (!activeAutoDiscount || activeAutoDiscount.applies_to === 'all' || targetCols.length === 0) return true;
+    const itemColl = (item.product.collection || '').toLowerCase();
+    return targetCols.some(tc => itemColl.includes(tc) || tc.includes(itemColl));
+  });
+
+  const eligibleCount = eligibleItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  // Calculate free units: 3 items -> 1 free, 4 items -> 2 free (and multiples of 4 + 3)
+  let eligibleFreeGiftUnits = 0;
+  if (eligibleCount >= 4) {
+    eligibleFreeGiftUnits = Math.floor(eligibleCount / 4) * 2 + (eligibleCount % 4 === 3 ? 1 : 0);
+  } else if (eligibleCount === 3) {
+    eligibleFreeGiftUnits = 1;
+  }
+
+  const isBuy2Get2Unlocked = eligibleCount >= 3;
+  const unlockedMessage = eligibleCount >= 4
+    ? `🎉 Buy 2 Get 2 Free Fully Unlocked! (2 Items FREE)`
+    : eligibleCount === 3
+      ? `🎉 1 Item FREE Applied! Add 1 more item to get 2 items FREE!`
+      : `Add ${3 - eligibleCount} more item${3 - eligibleCount > 1 ? 's' : ''} to get 1 Item FREE!`;
+
+  const progressPercent = Math.min((eligibleCount / 4) * 100, 100);
 
   // Cart summary calculations
   const cartItemKey = (productId: number, selectedFragrance: string) => `${productId}-${selectedFragrance}`;
   const freeGiftValuesByItem = new Map<string, number>();
-  const discountCandidates = cartItems
+  const discountCandidates = eligibleItems
     .flatMap(item => Array.from({ length: item.quantity }, () => item))
     .sort((a, b) => a.product.price - b.product.price)
     .slice(0, eligibleFreeGiftUnits);
@@ -688,27 +723,27 @@ export default function Header() {
                   <div className={styles.milestoneLabelPrice}>₹0</div>
                 </div>
 
-                <div className={styles.milestoneTick} style={{ left: '33.3%' }}>
+                <div className={styles.milestoneTick} style={{ left: '25%' }}>
                   <div className={`${styles.milestoneCircle} ${cartCount >= 1 ? styles.activeCircle : ''}`}>
                     {cartCount >= 1 ? '✓' : '%'}
                   </div>
                   <div className={styles.milestoneLabelPrice}>1 Item</div>
-                  <div className={styles.milestoneLabelName}>Regular Price</div>
+                  <div className={styles.milestoneLabelName}>Regular</div>
                 </div>
 
-                <div className={styles.milestoneTick} style={{ left: '66.6%' }}>
-                  <div className={`${styles.milestoneCircle} ${cartCount >= 2 ? styles.activeCircle : ''}`}>
-                    {cartCount >= 2 ? '✓' : '%'}
+                <div className={styles.milestoneTick} style={{ left: '75%' }}>
+                  <div className={`${styles.milestoneCircle} ${cartCount >= 3 ? styles.activeCircle : ''}`}>
+                    {cartCount >= 3 ? '✓' : '%'}
                   </div>
-                  <div className={styles.milestoneLabelPrice}>2 Items</div>
-                  <div className={styles.milestoneLabelName}>Get 2 Free</div>
+                  <div className={styles.milestoneLabelPrice}>3 Items</div>
+                  <div className={styles.milestoneLabelName}>1 Item Free</div>
                 </div>
 
                 <div className={styles.milestoneTick} style={{ left: '100%' }}>
-                  <div className={`${styles.milestoneCircle} ${cartCount >= 2 ? styles.activeCircle : ''}`}>
-                    {cartCount >= 2 ? '✓' : '%'}
+                  <div className={`${styles.milestoneCircle} ${cartCount >= 4 ? styles.activeCircle : ''}`}>
+                    {cartCount >= 4 ? '✓' : '%'}
                   </div>
-                  <div className={styles.milestoneLabelPrice} style={{ right: 0, whiteSpace: 'nowrap' }}>Offer</div>
+                  <div className={styles.milestoneLabelPrice} style={{ right: 0, whiteSpace: 'nowrap' }}>4 Items</div>
                   <div className={styles.milestoneLabelName} style={{ right: 0, whiteSpace: 'nowrap' }}>Buy 2 Get 2</div>
                 </div>
               </div>
@@ -747,8 +782,8 @@ export default function Header() {
                             {/* Row 1: Title and Final Price */}
                             <div className={styles.itemRowAlignTop}>
                               <h3 className={styles.itemTitle}>{item.product.name}</h3>
-                              <div className={styles.itemFinalPrice}>
-                                ₹ {itemEstimatedTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              <div className={styles.itemFinalPrice} style={{ color: itemEstimatedTotal === 0 ? '#166534' : '#1c1e21', fontWeight: '700' }}>
+                                {itemEstimatedTotal === 0 ? '🎁 FREE (₹ 0.00)' : `₹ ${itemEstimatedTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                               </div>
                             </div>
 

@@ -19,6 +19,13 @@ async function ensureDiscountsTable() {
   await sql`ALTER TABLE discounts ADD COLUMN IF NOT EXISTS value_type VARCHAR(30) NOT NULL DEFAULT 'fixed'`;
   await sql`ALTER TABLE discounts ADD COLUMN IF NOT EXISTS value_amount NUMERIC(10, 2) NOT NULL DEFAULT 0`;
   await sql`ALTER TABLE discounts ADD COLUMN IF NOT EXISTS minimum_order_value NUMERIC(10, 2) NOT NULL DEFAULT 0`;
+  await sql`ALTER TABLE discounts ADD COLUMN IF NOT EXISTS method VARCHAR(30) NOT NULL DEFAULT 'code'`;
+  await sql`ALTER TABLE discounts ADD COLUMN IF NOT EXISTS applies_to VARCHAR(50) NOT NULL DEFAULT 'all'`;
+  await sql`ALTER TABLE discounts ADD COLUMN IF NOT EXISTS target_collections VARCHAR(255) NOT NULL DEFAULT ''`;
+  await sql`ALTER TABLE discounts ADD COLUMN IF NOT EXISTS target_products VARCHAR(255) NOT NULL DEFAULT ''`;
+  await sql`ALTER TABLE discounts ADD COLUMN IF NOT EXISTS buy_qty INT NOT NULL DEFAULT 2`;
+  await sql`ALTER TABLE discounts ADD COLUMN IF NOT EXISTS get_qty INT NOT NULL DEFAULT 2`;
+  await sql`ALTER TABLE discounts ADD COLUMN IF NOT EXISTS get_discount_type VARCHAR(30) NOT NULL DEFAULT 'free'`;
 }
 
 function cleanCode(value: unknown) {
@@ -63,22 +70,23 @@ export async function GET() {
   try {
     await ensureDiscountsTable();
 
+    // Ensure Buy X get Y rows have method = 'automatic'
+    await sql`
+      UPDATE discounts
+      SET method = 'automatic'
+      WHERE LOWER(discount_type) LIKE '%buy%' OR LOWER(title) LIKE '%buy%'
+    `;
+
     // Seed if empty
     const checkCount = await sql`SELECT COUNT(*) FROM discounts` as unknown as CountRow[];
     const count = parseInt(checkCount[0].count, 10);
 
     if (count === 0) {
       const seedDiscounts = [
-        { title: 'CRR15', summary: '15% off 6 collections', type: 'Amount off product', status: 'Active', used: 0 },
-        { title: 'F&F25', summary: '25% off 6 collections', type: 'Amount off product', status: 'Active', used: 1 },
-        { title: 'f&f50', summary: '50% off 6 collections', type: 'Amount off product', status: 'Active', used: 0 },
-        { title: '2999 - Free Gift', summary: '15% off 27 collections on purchase of ₹2,999', type: 'Amount off product', status: 'Active', used: 0 },
-        { title: '1999 +Extra 10%', summary: '10% off 27 collections on purchase of ₹1,999', type: 'Amount off product', status: 'Active', used: 0 },
-        { title: '999 + Extra 5%', summary: '5% off 27 collections on purchase of ₹999', type: 'Amount off product', status: 'Active', used: 0 },
-        { title: 'DC2500', summary: '₹2,500.00 off 2 collections once per order', type: 'Amount off product', status: 'Active', used: 1 },
-        { title: 'FT10', summary: '10% off 11 products', type: 'Amount off product', status: 'Active', used: 1 },
-        { title: 'buy 2 get 2 free', summary: 'Buy 2 items, get 2 items free', type: 'Buy X get Y', status: 'Active', used: 0 },
-        { title: 'Buy 2 Get 2 Free rk', summary: 'Buy 2 items, get 2 items free', type: 'Buy X get Y', status: 'Expired', used: 0 }
+        { title: 'BUY2GET2FREE', summary: 'Buy 2 items, get 2 items free', type: 'Buy X get Y', status: 'Active', used: 0, method: 'automatic', applies_to: 'all', buy_qty: 2, get_qty: 2, get_discount_type: 'free' },
+        { title: 'CRR15', summary: '15% off 6 collections', type: 'Amount off product', status: 'Active', used: 0, method: 'code', applies_to: 'all', buy_qty: 1, get_qty: 1, get_discount_type: 'percentage' },
+        { title: 'F&F25', summary: '25% off 6 collections', type: 'Amount off product', status: 'Active', used: 1, method: 'code', applies_to: 'all', buy_qty: 1, get_qty: 1, get_discount_type: 'percentage' },
+        { title: '2999 - Free Gift', summary: '15% off 27 collections on purchase of ₹2,999', type: 'Amount off product', status: 'Active', used: 0, method: 'code', applies_to: 'all', buy_qty: 1, get_qty: 1, get_discount_type: 'percentage' }
       ];
 
       for (const disc of seedDiscounts) {
@@ -86,28 +94,11 @@ export async function GET() {
         const valueAmount = inferValueAmount(disc.title, disc.summary);
         const minimumOrderValue = inferMinimumOrder(disc.summary);
         await sql`
-          INSERT INTO discounts (title, summary, discount_type, status, used_count, value_type, value_amount, minimum_order_value)
-          VALUES (${disc.title}, ${disc.summary}, ${disc.type}, ${disc.status}, ${disc.used}, ${valueType}, ${valueAmount}, ${minimumOrderValue})
+          INSERT INTO discounts (title, summary, discount_type, status, used_count, value_type, value_amount, minimum_order_value, method, applies_to, buy_qty, get_qty, get_discount_type)
+          VALUES (${disc.title}, ${disc.summary}, ${disc.type}, ${disc.status}, ${disc.used}, ${valueType}, ${valueAmount}, ${minimumOrderValue}, ${disc.method}, ${disc.applies_to}, ${disc.buy_qty}, ${disc.get_qty}, ${disc.get_discount_type})
         `;
       }
       console.log('Seeded discounts successfully.');
-    }
-
-    const legacyRows = await sql`
-      SELECT id, title, summary
-      FROM discounts
-      WHERE value_amount = 0
-    ` as unknown as { id: number; title: string; summary: string }[];
-
-    for (const row of legacyRows) {
-      const valueType = inferValueType(row.title, row.summary);
-      const valueAmount = inferValueAmount(row.title, row.summary);
-      const minimumOrderValue = inferMinimumOrder(row.summary);
-      await sql`
-        UPDATE discounts
-        SET value_type = ${valueType}, value_amount = ${valueAmount}, minimum_order_value = ${minimumOrderValue}
-        WHERE id = ${row.id}
-      `;
     }
 
     const discounts = await sql`SELECT * FROM discounts ORDER BY id ASC`;
@@ -126,18 +117,33 @@ export async function POST(request: Request) {
     const body = await request.json();
     const title = cleanCode(body.title);
     const summary = cleanText(body.summary);
-    const discountType = cleanText(body.discount_type);
+    const discountType = cleanText(body.discount_type) || 'Buy X get Y';
     const valueType = cleanText(body.value_type) === 'percentage' ? 'percentage' : 'fixed';
     const valueAmount = parseNumber(body.value_amount);
     const minimumOrderValue = parseNumber(body.minimum_order_value);
+    const method = cleanText(body.method) === 'automatic' ? 'automatic' : 'code';
+    const appliesTo = cleanText(body.applies_to) || 'all';
+    const targetCollections = cleanText(body.target_collections);
+    const targetProducts = cleanText(body.target_products);
+    const buyQty = parseNumber(body.buy_qty) || 2;
+    const getQty = parseNumber(body.get_qty) || 2;
+    const getDiscountType = cleanText(body.get_discount_type) || 'free';
 
-    if (!title || !summary || !discountType || valueAmount <= 0) {
+    if (!title || !summary) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
 
     await sql`
-      INSERT INTO discounts (title, summary, discount_type, status, used_count, value_type, value_amount, minimum_order_value)
-      VALUES (${title}, ${summary}, ${discountType}, 'Active', 0, ${valueType}, ${valueAmount}, ${minimumOrderValue})
+      INSERT INTO discounts (
+        title, summary, discount_type, status, used_count, value_type, value_amount,
+        minimum_order_value, method, applies_to, target_collections, target_products,
+        buy_qty, get_qty, get_discount_type
+      )
+      VALUES (
+        ${title}, ${summary}, ${discountType}, 'Active', 0, ${valueType}, ${valueAmount},
+        ${minimumOrderValue}, ${method}, ${appliesTo}, ${targetCollections}, ${targetProducts},
+        ${buyQty}, ${getQty}, ${getDiscountType}
+      )
     `;
 
     return NextResponse.json({ success: true });
@@ -147,6 +153,7 @@ export async function POST(request: Request) {
   }
 }
 
+// PATCH: Update existing discount
 export async function PATCH(request: Request) {
   try {
     await ensureDiscountsTable();
@@ -155,13 +162,20 @@ export async function PATCH(request: Request) {
     const id = parseNumber(body.id);
     const title = cleanCode(body.title);
     const summary = cleanText(body.summary);
-    const discountType = cleanText(body.discount_type);
+    const discountType = cleanText(body.discount_type) || 'Buy X get Y';
     const status = cleanText(body.status) === 'Expired' ? 'Expired' : 'Active';
     const valueType = cleanText(body.value_type) === 'percentage' ? 'percentage' : 'fixed';
     const valueAmount = parseNumber(body.value_amount);
     const minimumOrderValue = parseNumber(body.minimum_order_value);
+    const method = cleanText(body.method) === 'automatic' ? 'automatic' : 'code';
+    const appliesTo = cleanText(body.applies_to) || 'all';
+    const targetCollections = cleanText(body.target_collections);
+    const targetProducts = cleanText(body.target_products);
+    const buyQty = parseNumber(body.buy_qty) || 2;
+    const getQty = parseNumber(body.get_qty) || 2;
+    const getDiscountType = cleanText(body.get_discount_type) || 'free';
 
-    if (!id || !title || !summary || !discountType || valueAmount <= 0) {
+    if (!id || !title || !summary) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
 
@@ -174,7 +188,14 @@ export async function PATCH(request: Request) {
         status = ${status},
         value_type = ${valueType},
         value_amount = ${valueAmount},
-        minimum_order_value = ${minimumOrderValue}
+        minimum_order_value = ${minimumOrderValue},
+        method = ${method},
+        applies_to = ${appliesTo},
+        target_collections = ${targetCollections},
+        target_products = ${targetProducts},
+        buy_qty = ${buyQty},
+        get_qty = ${getQty},
+        get_discount_type = ${getDiscountType}
       WHERE id = ${id}
     `;
 
@@ -207,4 +228,5 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }
+
 export const dynamic = 'force-dynamic';
