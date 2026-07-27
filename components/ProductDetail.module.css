@@ -39,7 +39,7 @@
 
 /* Layout Split */
 .layoutGrid {
-  display: grid;
+  display: grid !important;
   grid-template-columns: 1.15fr 1fr;
   gap: 40px;
   align-items: start;
@@ -125,11 +125,18 @@
   transition: transform 0.4s ease;
 }
 
-.bestSellerImgTag {
+.imageTagsContainer {
   position: absolute;
-  top: 14px;
-  left: 14px;
+  top: 12px;
+  left: 12px;
   z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.bestSellerImgTag {
   padding: 5px 12px;
   border-radius: 20px;
   background: linear-gradient(135deg, #e6a853 0%, #c48328 100%);
@@ -138,6 +145,20 @@
   font-weight: 800;
   letter-spacing: 0.1em;
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  white-space: nowrap;
+}
+
+.buy2Get2ImgTag {
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #7c1527 0%, #4a0512 100%);
+  border: 1px solid #dfc297;
+  color: #dfc297;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  white-space: nowrap;
 }
 
 .wishlistHeartBtn {
@@ -749,7 +770,9 @@
     align-items: stretch;
   }
   .guaranteesBox, .galleryBadgesCard, .bottomFeaturesBar {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 14px 10px;
   }
 }
 

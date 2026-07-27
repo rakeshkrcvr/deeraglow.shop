@@ -184,7 +184,10 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
 
               {/* Main Image Box */}
               <div className={styles.mainImageCard}>
-                <span className={styles.bestSellerImgTag}>🔥 BEST SELLER</span>
+                <div className={styles.imageTagsContainer}>
+                  <span className={styles.bestSellerImgTag}>🔥 BEST SELLER</span>
+                  <span className={styles.buy2Get2ImgTag}>🎁 BUY 2 GET 2 FREE</span>
+                </div>
                 <button
                   type="button"
                   onClick={() => setIsWishlisted(!isWishlisted)}
