@@ -47,6 +47,14 @@ export async function getSliderCollections(): Promise<SliderCollectionItem[]> {
 
     const allProducts = await getProducts();
 
+    try {
+      await sql`
+        UPDATE collections
+        SET description = REPLACE(REPLACE(description, 'Handcrafted', 'Exquisite'), 'handcrafted', 'exquisite')
+        WHERE description ILIKE '%handcrafted%'
+      `;
+    } catch (e) {}
+
     // Query active slider collections
     const rows = await sql`
       SELECT * FROM collections 
@@ -61,6 +69,8 @@ export async function getSliderCollections(): Promise<SliderCollectionItem[]> {
         );
         return {
           ...coll,
+          description: (coll.description || '').replace(/handcrafted/gi, 'exquisite'),
+          slider_subtitle: (coll.slider_subtitle || '').replace(/handcrafted/gi, 'exquisite'),
           products: collProds.slice(0, 3)
         };
       });
@@ -91,7 +101,7 @@ export async function getSliderCollections(): Promise<SliderCollectionItem[]> {
       id: 902,
       name: 'Kings & Queens of Rajasthan',
       slug: 'kings-queens-of-rajasthan',
-      description: 'The legacy of royals, crafted in handcrafted jewels.',
+      description: 'The legacy of royals, captured in exquisite jewels.',
       image_url: '/images/hero_slide_2.png',
       show_in_slider: true,
       slider_subtitle: 'The Legacy of Royals, Crafted in Jewels',

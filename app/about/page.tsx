@@ -67,7 +67,7 @@ export default function AboutPage() {
 
             <div style={{ textAlign: 'center', marginTop: '48px' }}>
               <p style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', color: 'var(--accent)', margin: '0' }}>
-                Handcrafted with devotion in India.
+                Designed with devotion in India.
               </p>
             </div>
           </div>

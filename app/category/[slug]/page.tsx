@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: PageProps) {
 
   return {
     title: `${title} Collection | Deera Glow Premium Jewelry`,
-    description: `Shop handcrafted ${title} artificial jewelry by Deera Glow. Discover luxury rings, necklaces, earrings, bracelets, sterling silver, gold-plated jewelry and more.`,
+    description: `Shop exquisite ${title} artificial jewelry by Deera Glow. Discover luxury rings, necklaces, earrings, bracelets, sterling silver, gold-plated jewelry and more.`,
   };
 }
 

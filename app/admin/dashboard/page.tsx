@@ -21,6 +21,12 @@ import {
   defaultCustomerVideos,
   normalizeCustomerVideos
 } from '@/lib/customerVideos';
+import {
+  CUSTOMER_NOTIFICATIONS_STORAGE_KEY,
+  PurchaseNotification,
+  defaultPurchaseNotifications,
+  normalizePurchaseNotifications
+} from '@/lib/purchaseNotifications';
 import { HeroSlide } from '@/components/Hero';
 
 interface Product {
@@ -213,6 +219,19 @@ export default function AdminDashboard() {
     productId: '',
     verified: true
   });
+  const [customerSubTab, setCustomerSubTab] = useState<'reviews' | 'purchase_notifications' | 'moments' | 'videos'>('reviews');
+  const [purchaseNotifications, setPurchaseNotifications] = useState<PurchaseNotification[]>(defaultPurchaseNotifications);
+  const [showNotificationForm, setShowNotificationForm] = useState(false);
+  const [editingNotificationId, setEditingNotificationId] = useState<string | null>(null);
+  const [notificationForm, setNotificationForm] = useState({
+    customerName: '',
+    city: '',
+    productName: '',
+    productImage: '/images/earrings_category.png',
+    productSlug: '',
+    timeAgo: '2 minutes ago',
+    verified: true
+  });
   const [videoForm, setVideoForm] = useState({
     title: '',
     author: '',
@@ -380,7 +399,7 @@ export default function AdminDashboard() {
   const [twitterUrl, setTwitterUrl] = useState('');
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [heroEyebrow, setHeroEyebrow] = useState('DEERA GLOW');
-  const [heroTitle, setHeroTitle] = useState('Handcrafted');
+  const [heroTitle, setHeroTitle] = useState('Exquisite');
   const [heroItalicTitle, setHeroItalicTitle] = useState('Fine Jewelry');
   const [heroDescription, setHeroDescription] = useState('Premium artificial jewelry crafted for everyday elegance and special moments. Anti-tarnish, skin-friendly, and designed to shine.');
   const [heroPrimaryButtonText, setHeroPrimaryButtonText] = useState('Shop Collections');
@@ -392,7 +411,7 @@ export default function AdminDashboard() {
   const [announcementItems, setAnnouncementItems] = useState<AnnouncementItem[]>([
     { id: '1', text: 'Buy 2 Get 2 Free', icon: 'gift', link: '/collections' },
     { id: '2', text: '100% Secure Checkout', icon: 'shield', link: '' },
-    { id: '3', text: 'Premium Handcrafted Jewelry', icon: 'star', link: '' }
+    { id: '3', text: 'Premium Fine Jewelry', icon: 'star', link: '' }
   ]);
   const [contentSuccess, setContentSuccess] = useState('');
   const [contentError, setContentError] = useState('');
@@ -490,11 +509,23 @@ export default function AdminDashboard() {
     window.dispatchEvent(new Event('deeksha-videos-updated'));
   };
 
+  const savePurchaseNotifications = (nextNotifs: PurchaseNotification[]) => {
+    setPurchaseNotifications(nextNotifs);
+    localStorage.setItem(CUSTOMER_NOTIFICATIONS_STORAGE_KEY, JSON.stringify(nextNotifs));
+    window.dispatchEvent(new Event('deeksha-notifications-updated'));
+  };
+
   const loadCustomerReviews = () => {
     try {
       const savedReviews = localStorage.getItem(CUSTOMER_REVIEWS_STORAGE_KEY);
       if (savedReviews) {
-        setCustomerReviews(normalizeCustomerReviews(JSON.parse(savedReviews)));
+        const parsed = JSON.parse(savedReviews);
+        if (Array.isArray(parsed) && parsed.length >= 20) {
+          setCustomerReviews(normalizeCustomerReviews(parsed));
+        } else {
+          localStorage.setItem(CUSTOMER_REVIEWS_STORAGE_KEY, JSON.stringify(defaultCustomerReviews));
+          setCustomerReviews(defaultCustomerReviews);
+        }
       } else {
         localStorage.setItem(CUSTOMER_REVIEWS_STORAGE_KEY, JSON.stringify(defaultCustomerReviews));
         setCustomerReviews(defaultCustomerReviews);
@@ -530,6 +561,84 @@ export default function AdminDashboard() {
     } catch {
       setCustomerVideos(defaultCustomerVideos);
     }
+  };
+
+  const loadPurchaseNotifications = () => {
+    try {
+      const saved = localStorage.getItem(CUSTOMER_NOTIFICATIONS_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length >= 50) {
+          setPurchaseNotifications(normalizePurchaseNotifications(parsed));
+        } else {
+          localStorage.setItem(CUSTOMER_NOTIFICATIONS_STORAGE_KEY, JSON.stringify(defaultPurchaseNotifications));
+          setPurchaseNotifications(defaultPurchaseNotifications);
+        }
+      } else {
+        localStorage.setItem(CUSTOMER_NOTIFICATIONS_STORAGE_KEY, JSON.stringify(defaultPurchaseNotifications));
+        setPurchaseNotifications(defaultPurchaseNotifications);
+      }
+    } catch {
+      setPurchaseNotifications(defaultPurchaseNotifications);
+    }
+  };
+
+  const resetNotificationForm = () => {
+    setEditingNotificationId(null);
+    setNotificationForm({
+      customerName: '',
+      city: '',
+      productName: products[0]?.name || 'Royal Pearl Drop Earrings',
+      productImage: products[0]?.image_url || '/images/earrings_category.png',
+      productSlug: products[0]?.slug || 'royal-pearl-drops',
+      timeAgo: '2 minutes ago',
+      verified: true
+    });
+  };
+
+  const handleEditNotification = (notif: PurchaseNotification) => {
+    setEditingNotificationId(notif.id);
+    setNotificationForm({
+      customerName: notif.customerName,
+      city: notif.city,
+      productName: notif.productName,
+      productImage: notif.productImage,
+      productSlug: notif.productSlug || '',
+      timeAgo: notif.timeAgo,
+      verified: notif.verified !== false
+    });
+    setShowNotificationForm(true);
+  };
+
+  const handleSaveNotification = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const customerName = notificationForm.customerName.trim() || 'Happy Customer';
+    const city = notificationForm.city.trim() || 'India';
+    const productName = notificationForm.productName.trim() || 'Royal Pearl Drop Earrings';
+
+    const nextNotif: PurchaseNotification = {
+      id: editingNotificationId || `notif-${Date.now()}`,
+      customerName,
+      city,
+      productName,
+      productImage: notificationForm.productImage.trim() || '/images/earrings_category.png',
+      productSlug: notificationForm.productSlug.trim() || '',
+      timeAgo: notificationForm.timeAgo.trim() || 'Just now',
+      verified: notificationForm.verified
+    };
+
+    const nextNotifs = editingNotificationId
+      ? purchaseNotifications.map(n => n.id === editingNotificationId ? nextNotif : n)
+      : [nextNotif, ...purchaseNotifications];
+
+    savePurchaseNotifications(nextNotifs);
+    resetNotificationForm();
+    setShowNotificationForm(false);
+  };
+
+  const handleDeleteNotification = (id: string) => {
+    if (!confirm('Delete this purchase notification popup?')) return;
+    savePurchaseNotifications(purchaseNotifications.filter(n => n.id !== id));
   };
 
   const resetReviewForm = () => {
@@ -986,7 +1095,7 @@ export default function AdminDashboard() {
         setHeroEyebrow(data.heroEyebrow || 'TIMELESS BEAUTY');
         setHeroTitle(data.heroTitle || 'Shine Brighter');
         setHeroItalicTitle(data.heroItalicTitle || 'Every Day');
-        setHeroDescription(data.heroDescription || 'Discover handcrafted jewelry that celebrates your unique style and every special moment.');
+        setHeroDescription(data.heroDescription || 'Discover exquisite jewelry that celebrates your unique style and every special moment.');
         setHeroPrimaryButtonText(data.heroPrimaryButtonText || 'Shop Collection');
         setHeroPrimaryButtonHref(data.heroPrimaryButtonHref || '#shop-by-collection');
         setHeroSecondaryButtonText(data.heroSecondaryButtonText || 'New Arrivals');
@@ -1127,7 +1236,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
       showMobileText: true,
       eyebrow: 'TIMELESS BEAUTY',
       title: 'Shine Brighter Every Day',
-      description: 'Discover handcrafted jewelry that celebrates your unique style and every special moment.',
+      description: 'Discover exquisite jewelry that celebrates your unique style and every special moment.',
       btnText: 'Shop Collection',
       btnHref: '#shop-by-collection'
     },
@@ -1171,7 +1280,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
             showMobileText: true,
             eyebrow: idx === 0 ? 'TIMELESS BEAUTY' : idx === 1 ? 'LUXURY CRAFTSMANSHIP' : 'THE GOLDEN HOUR',
             title: idx === 0 ? 'Shine Brighter Every Day' : idx === 1 ? 'Elegance in Every Detail' : 'Modern Classics',
-            description: idx === 0 ? 'Discover handcrafted jewelry that celebrates your unique style and every special moment.' : idx === 1 ? 'Adorn yourself with masterfully crafted necklaces, bracelets, and charms made to last.' : 'Find the perfect signature pieces that seamlessly transitions from day to night.',
+            description: idx === 0 ? 'Discover exquisite jewelry that celebrates your unique style and every special moment.' : idx === 1 ? 'Adorn yourself with masterfully crafted necklaces, bracelets, and charms made to last.' : 'Find the perfect signature pieces that seamlessly transitions from day to night.',
             btnText: idx === 0 ? 'Shop Collection' : idx === 1 ? 'Explore New Arrivals' : 'Shop Best Sellers',
             btnHref: idx === 0 ? '#shop-by-collection' : idx === 1 ? '/category/new-arrivals' : '/category/best-sellers'
           };
@@ -1212,7 +1321,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
           showMobileText: true,
           eyebrow: 'NEW ARRIVAL',
           title: 'Special Collection',
-          description: 'Handcrafted luxury jewelry.',
+          description: 'Exquisite luxury jewelry.',
           btnText: 'Shop Now',
           btnHref: '#products'
         });
@@ -1421,6 +1530,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
         loadCustomerReviews();
         loadCustomerMoments();
         loadCustomerVideos();
+        loadPurchaseNotifications();
       });
     }
   }, []);
@@ -1429,22 +1539,28 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
     loadCustomerReviews();
     loadCustomerMoments();
     loadCustomerVideos();
+    loadPurchaseNotifications();
     const refreshReviews = () => loadCustomerReviews();
     const refreshMoments = () => loadCustomerMoments();
     const refreshVideos = () => loadCustomerVideos();
+    const refreshNotifications = () => loadPurchaseNotifications();
     window.addEventListener('storage', refreshReviews);
     window.addEventListener('storage', refreshMoments);
     window.addEventListener('storage', refreshVideos);
+    window.addEventListener('storage', refreshNotifications);
     window.addEventListener('deeksha-reviews-updated', refreshReviews);
     window.addEventListener('deeksha-moments-updated', refreshMoments);
     window.addEventListener('deeksha-videos-updated', refreshVideos);
+    window.addEventListener('deeksha-notifications-updated', refreshNotifications);
     return () => {
       window.removeEventListener('storage', refreshReviews);
       window.removeEventListener('storage', refreshMoments);
       window.removeEventListener('storage', refreshVideos);
+      window.removeEventListener('storage', refreshNotifications);
       window.removeEventListener('deeksha-reviews-updated', refreshReviews);
       window.removeEventListener('deeksha-moments-updated', refreshMoments);
       window.removeEventListener('deeksha-videos-updated', refreshVideos);
+      window.removeEventListener('deeksha-notifications-updated', refreshNotifications);
     };
   }, []);
 
@@ -2435,39 +2551,87 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '2px', marginBottom: '4px' }}>
               <button
                 type="button"
-                onClick={() => selectAdminTab('customers')}
+                onClick={() => { selectAdminTab('customers'); setCustomerSubTab('reviews'); }}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   padding: '8px 12px 8px 36px',
                   borderRadius: '8px',
                   border: 'none',
-                  background: activeTab === 'customers' ? '#ffffff' : 'transparent',
-                  color: activeTab === 'customers' ? '#1a1a1a' : '#6d6d6d',
+                  background: (activeTab === 'customers' && customerSubTab === 'reviews') ? '#ffffff' : 'transparent',
+                  color: (activeTab === 'customers' && customerSubTab === 'reviews') ? '#1a1a1a' : '#6d6d6d',
                   fontSize: '13px',
-                  fontWeight: activeTab === 'customers' ? '600' : '400',
+                  fontWeight: (activeTab === 'customers' && customerSubTab === 'reviews') ? '600' : '400',
                   cursor: 'pointer',
                   textAlign: 'left',
                   width: '100%'
                 }}
               >
-                Reviews
+                💬 Reviews
               </button>
-              {['Segments', 'Companies'].map((item, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    padding: '8px 12px 8px 36px',
-                    color: '#9c9c9c',
-                    fontSize: '13px',
-                    cursor: 'not-allowed',
-                    borderRadius: '8px',
-                    transition: 'background 0.1s ease'
-                  }}
-                >
-                  {item}
-                </div>
-              ))}
+
+              <button
+                type="button"
+                onClick={() => { selectAdminTab('customers'); setCustomerSubTab('purchase_notifications'); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '8px 12px 8px 36px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: (activeTab === 'customers' && customerSubTab === 'purchase_notifications') ? '#ffffff' : 'transparent',
+                  color: (activeTab === 'customers' && customerSubTab === 'purchase_notifications') ? '#1a1a1a' : '#6d6d6d',
+                  fontSize: '13px',
+                  fontWeight: (activeTab === 'customers' && customerSubTab === 'purchase_notifications') ? '600' : '400',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  width: '100%'
+                }}
+              >
+                🔔 Purchase Popups
+              </button>
+
+              <button
+                type="button"
+                onClick={() => { selectAdminTab('customers'); setCustomerSubTab('moments'); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '8px 12px 8px 36px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: (activeTab === 'customers' && customerSubTab === 'moments') ? '#ffffff' : 'transparent',
+                  color: (activeTab === 'customers' && customerSubTab === 'moments') ? '#1a1a1a' : '#6d6d6d',
+                  fontSize: '13px',
+                  fontWeight: (activeTab === 'customers' && customerSubTab === 'moments') ? '600' : '400',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  width: '100%'
+                }}
+              >
+                📸 Photo Gallery
+              </button>
+
+              <button
+                type="button"
+                onClick={() => { selectAdminTab('customers'); setCustomerSubTab('videos'); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '8px 12px 8px 36px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: (activeTab === 'customers' && customerSubTab === 'videos') ? '#ffffff' : 'transparent',
+                  color: (activeTab === 'customers' && customerSubTab === 'videos') ? '#1a1a1a' : '#6d6d6d',
+                  fontSize: '13px',
+                  fontWeight: (activeTab === 'customers' && customerSubTab === 'videos') ? '600' : '400',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  width: '100%'
+                }}
+              >
+                📹 Video Testimonials
+              </button>
             </div>
           )}
 
@@ -3962,298 +4126,569 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
           </div>
         )}
 
-        {/* TAB 1.9: CUSTOMER REVIEWS MANAGER */}
+        {/* TAB 1.9: CUSTOMERS MANAGEMENT */}
         {activeTab === 'customers' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '24px' }}>👥</span>
                 <div>
-                  <h1 style={{ fontSize: '20px', fontWeight: '700', margin: 0 }}>Customer Reviews</h1>
-                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6d6d6d' }}>Manage all product-page reviews from one place.</p>
+                  <h1 style={{ fontSize: '20px', fontWeight: '700', margin: 0 }}>Customer Social Proof & Reviews</h1>
+                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6d6d6d' }}>Manage reviews, live purchase popups, photo gallery, and video testimonials.</p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  resetReviewForm();
-                  setShowReviewForm(!showReviewForm);
-                }}
-                style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
-              >
-                {showReviewForm ? 'Close Form' : 'Add Review'}
-              </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '16px', marginBottom: '20px' }}>
+            {/* Customers Sub-Tab Nav Bar */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px', flexWrap: 'wrap' }}>
               {[
-                { label: 'Total reviews', value: customerReviews.length },
-                { label: 'Verified', value: customerReviews.filter(review => review.verified).length },
-                { label: '5 star', value: customerReviews.filter(review => review.rating === 5).length },
-                { label: 'Helpful votes', value: customerReviews.reduce((sum, review) => sum + review.helpful, 0) }
-              ].map(card => (
-                <div key={card.label} style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '16px' }}>
-                  <p style={{ margin: '0 0 6px', color: '#6d6d6d', fontSize: '12px' }}>{card.label}</p>
-                  <strong style={{ display: 'block', fontSize: '24px', lineHeight: 1 }}>{card.value}</strong>
-                </div>
+                { id: 'reviews', label: '💬 Product Reviews', count: customerReviews.length },
+                { id: 'purchase_notifications', label: '🔔 Purchase Popups (Live)', count: purchaseNotifications.length },
+                { id: 'moments', label: '📸 Real Moments Photos', count: customerMoments.length },
+                { id: 'videos', label: '📹 Real Moments Videos', count: customerVideos.length }
+              ].map(sub => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setCustomerSubTab(sub.id as any)}
+                  style={{
+                    backgroundColor: customerSubTab === sub.id ? '#1a1a1a' : '#ffffff',
+                    color: customerSubTab === sub.id ? '#ffffff' : '#4a4a4a',
+                    border: '1px solid',
+                    borderColor: customerSubTab === sub.id ? '#1a1a1a' : '#dcdcdc',
+                    borderRadius: '20px',
+                    padding: '8px 16px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <span>{sub.label}</span>
+                  <span style={{
+                    fontSize: '11px',
+                    backgroundColor: customerSubTab === sub.id ? 'rgba(255,255,255,0.25)' : '#eeeeee',
+                    color: customerSubTab === sub.id ? '#ffffff' : '#6d6d6d',
+                    padding: '1px 7px',
+                    borderRadius: '10px'
+                  }}>
+                    {sub.count}
+                  </span>
+                </button>
               ))}
             </div>
 
-            <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '18px', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '14px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700' }}>Real Moments Photos</h3>
-                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6d6d6d' }}>These photos appear in the product page gallery and popup.</p>
-                </div>
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                  <button
-                    type="button"
-                    onClick={() => saveCustomerMoments(defaultCustomerMoments)}
-                    style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 12px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
-                  >
-                    Reset defaults
-                  </button>
-                  <label style={{ backgroundColor: '#1a1a1a', color: '#ffffff', borderRadius: '6px', padding: '8px 14px', fontSize: '13px', fontWeight: '600', cursor: uploadingMomentPhotos ? 'wait' : 'pointer', opacity: uploadingMomentPhotos ? 0.7 : 1 }}>
-                    {uploadingMomentPhotos ? 'Uploading...' : 'Upload photos'}
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      disabled={uploadingMomentPhotos}
-                      onChange={async (e) => {
-                        await handleUploadMomentPhotos(e.target.files);
-                        e.target.value = '';
-                      }}
-                      style={{ display: 'none' }}
-                    />
-                  </label>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
-                {customerMoments.map((moment, index) => (
-                  <div key={moment.id} style={{ border: '1px solid #e3e3e3', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#fafafa' }}>
-                    <img src={moment.image} alt={moment.alt} style={{ width: '100%', aspectRatio: '1.35 / 1', objectFit: 'cover', display: 'block' }} />
-                    <div style={{ padding: '9px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '12px', color: '#6d6d6d' }}>Photo {index + 1}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteMomentPhoto(moment.id)}
-                        style={{ backgroundColor: '#ffebe9', color: '#d72c0d', border: '1px solid #ffd0cc', borderRadius: '5px', padding: '5px 8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '18px', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '14px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700' }}>Real Moments Videos</h3>
-                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6d6d6d' }}>These videos appear in customer video cards and the product page Instagram section.</p>
-                </div>
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                  <button
-                    type="button"
-                    onClick={() => saveCustomerVideos(defaultCustomerVideos)}
-                    style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 12px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
-                  >
-                    Reset defaults
-                  </button>
+            {/* SUB-TAB 1: PRODUCT REVIEWS */}
+            {customerSubTab === 'reviews' && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <h2 style={{ fontSize: '16px', fontWeight: '700', margin: 0 }}>Product Page Customer Reviews</h2>
                   <button
                     type="button"
                     onClick={() => {
-                      resetVideoForm();
-                      setShowVideoForm(!showVideoForm);
+                      resetReviewForm();
+                      setShowReviewForm(!showReviewForm);
                     }}
-                    style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                    style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
                   >
-                    {showVideoForm ? 'Close form' : 'Add video'}
+                    {showReviewForm ? 'Close Form' : '+ Add Review'}
                   </button>
                 </div>
-              </div>
 
-              {showVideoForm && (
-                <form onSubmit={handleSaveCustomerVideo} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px', marginBottom: '16px', padding: '14px', border: '1px solid #e3e3e3', borderRadius: '8px', backgroundColor: '#fafafa', fontSize: '13px' }}>
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
-                    Video title
-                    <input value={videoForm.title} onChange={e => setVideoForm(prev => ({ ...prev, title: e.target.value }))} placeholder="Unboxing Experience" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
-                  </label>
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
-                    Customer name
-                    <input value={videoForm.author} onChange={e => setVideoForm(prev => ({ ...prev, author: e.target.value }))} placeholder="Neha S." style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
-                  </label>
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
-                    Duration
-                    <input value={videoForm.duration} onChange={e => setVideoForm(prev => ({ ...prev, duration: e.target.value }))} placeholder="0:24" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
-                  </label>
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
-                    Thumbnail URL
-                    <input value={videoForm.thumbnail} onChange={e => setVideoForm(prev => ({ ...prev, thumbnail: e.target.value }))} placeholder="/images/hero_candle.png" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
-                  </label>
-                  <label style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
-                    Video URL
-                    <input value={videoForm.videoUrl} onChange={e => setVideoForm(prev => ({ ...prev, videoUrl: e.target.value }))} required placeholder="https://example.com/customer-video.mp4" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
-                  </label>
-                  <label style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
-                    Link on video
-                    <input value={videoForm.link} onChange={e => setVideoForm(prev => ({ ...prev, link: e.target.value }))} placeholder="https://instagram.com/reel/..." style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
-                    <input type="checkbox" checked={videoForm.verified} onChange={e => setVideoForm(prev => ({ ...prev, verified: e.target.checked }))} />
-                    Verified purchase
-                  </label>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                    <button type="button" onClick={() => { resetVideoForm(); setShowVideoForm(false); }} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 12px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>Cancel</button>
-                    <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-                      {editingVideoId ? 'Save video' : 'Add video'}
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' }}>
-                {customerVideos.map((video, index) => (
-                  <div key={video.id} style={{ border: '1px solid #e3e3e3', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#fafafa' }}>
-                    <video src={video.videoUrl} poster={video.thumbnail} muted playsInline controls style={{ width: '100%', aspectRatio: '1.55 / 1', objectFit: 'cover', display: 'block', backgroundColor: '#111111' }} />
-                    <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <div>
-                        <strong style={{ display: 'block', fontSize: '13px' }}>Video {index + 1}: {video.title}</strong>
-                        <span style={{ display: 'block', marginTop: '3px', fontSize: '12px', color: '#6d6d6d' }}>by {video.author} • {video.duration}</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '11px', color: video.verified ? '#2d5c4d' : '#8c8c8c' }}>{video.verified ? 'Verified Purchase' : 'Not verified'}</span>
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                          <button type="button" onClick={() => handleEditCustomerVideo(video)} style={{ backgroundColor: '#ffffff', color: '#1a1a1a', border: '1px solid #cccccc', borderRadius: '5px', padding: '5px 8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
-                            Edit
-                          </button>
-                          <button type="button" onClick={() => handleDeleteCustomerVideo(video.id)} style={{ backgroundColor: '#ffebe9', color: '#d72c0d', border: '1px solid #ffd0cc', borderRadius: '5px', padding: '5px 8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
-                            Delete
-                          </button>
-                        </div>
-                      </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '16px', marginBottom: '20px' }}>
+                  {[
+                    { label: 'Total reviews', value: customerReviews.length },
+                    { label: 'Verified', value: customerReviews.filter(review => review.verified).length },
+                    { label: '5 star', value: customerReviews.filter(review => review.rating === 5).length },
+                    { label: 'Helpful votes', value: customerReviews.reduce((sum, review) => sum + review.helpful, 0) }
+                  ].map(card => (
+                    <div key={card.label} style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '16px' }}>
+                      <p style={{ margin: '0 0 6px', color: '#6d6d6d', fontSize: '12px' }}>{card.label}</p>
+                      <strong style={{ display: 'block', fontSize: '24px', lineHeight: 1 }}>{card.value}</strong>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                  ))}
+                </div>
 
-            {showReviewForm && (
-              <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '20px', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-                <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '700' }}>{editingReviewId ? 'Edit Review' : 'Add Customer Review'}</h3>
-                <form onSubmit={handleSaveReview} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '14px', fontSize: '13px' }}>
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
-                    Customer name
-                    <input value={reviewForm.name} onChange={e => setReviewForm(prev => ({ ...prev, name: e.target.value }))} placeholder="sunny" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
-                  </label>
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
-                    City
-                    <input value={reviewForm.city} onChange={e => setReviewForm(prev => ({ ...prev, city: e.target.value }))} placeholder="delhi" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
-                  </label>
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
-                    Product
-                    <select value={reviewForm.productId} onChange={e => setReviewForm(prev => ({ ...prev, productId: e.target.value }))} style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px', backgroundColor: '#ffffff' }}>
-                      <option value="">Generic Deera Glow Jewelry</option>
-                      {products.filter(product => !product.deleted_at).map(product => (
-                        <option key={product.id} value={product.id}>{product.name}</option>
-                      ))}
-                    </select>
-                  </label>
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
-                    Rating
-                    <select value={reviewForm.rating} onChange={e => setReviewForm(prev => ({ ...prev, rating: e.target.value }))} style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px', backgroundColor: '#ffffff' }}>
-                      <option value="5">5 stars</option>
-                      <option value="4">4 stars</option>
-                      <option value="3">3 stars</option>
-                      <option value="2">2 stars</option>
-                      <option value="1">1 star</option>
-                    </select>
-                  </label>
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
-                    Customer photo path
-                    <input value={reviewForm.avatar} onChange={e => setReviewForm(prev => ({ ...prev, avatar: e.target.value }))} placeholder="/images/rings_category.png" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
-                  </label>
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
-                    Helpful count
-                    <input type="number" min="0" value={reviewForm.helpful} onChange={e => setReviewForm(prev => ({ ...prev, helpful: e.target.value }))} style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
-                  </label>
-                  <label style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
-                    Review text
-                    <textarea value={reviewForm.quote} onChange={e => setReviewForm(prev => ({ ...prev, quote: e.target.value }))} required rows={4} placeholder="mujhe bahut jada pasand aayi h ye ring..." style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px', resize: 'vertical', fontFamily: 'inherit' }} />
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
-                    <input type="checkbox" checked={reviewForm.verified} onChange={e => setReviewForm(prev => ({ ...prev, verified: e.target.checked }))} />
-                    Verified purchase
-                  </label>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                    <button type="button" onClick={() => { resetReviewForm(); setShowReviewForm(false); }} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '9px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>Cancel</button>
-                    <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '9px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>{editingReviewId ? 'Save Review' : 'Create Review'}</button>
+                {showReviewForm && (
+                  <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '20px', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                    <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '700' }}>{editingReviewId ? 'Edit Review' : 'Add Customer Review'}</h3>
+                    <form onSubmit={handleSaveReview} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '14px', fontSize: '13px' }}>
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                        Customer name
+                        <input value={reviewForm.name} onChange={e => setReviewForm(prev => ({ ...prev, name: e.target.value }))} placeholder="Priya" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                      </label>
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                        City
+                        <input value={reviewForm.city} onChange={e => setReviewForm(prev => ({ ...prev, city: e.target.value }))} placeholder="Delhi" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                      </label>
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                        Product
+                        <select value={reviewForm.productId} onChange={e => setReviewForm(prev => ({ ...prev, productId: e.target.value }))} style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px', backgroundColor: '#ffffff' }}>
+                          <option value="">Generic Deera Glow Jewelry</option>
+                          {products.filter(product => !product.deleted_at).map(product => (
+                            <option key={product.id} value={product.id}>{product.name}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                        Rating
+                        <select value={reviewForm.rating} onChange={e => setReviewForm(prev => ({ ...prev, rating: e.target.value }))} style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px', backgroundColor: '#ffffff' }}>
+                          <option value="5">5 stars</option>
+                          <option value="4">4 stars</option>
+                          <option value="3">3 stars</option>
+                          <option value="2">2 stars</option>
+                          <option value="1">1 star</option>
+                        </select>
+                      </label>
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                        Customer photo path
+                        <input value={reviewForm.avatar} onChange={e => setReviewForm(prev => ({ ...prev, avatar: e.target.value }))} placeholder="/images/rings_category.png" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                      </label>
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                        Helpful count
+                        <input type="number" min="0" value={reviewForm.helpful} onChange={e => setReviewForm(prev => ({ ...prev, helpful: e.target.value }))} style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                      </label>
+                      <label style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                        Review text
+                        <textarea value={reviewForm.quote} onChange={e => setReviewForm(prev => ({ ...prev, quote: e.target.value }))} required rows={4} placeholder="Beautiful quality and fast delivery..." style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px', resize: 'vertical', fontFamily: 'inherit' }} />
+                      </label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
+                        <input type="checkbox" checked={reviewForm.verified} onChange={e => setReviewForm(prev => ({ ...prev, verified: e.target.checked }))} />
+                        Verified purchase
+                      </label>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                        <button type="button" onClick={() => { resetReviewForm(); setShowReviewForm(false); }} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '9px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>Cancel</button>
+                        <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '9px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>{editingReviewId ? 'Save Review' : 'Create Review'}</button>
+                      </div>
+                    </form>
                   </div>
-                </form>
+                )}
+
+                <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '12px', marginBottom: '16px' }}>
+                  <input
+                    value={reviewSearchQuery}
+                    onChange={e => setReviewSearchQuery(e.target.value)}
+                    placeholder="Search reviews by customer, city, product, or text"
+                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #cccccc', borderRadius: '6px', fontSize: '13px' }}
+                  />
+                </div>
+
+                <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', overflow: 'hidden' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#f9f9f9', borderBottom: '1px solid #e3e3e3', color: '#6d6d6d' }}>
+                        <th style={{ padding: '12px 16px' }}>Customer</th>
+                        <th style={{ padding: '12px 16px' }}>Product</th>
+                        <th style={{ padding: '12px 16px' }}>Review</th>
+                        <th style={{ padding: '12px 16px' }}>Rating</th>
+                        <th style={{ padding: '12px 16px' }}>Helpful</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredCustomerReviews.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: '#8c8c8c' }}>No reviews found.</td>
+                        </tr>
+                      ) : filteredCustomerReviews.map((review) => (
+                        <tr key={review.id} style={{ borderBottom: '1px solid #e3e3e3', verticalAlign: 'top' }}>
+                          <td style={{ padding: '12px 16px' }}>
+                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                              <img src={review.avatar} alt={review.name} style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', backgroundColor: '#f1f1f1' }} />
+                              <div>
+                                <div style={{ fontWeight: '700' }}>{review.name}</div>
+                                <div style={{ color: '#6d6d6d', fontSize: '12px' }}>{review.city} • {review.time}</div>
+                                {review.verified && <span style={{ display: 'inline-block', marginTop: '4px', color: '#2d7d46', fontSize: '11px', fontWeight: '700' }}>Verified</span>}
+                              </div>
+                            </div>
+                          </td>
+                          <td style={{ padding: '12px 16px' }}>
+                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', minWidth: '220px' }}>
+                              <img src={review.productImage} alt={review.productName} style={{ width: '46px', height: '46px', borderRadius: '6px', objectFit: 'cover', backgroundColor: '#f1f1f1' }} />
+                              <span style={{ fontWeight: '600' }}>{review.productName}</span>
+                            </div>
+                          </td>
+                          <td style={{ padding: '12px 16px', color: '#3d3d3d', maxWidth: '360px', lineHeight: 1.5 }}>{review.quote}</td>
+                          <td style={{ padding: '12px 16px', color: '#d59a3d', whiteSpace: 'nowrap' }}>{'★'.repeat(review.rating)}</td>
+                          <td style={{ padding: '12px 16px' }}>{review.helpful}</td>
+                          <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                              <button type="button" onClick={() => handleEditReview(review)} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '7px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>Edit</button>
+                              <button type="button" onClick={() => handleDeleteReview(review.id)} style={{ backgroundColor: '#ffebe9', color: '#d72c0d', border: '1px solid #ffd0cc', borderRadius: '6px', padding: '7px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
-            <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '12px', marginBottom: '16px' }}>
-              <input
-                value={reviewSearchQuery}
-                onChange={e => setReviewSearchQuery(e.target.value)}
-                placeholder="Search reviews by customer, city, product, or text"
-                style={{ width: '100%', padding: '10px 12px', border: '1px solid #cccccc', borderRadius: '6px', fontSize: '13px' }}
-              />
-            </div>
+            {/* SUB-TAB 2: PURCHASE NOTIFICATION POPUPS */}
+            {customerSubTab === 'purchase_notifications' && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <h2 style={{ fontSize: '18px', fontWeight: '700', margin: 0 }}>Purchase Notification Popups</h2>
+                    <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6d6d6d' }}>Manage live purchase popups shown to website visitors ("Priya from Delhi purchased...").</p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      type="button"
+                      onClick={() => savePurchaseNotifications(defaultPurchaseNotifications)}
+                      style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                    >
+                      Reset Defaults
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        resetNotificationForm();
+                        setShowNotificationForm(!showNotificationForm);
+                      }}
+                      style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                    >
+                      {showNotificationForm ? 'Close Form' : '+ Add Notification'}
+                    </button>
+                  </div>
+                </div>
 
-            <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', overflow: 'hidden' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#f9f9f9', borderBottom: '1px solid #e3e3e3', color: '#6d6d6d' }}>
-                    <th style={{ padding: '12px 16px' }}>Customer</th>
-                    <th style={{ padding: '12px 16px' }}>Product</th>
-                    <th style={{ padding: '12px 16px' }}>Review</th>
-                    <th style={{ padding: '12px 16px' }}>Rating</th>
-                    <th style={{ padding: '12px 16px' }}>Helpful</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredCustomerReviews.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: '#8c8c8c' }}>No reviews found.</td>
-                    </tr>
-                  ) : filteredCustomerReviews.map((review) => (
-                    <tr key={review.id} style={{ borderBottom: '1px solid #e3e3e3', verticalAlign: 'top' }}>
-                      <td style={{ padding: '12px 16px' }}>
-                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                          <img src={review.avatar} alt={review.name} style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', backgroundColor: '#f1f1f1' }} />
-                          <div>
-                            <div style={{ fontWeight: '700' }}>{review.name}</div>
-                            <div style={{ color: '#6d6d6d', fontSize: '12px' }}>{review.city} • {review.time}</div>
-                            {review.verified && <span style={{ display: 'inline-block', marginTop: '4px', color: '#2d7d46', fontSize: '11px', fontWeight: '700' }}>Verified</span>}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '16px', marginBottom: '20px' }}>
+                  <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '16px' }}>
+                    <p style={{ margin: '0 0 6px', color: '#6d6d6d', fontSize: '12px' }}>Total Popups</p>
+                    <strong style={{ display: 'block', fontSize: '24px', lineHeight: 1 }}>{purchaseNotifications.length}</strong>
+                  </div>
+                  <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '16px' }}>
+                    <p style={{ margin: '0 0 6px', color: '#6d6d6d', fontSize: '12px' }}>Verified Purchases</p>
+                    <strong style={{ display: 'block', fontSize: '24px', lineHeight: 1, color: '#2d5c4d' }}>{purchaseNotifications.filter(n => n.verified !== false).length}</strong>
+                  </div>
+                  <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '16px' }}>
+                    <p style={{ margin: '0 0 6px', color: '#6d6d6d', fontSize: '12px' }}>Display Interval</p>
+                    <strong style={{ display: 'block', fontSize: '24px', lineHeight: 1, color: '#b8860b' }}>30 sec</strong>
+                  </div>
+                </div>
+
+                {showNotificationForm && (
+                  <form onSubmit={handleSaveNotification} style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '12px', padding: '20px', marginBottom: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                    <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '700' }}>
+                      {editingNotificationId ? 'Edit Purchase Notification' : 'Add New Purchase Notification'}
+                    </h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '14px', fontSize: '13px' }}>
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                        Customer Name
+                        <input
+                          value={notificationForm.customerName}
+                          onChange={e => setNotificationForm(prev => ({ ...prev, customerName: e.target.value }))}
+                          required
+                          placeholder="e.g. Priya"
+                          style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }}
+                        />
+                      </label>
+
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                        City / Location
+                        <input
+                          value={notificationForm.city}
+                          onChange={e => setNotificationForm(prev => ({ ...prev, city: e.target.value }))}
+                          required
+                          placeholder="e.g. Delhi"
+                          style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }}
+                        />
+                      </label>
+
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600', gridColumn: '1 / -1' }}>
+                        Select Store Product (Auto-fills product details)
+                        <select
+                          onChange={e => {
+                            const pId = e.target.value;
+                            if (!pId) return;
+                            const prod = products.find(p => String(p.id) === pId);
+                            if (prod) {
+                              setNotificationForm(prev => ({
+                                ...prev,
+                                productName: prod.name,
+                                productImage: prod.image_url,
+                                productSlug: prod.slug
+                              }));
+                            }
+                          }}
+                          style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px', backgroundColor: '#ffffff' }}
+                        >
+                          <option value="">-- Choose from existing products --</option>
+                          {products.filter(p => !p.deleted_at).map(p => (
+                            <option key={p.id} value={p.id}>{p.name} (₹{p.price})</option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                        Product Name
+                        <input
+                          value={notificationForm.productName}
+                          onChange={e => setNotificationForm(prev => ({ ...prev, productName: e.target.value }))}
+                          required
+                          placeholder="Royal Pearl Drop Earrings"
+                          style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }}
+                        />
+                      </label>
+
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                        Time Ago Text
+                        <input
+                          value={notificationForm.timeAgo}
+                          onChange={e => setNotificationForm(prev => ({ ...prev, timeAgo: e.target.value }))}
+                          required
+                          placeholder="e.g. 2 minutes ago"
+                          style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }}
+                        />
+                      </label>
+
+                      <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600', gridColumn: '1 / -1' }}>
+                        Product Image Path / URL
+                        <input
+                          value={notificationForm.productImage}
+                          onChange={e => setNotificationForm(prev => ({ ...prev, productImage: e.target.value }))}
+                          required
+                          placeholder="/images/earrings_category.png"
+                          style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }}
+                        />
+                      </label>
+
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
+                        <input
+                          type="checkbox"
+                          checked={notificationForm.verified}
+                          onChange={e => setNotificationForm(prev => ({ ...prev, verified: e.target.checked }))}
+                        />
+                        Show Verified Purchase Badge
+                      </label>
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                        <button
+                          type="button"
+                          onClick={() => { resetNotificationForm(); setShowNotificationForm(false); }}
+                          style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '9px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '9px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                        >
+                          {editingNotificationId ? 'Save Changes' : 'Add Notification'}
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                )}
+
+                <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '12px', overflow: 'hidden' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #e3e3e3', color: '#6d6d6d', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        <th style={{ padding: '12px 16px' }}>Product</th>
+                        <th style={{ padding: '12px 16px' }}>Customer & Location</th>
+                        <th style={{ padding: '12px 16px' }}>Time Ago</th>
+                        <th style={{ padding: '12px 16px' }}>Status</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {purchaseNotifications.map((notif) => (
+                        <tr key={notif.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                          <td style={{ padding: '12px 16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <img src={notif.productImage} alt={notif.productName} style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover', border: '1px solid #eeeeee' }} />
+                              <strong style={{ fontSize: '13px', color: '#1a1a1a' }}>{notif.productName}</strong>
+                            </div>
+                          </td>
+                          <td style={{ padding: '12px 16px' }}>
+                            <span style={{ fontWeight: '600', color: '#1a1a1a' }}>{notif.customerName}</span>
+                            <span style={{ color: '#6d6d6d', marginLeft: '6px' }}>from {notif.city}</span>
+                          </td>
+                          <td style={{ padding: '12px 16px', color: '#6d6d6d' }}>{notif.timeAgo}</td>
+                          <td style={{ padding: '12px 16px' }}>
+                            <span style={{ fontSize: '11px', fontWeight: '600', padding: '3px 8px', borderRadius: '10px', backgroundColor: notif.verified !== false ? '#e2ece9' : '#f0f0f0', color: notif.verified !== false ? '#2d5c4d' : '#6d6d6d' }}>
+                              {notif.verified !== false ? '✓ Verified' : 'Standard'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                              <button
+                                type="button"
+                                onClick={() => handleEditNotification(notif)}
+                                style={{ backgroundColor: '#ffffff', color: '#1a1a1a', border: '1px solid #cccccc', borderRadius: '5px', padding: '5px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteNotification(notif.id)}
+                                style={{ backgroundColor: '#ffebe9', color: '#d72c0d', border: '1px solid #ffd0cc', borderRadius: '5px', padding: '5px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* SUB-TAB 3: PHOTO MOMENTS GALLERY */}
+            {customerSubTab === 'moments' && (
+              <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '18px', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '14px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700' }}>Real Moments Photos</h3>
+                    <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6d6d6d' }}>These photos appear in the product page gallery and popup.</p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={() => saveCustomerMoments(defaultCustomerMoments)}
+                      style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 12px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                    >
+                      Reset defaults
+                    </button>
+                    <label style={{ backgroundColor: '#1a1a1a', color: '#ffffff', borderRadius: '6px', padding: '8px 14px', fontSize: '13px', fontWeight: '600', cursor: uploadingMomentPhotos ? 'wait' : 'pointer', opacity: uploadingMomentPhotos ? 0.7 : 1 }}>
+                      {uploadingMomentPhotos ? 'Uploading...' : 'Upload photos'}
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        disabled={uploadingMomentPhotos}
+                        onChange={async (e) => {
+                          await handleUploadMomentPhotos(e.target.files);
+                          e.target.value = '';
+                        }}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+                  {customerMoments.map((moment, index) => (
+                    <div key={moment.id} style={{ border: '1px solid #e3e3e3', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#fafafa' }}>
+                      <img src={moment.image} alt={moment.alt} style={{ width: '100%', aspectRatio: '1.35 / 1', objectFit: 'cover', display: 'block' }} />
+                      <div style={{ padding: '9px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '12px', color: '#6d6d6d' }}>Photo {index + 1}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteMomentPhoto(moment.id)}
+                          style={{ backgroundColor: '#ffebe9', color: '#d72c0d', border: '1px solid #ffd0cc', borderRadius: '5px', padding: '5px 8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* SUB-TAB 4: VIDEO TESTIMONIALS */}
+            {customerSubTab === 'videos' && (
+              <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '18px', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '14px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700' }}>Real Moments Videos</h3>
+                    <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6d6d6d' }}>These videos appear in customer video cards and the product page Instagram section.</p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={() => saveCustomerVideos(defaultCustomerVideos)}
+                      style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 12px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                    >
+                      Reset defaults
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        resetVideoForm();
+                        setShowVideoForm(!showVideoForm);
+                      }}
+                      style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                    >
+                      {showVideoForm ? 'Close form' : 'Add video'}
+                    </button>
+                  </div>
+                </div>
+
+                {showVideoForm && (
+                  <form onSubmit={handleSaveCustomerVideo} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px', marginBottom: '16px', padding: '14px', border: '1px solid #e3e3e3', borderRadius: '8px', backgroundColor: '#fafafa', fontSize: '13px' }}>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                      Video title
+                      <input value={videoForm.title} onChange={e => setVideoForm(prev => ({ ...prev, title: e.target.value }))} placeholder="Unboxing Experience" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                    </label>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                      Customer name
+                      <input value={videoForm.author} onChange={e => setVideoForm(prev => ({ ...prev, author: e.target.value }))} placeholder="Neha S." style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                    </label>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                      Duration
+                      <input value={videoForm.duration} onChange={e => setVideoForm(prev => ({ ...prev, duration: e.target.value }))} placeholder="0:24" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                    </label>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                      Thumbnail URL
+                      <input value={videoForm.thumbnail} onChange={e => setVideoForm(prev => ({ ...prev, thumbnail: e.target.value }))} placeholder="/images/earrings_category.png" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                    </label>
+                    <label style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                      Video URL
+                      <input value={videoForm.videoUrl} onChange={e => setVideoForm(prev => ({ ...prev, videoUrl: e.target.value }))} required placeholder="https://example.com/customer-video.mp4" style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                    </label>
+                    <label style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
+                      Link on video
+                      <input value={videoForm.link} onChange={e => setVideoForm(prev => ({ ...prev, link: e.target.value }))} placeholder="https://instagram.com/reel/..." style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px' }} />
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
+                      <input type="checkbox" checked={videoForm.verified} onChange={e => setVideoForm(prev => ({ ...prev, verified: e.target.checked }))} />
+                      Verified purchase
+                    </label>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                      <button type="button" onClick={() => { resetVideoForm(); setShowVideoForm(false); }} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 12px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>Cancel</button>
+                      <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                        {editingVideoId ? 'Save video' : 'Add video'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' }}>
+                  {customerVideos.map((video, index) => (
+                    <div key={video.id} style={{ border: '1px solid #e3e3e3', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#fafafa' }}>
+                      <video src={video.videoUrl} poster={video.thumbnail} muted playsInline controls style={{ width: '100%', aspectRatio: '1.55 / 1', objectFit: 'cover', display: 'block', backgroundColor: '#111111' }} />
+                      <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div>
+                          <strong style={{ display: 'block', fontSize: '13px' }}>Video {index + 1}: {video.title}</strong>
+                          <span style={{ display: 'block', marginTop: '3px', fontSize: '12px', color: '#6d6d6d' }}>by {video.author} • {video.duration}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '11px', color: video.verified ? '#2d5c4d' : '#8c8c8c' }}>{video.verified ? 'Verified Purchase' : 'Not verified'}</span>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button type="button" onClick={() => handleEditCustomerVideo(video)} style={{ backgroundColor: '#ffffff', color: '#1a1a1a', border: '1px solid #cccccc', borderRadius: '5px', padding: '5px 8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                              Edit
+                            </button>
+                            <button type="button" onClick={() => handleDeleteCustomerVideo(video.id)} style={{ backgroundColor: '#ffebe9', color: '#d72c0d', border: '1px solid #ffd0cc', borderRadius: '5px', padding: '5px 8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                              Delete
+                            </button>
                           </div>
                         </div>
-                      </td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', minWidth: '220px' }}>
-                          <img src={review.productImage} alt={review.productName} style={{ width: '46px', height: '46px', borderRadius: '6px', objectFit: 'cover', backgroundColor: '#f1f1f1' }} />
-                          <span style={{ fontWeight: '600' }}>{review.productName}</span>
-                        </div>
-                      </td>
-                      <td style={{ padding: '12px 16px', color: '#3d3d3d', maxWidth: '360px', lineHeight: 1.5 }}>{review.quote}</td>
-                      <td style={{ padding: '12px 16px', color: '#d59a3d', whiteSpace: 'nowrap' }}>{'★'.repeat(review.rating)}</td>
-                      <td style={{ padding: '12px 16px' }}>{review.helpful}</td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                          <button type="button" onClick={() => handleEditReview(review)} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '7px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>Edit</button>
-                          <button type="button" onClick={() => handleDeleteReview(review.id)} style={{ backgroundColor: '#ffebe9', color: '#d72c0d', border: '1px solid #ffd0cc', borderRadius: '6px', padding: '7px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>Delete</button>
-                        </div>
-                      </td>
-                    </tr>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -4566,7 +5001,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
                           showMobileText: true,
                           eyebrow: 'NEW ARRIVAL',
                           title: 'New Collection',
-                          description: 'Handcrafted luxury jewelry.',
+                          description: 'Exquisite luxury jewelry.',
                           btnText: 'Explore Now',
                           btnHref: '#products',
                           mobileBtnHref: ''

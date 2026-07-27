@@ -27,7 +27,7 @@ export const defaultStoreSettings: Record<string, string> = {
   heroEyebrow: 'TIMELESS BEAUTY',
   heroTitle: 'Shine Brighter',
   heroItalicTitle: 'Every Day',
-  heroDescription: 'Discover handcrafted jewelry that celebrates your unique style and every special moment.',
+  heroDescription: 'Discover exquisite jewelry that celebrates your unique style and every special moment.',
   heroPrimaryButtonText: 'Shop Collection',
   heroPrimaryButtonHref: '#shop-by-collection',
   heroSecondaryButtonText: 'New Arrivals',
@@ -41,7 +41,7 @@ export const defaultStoreSettings: Record<string, string> = {
   contentPromoBannerLink: '/category/necklaces',
   contentPromoBanner2Image: '/images/jewelry_category_banner.png',
   contentPromoBanner2Link: '/category/earrings',
-  heroAnnouncementItems: '[{"id":"1","text":"Buy 2 Get 2 Free","icon":"gift","link":"/collections"},{"id":"2","text":"100% Secure Checkout","icon":"shield","link":""},{"id":"3","text":"Premium Handcrafted Jewelry","icon":"star","link":""}]'
+  heroAnnouncementItems: '[{"id":"1","text":"Buy 2 Get 2 Free","icon":"gift","link":"/collections"},{"id":"2","text":"100% Secure Checkout","icon":"shield","link":""},{"id":"3","text":"Premium Fine Jewelry","icon":"star","link":""}]'
 };
 
 export async function ensureStoreSettingsTable() {
@@ -84,7 +84,23 @@ export async function getStoreSettings() {
     }
   }
 
+  try {
+    await sql`
+      UPDATE store_settings
+      SET value = REPLACE(REPLACE(value, 'Premium Handcrafted Jewelry', 'Premium Fine Jewelry'), 'handcrafted', 'exquisite')
+      WHERE value ILIKE '%handcrafted%'
+    `;
+  } catch (e) {}
+
   const mergedSettings = { ...defaultStoreSettings, ...settings };
+  Object.keys(mergedSettings).forEach(key => {
+    if (typeof mergedSettings[key] === 'string' && /handcrafted/i.test(mergedSettings[key])) {
+      mergedSettings[key] = mergedSettings[key]
+        .replace(/Premium Handcrafted Jewelry/gi, 'Premium Fine Jewelry')
+        .replace(/handcrafted/gi, 'exquisite');
+    }
+  });
+
   if (!mergedSettings.logoHeaderUrl) mergedSettings.logoHeaderUrl = defaultStoreSettings.logoHeaderUrl;
   if (!mergedSettings.logoFooterUrl) mergedSettings.logoFooterUrl = defaultStoreSettings.logoFooterUrl;
   return mergedSettings;

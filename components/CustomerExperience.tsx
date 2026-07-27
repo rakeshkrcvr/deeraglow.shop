@@ -624,7 +624,7 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
                     <span className={styles.featureEmoji}>✨</span>
                     <div>
                       <strong>Compliment Magnet</strong>
-                      <p>Beautiful handcrafted details that turn heads</p>
+                      <p>Beautiful intricate details that turn heads</p>
                     </div>
                   </li>
                   <li>
@@ -688,8 +688,8 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
                 <div className={styles.chooseCard}>
                   <span className={styles.chooseIcon}>🧡</span>
                   <div>
-                    <h4>Handcrafted with Love</h4>
-                    <p>Crafted with care in every piece</p>
+                    <h4>Designed with Love</h4>
+                    <p>Created with care in every piece</p>
                   </div>
                 </div>
               </div>

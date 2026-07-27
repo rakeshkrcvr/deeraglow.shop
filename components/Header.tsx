@@ -55,7 +55,7 @@ type AnnouncementItem = {
 const defaultAnnouncements: AnnouncementItem[] = [
   { id: '1', text: 'Buy 2 Get 2 Free', icon: 'gift', link: '/collections' },
   { id: '2', text: '100% Secure Checkout', icon: 'shield', link: '' },
-  { id: '3', text: 'Premium Handcrafted Jewelry', icon: 'star', link: '' }
+  { id: '3', text: 'Premium Fine Jewelry', icon: 'star', link: '' }
 ];
 
 const renderAnnouncementIcon = (icon?: string) => {
@@ -803,7 +803,7 @@ export default function Header() {
                     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                   </svg>
                   <p>Your cart is empty.</p>
-                  <p className={styles.emptySub}>Fill it with premium, handcrafted jewelry designed for you.</p>
+                  <p className={styles.emptySub}>Fill it with premium, exquisite jewelry designed for you.</p>
                   <button className={styles.shopBtn} onClick={() => setIsCartOpen(false)}>
                     Browse Jewelry
                   </button>

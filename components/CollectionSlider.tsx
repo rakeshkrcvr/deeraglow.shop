@@ -25,7 +25,7 @@ const defaultCollections: SliderCollectionItem[] = [
     id: 902,
     name: 'Kings & Queens of Rajasthan',
     slug: 'kings-queens-of-rajasthan',
-    description: 'The legacy of royals, crafted in handcrafted jewels.',
+    description: 'The legacy of royals, captured in exquisite jewels.',
     image_url: '/images/hero_slide_2.png',
     show_in_slider: true,
     slider_subtitle: 'The Legacy of Royals, Crafted in Jewels',

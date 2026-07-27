@@ -2,96 +2,84 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import {
+  CUSTOMER_NOTIFICATIONS_STORAGE_KEY,
+  PurchaseNotification,
+  defaultPurchaseNotifications,
+  normalizePurchaseNotifications
+} from '@/lib/purchaseNotifications';
 import styles from './RecentSalesPopup.module.css';
 
-interface Product {
-  id: number;
-  name: string;
-  slug: string;
-  image_url: string;
-  price: number;
+// Fisher-Yates Shuffle helper for array of indices
+function generateShuffledOrder(length: number): number[] {
+  const indices = Array.from({ length }, (_, i) => i);
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  return indices;
 }
 
-const fallbackProducts: Product[] = [
-  { id: 1, name: 'Royal Pearl Drop Earrings', slug: 'earrings-royal-pearl-drops', image_url: '/images/hero_slide_1.png', price: 1299 },
-  { id: 2, name: 'Golden Solitaire Ring', slug: 'golden-solitaire-ring', image_url: '/images/rings_category.png', price: 999 },
-  { id: 3, name: 'Rose Gold Floral Studs', slug: 'rose-gold-floral-studs', image_url: '/images/earrings_category.png', price: 799 },
-  { id: 4, name: 'Classic Heart Pendant Necklace', slug: 'classic-heart-pendant', image_url: '/images/necklaces_category.png', price: 1499 },
-  { id: 5, name: 'Minimalist Paperclip Link Chain', slug: 'minimalist-link-chain', image_url: '/images/bracelets_category.png', price: 899 },
-  { id: 6, name: 'Vintage Emerald Cut Ring', slug: 'vintage-emerald-ring', image_url: '/images/charm_category.png', price: 1199 },
-  { id: 7, name: 'Charm Carrier Bangle', slug: 'charm-carrier-bangle', image_url: '/images/hero_slide_2.png', price: 1599 },
-  { id: 8, name: 'Eternity Band Ring', slug: 'eternity-band-ring', image_url: '/images/hero_slide_3.png', price: 1099 }
-];
-
-const customerLocations = [
-  { name: 'Priya', city: 'Delhi' },
-  { name: 'Ananya', city: 'Mumbai' },
-  { name: 'Sneha', city: 'Jaipur' },
-  { name: 'Ritu', city: 'Bangalore' },
-  { name: 'Pooja', city: 'Chandigarh' },
-  { name: 'Divya', city: 'Ahmedabad' },
-  { name: 'Kavita', city: 'Kolkata' },
-  { name: 'Meera', city: 'Pune' },
-  { name: 'Aarti', city: 'Lucknow' },
-  { name: 'Neha', city: 'Hyderabad' },
-  { name: 'Shweta', city: 'Surat' },
-  { name: 'Isha', city: 'Indore' },
-  { name: 'Tanya', city: 'Noida' },
-  { name: 'Deepika', city: 'Gurugram' },
-  { name: 'Simran', city: 'Amritsar' }
-];
-
-const timeAgoList = [
-  '2 minutes ago',
-  '4 minutes ago',
-  '7 minutes ago',
-  '10 minutes ago',
-  '12 minutes ago',
-  '15 minutes ago',
-  '18 minutes ago',
-  '23 minutes ago'
-];
-
 export default function RecentSalesPopup() {
-  const [products, setProducts] = useState<Product[]>(fallbackProducts);
+  const [notifications, setNotifications] = useState<PurchaseNotification[]>(defaultPurchaseNotifications);
   const [visible, setVisible] = useState(false);
-  const [currentSale, setCurrentSale] = useState<{
-    customer: string;
-    city: string;
-    product: Product;
-    timeAgo: string;
-  } | null>(null);
+  const [currentSale, setCurrentSale] = useState<PurchaseNotification | null>(null);
 
-  const currentIndexRef = useRef(0);
+  const shuffledQueueRef = useRef<number[]>([]);
+  const pointerRef = useRef(0);
 
-  // Fetch real products from API
-  useEffect(() => {
-    fetch('/api/products')
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setProducts(data);
+  const loadAndShuffleNotifications = () => {
+    try {
+      const saved = localStorage.getItem(CUSTOMER_NOTIFICATIONS_STORAGE_KEY);
+      let list: PurchaseNotification[] = defaultPurchaseNotifications;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length >= 50) {
+          list = normalizePurchaseNotifications(parsed);
+        } else {
+          localStorage.setItem(CUSTOMER_NOTIFICATIONS_STORAGE_KEY, JSON.stringify(defaultPurchaseNotifications));
+          list = defaultPurchaseNotifications;
         }
-      })
-      .catch((err) => console.error('Error loading products for sales popup:', err));
+      } else {
+        localStorage.setItem(CUSTOMER_NOTIFICATIONS_STORAGE_KEY, JSON.stringify(defaultPurchaseNotifications));
+      }
+      setNotifications(list);
+      shuffledQueueRef.current = generateShuffledOrder(list.length);
+      pointerRef.current = 0;
+    } catch {
+      setNotifications(defaultPurchaseNotifications);
+      shuffledQueueRef.current = generateShuffledOrder(defaultPurchaseNotifications.length);
+      pointerRef.current = 0;
+    }
+  };
+
+  useEffect(() => {
+    loadAndShuffleNotifications();
+    window.addEventListener('storage', loadAndShuffleNotifications);
+    window.addEventListener('deeksha-notifications-updated', loadAndShuffleNotifications);
+    return () => {
+      window.removeEventListener('storage', loadAndShuffleNotifications);
+      window.removeEventListener('deeksha-notifications-updated', loadAndShuffleNotifications);
+    };
   }, []);
 
   const triggerNextPopup = () => {
-    if (products.length === 0) return;
+    if (notifications.length === 0) return;
 
-    const nextProduct = products[currentIndexRef.current % products.length];
-    const customerObj = customerLocations[currentIndexRef.current % customerLocations.length];
-    const timeAgo = timeAgoList[currentIndexRef.current % timeAgoList.length];
+    if (
+      shuffledQueueRef.current.length !== notifications.length ||
+      pointerRef.current >= shuffledQueueRef.current.length
+    ) {
+      shuffledQueueRef.current = generateShuffledOrder(notifications.length);
+      pointerRef.current = 0;
+    }
 
-    currentIndexRef.current += 1;
+    const nextIndex = shuffledQueueRef.current[pointerRef.current];
+    pointerRef.current += 1;
 
-    setCurrentSale({
-      customer: customerObj.name,
-      city: customerObj.city,
-      product: nextProduct,
-      timeAgo
-    });
+    const nextNotif = notifications[nextIndex] || notifications[0];
 
+    setCurrentSale(nextNotif);
     setVisible(true);
 
     // Hide after 6 seconds
@@ -101,26 +89,26 @@ export default function RecentSalesPopup() {
   };
 
   useEffect(() => {
-    // Initial trigger after 4 seconds
+    if (notifications.length === 0) return;
+
     const initialTimer = setTimeout(() => {
       triggerNextPopup();
     }, 4000);
 
-    // Recurring trigger every 2 minutes (120,000 ms)
     const interval = setInterval(() => {
       triggerNextPopup();
-    }, 120000);
+    }, 30000);
 
     return () => {
       clearTimeout(initialTimer);
       clearInterval(interval);
     };
-  }, [products]);
+  }, [notifications]);
 
   if (!currentSale) return null;
 
-  const productUrl = currentSale.product.slug
-    ? `/products/${currentSale.product.slug}`
+  const productUrl = currentSale.productSlug
+    ? `/products/${currentSale.productSlug}`
     : '/collections';
 
   return (
@@ -131,21 +119,23 @@ export default function RecentSalesPopup() {
         onClick={() => setVisible(false)}
       >
         <div className={styles.imageContainer}>
-          <img src={currentSale.product.image_url} alt={currentSale.product.name} className={styles.productImg} />
+          <img src={currentSale.productImage || '/images/earrings_category.png'} alt={currentSale.productName} className={styles.productImg} />
         </div>
 
         <div className={styles.contentCol}>
           <div className={styles.customerName}>
-            {currentSale.customer} from {currentSale.city}
+            {currentSale.customerName} from {currentSale.city}
           </div>
           <div className={styles.purchasedLabel}>purchased</div>
-          <div className={styles.productTitle}>{currentSale.product.name}</div>
+          <div className={styles.productTitle}>{currentSale.productName}</div>
           <div className={styles.metaRow}>
             <span>{currentSale.timeAgo}</span>
-            <svg className={styles.verifiedBadge} width="12" height="12" viewBox="0 0 24 24" fill="#b8860b">
-              <circle cx="12" cy="12" r="10" fill="#b8860b" />
-              <path d="m9 12 2 2 4-4" stroke="#ffffff" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            {currentSale.verified !== false && (
+              <svg className={styles.verifiedBadge} width="12" height="12" viewBox="0 0 24 24" fill="#b8860b">
+                <circle cx="12" cy="12" r="10" fill="#b8860b" />
+                <path d="m9 12 2 2 4-4" stroke="#ffffff" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
           </div>
         </div>
 

@@ -40,7 +40,7 @@ const defaultHeroSettings: HeroSettings = {
   eyebrow: 'TIMELESS BEAUTY',
   title: 'Shine Brighter',
   italicTitle: 'Every Day',
-  description: 'Discover handcrafted jewelry that celebrates your unique style and every special moment.',
+  description: 'Discover exquisite jewelry that celebrates your unique style and every special moment.',
   primaryButtonText: 'Shop Collection',
   primaryButtonHref: '#shop-by-collection',
   secondaryButtonText: 'New Arrivals',
@@ -64,7 +64,7 @@ const defaultSlides: HeroSlide[] = [
     showMobileText: true,
     eyebrow: 'TIMELESS BEAUTY',
     title: 'Shine Brighter Every Day',
-    description: 'Discover handcrafted jewelry that celebrates your unique style and every special moment.',
+    description: 'Discover exquisite jewelry that celebrates your unique style and every special moment.',
     btnText: 'Shop Collection',
     btnHref: '/collections'
   },

@@ -161,8 +161,8 @@ export default function Footer() {
       <div className={styles.footerBottom}>
         <div className={`container ${styles.bottomContainer}`}>
           <p>© {new Date().getFullYear()} Deera Glow. All rights reserved.</p>
-          <div className={styles.handcrafted}>
-            <span>Handcrafted with love in India 🇮🇳</span>
+          <div className={styles.footerFeature}>
+            <span>Designed with love in India 🇮🇳</span>
           </div>
         </div>
       </div>

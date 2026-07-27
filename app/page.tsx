@@ -75,7 +75,7 @@ export default async function Home() {
                 <div className={styles.mainImageCol}>
                   <Image 
                     src="/images/category_banner_jewelry.png" 
-                    alt="Premium handcrafted jewelry selection" 
+                    alt="Premium fine jewelry selection" 
                     width={450} 
                     height={450}
                     className={styles.storyImg1}
@@ -101,7 +101,7 @@ export default async function Home() {
               <div className={styles.storyDivider}></div>
               
               <p className={styles.storyParagraph}>
-                At Deera Glow, we believe that jewelry is more than an accessory—it is an expression of your inner light. Each piece is meticulously designed and handcrafted, carrying the promise of warmth, confidence, and timeless elegance for every moment.
+                At Deera Glow, we believe that jewelry is more than an accessory—it is an expression of your inner light. Each piece is meticulously designed and created, carrying the promise of warmth, confidence, and timeless elegance for every moment.
               </p>
 
               <div className={styles.storyPoints}>

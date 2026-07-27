@@ -240,10 +240,10 @@ export default function CategoryPageClient({ slug, title, products }: CategoryPa
             <div className={styles.dividerLine}>
               <span className={styles.dividerDiamond}>◆</span>
             </div>
-            <span className={styles.sectionEyebrow}>OUR ARTISANAL CREATIONS</span>
+            <span className={styles.sectionEyebrow}>OUR ELEGANT CREATIONS</span>
             <h2 className={styles.sectionTitle}>Shop the Collection</h2>
             <p className={styles.sectionSubtitle}>
-              Each piece is handcrafted with premium materials and designed to add a touch of elegance, shine, and style to your everyday life.
+              Each piece is created with premium materials and designed to add a touch of elegance, shine, and style to your everyday life.
             </p>
           </div>
 

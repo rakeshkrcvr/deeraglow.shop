@@ -34,7 +34,7 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
           <h2 className={styles.title}>Shop Our Jewelry</h2>
           <div className={styles.titleLine}></div>
           <p className={styles.leadText}>
-            Each piece is handcrafted with premium materials and designed to add a touch of elegance, shine, and style to your everyday life.
+            Each piece is created with premium materials and designed to add a touch of elegance, shine, and style to your everyday life.
           </p>
         </div>
 

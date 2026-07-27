@@ -219,7 +219,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
               <div className={styles.galleryBadgeItem}>
                 <span className={styles.galleryBadgeIcon}>💎</span>
                 <div>
-                  <strong>100% Handcrafted</strong>
+                  <strong>100% Quality Assured</strong>
                   <p>Premium Quality</p>
                 </div>
               </div>

@@ -30,11 +30,11 @@ export default function AuraCollection({ products }: AuraCollectionProps) {
         
         {/* Section Header */}
         <div className={styles.sectionHeader}>
-          <span className={styles.subtitle}>OUR ARTISANAL CREATIONS</span>
+          <span className={styles.subtitle}>OUR ELEGANT CREATIONS</span>
           <h2 className={styles.title}>Shop the Collection</h2>
           <div className={styles.titleLine}></div>
           <p className={styles.leadText}>
-            Each piece is handcrafted with premium materials and designed to add a touch of elegance, shine, and style to your everyday life.
+            Each piece is created with premium materials and designed to add a touch of elegance, shine, and style to your everyday life.
           </p>
         </div>
 

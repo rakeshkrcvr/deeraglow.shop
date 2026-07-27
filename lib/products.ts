@@ -326,15 +326,29 @@ export async function getProducts(options: { includeDeleted?: boolean } = {}): P
       }
     }
 
-    if (needsRequery) {
-      allProducts = await sql`SELECT * FROM products ORDER BY id ASC` as unknown as Product[];
-    }
+    try {
+      await sql`
+        UPDATE products
+        SET 
+          description = REPLACE(REPLACE(description, 'Handcrafted', 'Exquisite'), 'handcrafted', 'exquisite'),
+          features = REPLACE(REPLACE(features, 'Handcrafted', 'Exquisite'), 'handcrafted', 'exquisite'),
+          acc_ingredients = REPLACE(REPLACE(acc_ingredients, 'Handcrafted', 'Exquisite'), 'handcrafted', 'exquisite')
+        WHERE description ILIKE '%handcrafted%' OR features ILIKE '%handcrafted%' OR acc_ingredients ILIKE '%handcrafted%'
+      `;
+    } catch (e) {}
+
+    const sanitizedProducts = allProducts.map(p => ({
+      ...p,
+      description: (p.description || '').replace(/handcrafted/gi, 'exquisite'),
+      features: (p.features || '').replace(/handcrafted/gi, 'exquisite'),
+      acc_ingredients: (p.acc_ingredients || '').replace(/handcrafted/gi, 'exquisite')
+    }));
 
     if (options.includeDeleted) {
-      return allProducts;
+      return sanitizedProducts;
     }
 
-    return allProducts.filter(product => !product.deleted_at);
+    return sanitizedProducts.filter(product => !product.deleted_at);
   } catch (error) {
     console.error("Error in getProducts db transaction:", error);
     return [];
