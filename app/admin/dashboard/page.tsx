@@ -242,6 +242,42 @@ export default function AdminDashboard() {
     verified: true
   });
 
+  // Bulk selection states for Purchase Notifications
+  const [selectedNotificationIds, setSelectedNotificationIds] = useState<string[]>([]);
+  const [showBulkEditNotificationsModal, setShowBulkEditNotificationsModal] = useState(false);
+  const [bulkNotificationForm, setBulkNotificationForm] = useState({
+    changeProduct: false,
+    productName: '',
+    productImage: '',
+    productSlug: '',
+    changeCity: false,
+    city: '',
+    changeCustomerName: false,
+    customerName: '',
+    changeTimeAgo: false,
+    timeAgo: '2 minutes ago',
+    changeVerified: false,
+    verified: true
+  });
+
+  // Bulk selection states for Customer Reviews
+  const [selectedReviewIds, setSelectedReviewIds] = useState<string[]>([]);
+  const [showBulkEditReviewsModal, setShowBulkEditReviewsModal] = useState(false);
+  const [bulkReviewForm, setBulkReviewForm] = useState({
+    changeProduct: false,
+    productName: '',
+    productImage: '',
+    productId: '',
+    changeCity: false,
+    city: '',
+    changeCustomerName: false,
+    name: '',
+    changeRating: false,
+    rating: 5,
+    changeVerified: false,
+    verified: true
+  });
+
   const [searchQuery, setSearchQuery] = useState('');
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingOrders, setLoadingOrders] = useState(true);
@@ -639,6 +675,124 @@ export default function AdminDashboard() {
   const handleDeleteNotification = (id: string) => {
     if (!confirm('Delete this purchase notification popup?')) return;
     savePurchaseNotifications(purchaseNotifications.filter(n => n.id !== id));
+  };
+
+  // Bulk actions for Purchase Notifications
+  const handleSelectAllNotifications = (checked: boolean) => {
+    if (checked) {
+      setSelectedNotificationIds(purchaseNotifications.map(n => n.id));
+    } else {
+      setSelectedNotificationIds([]);
+    }
+  };
+
+  const handleToggleNotificationSelect = (id: string) => {
+    setSelectedNotificationIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkDeleteNotifications = () => {
+    if (selectedNotificationIds.length === 0) return;
+    if (!confirm(`Delete ${selectedNotificationIds.length} purchase notification popups?`)) return;
+    const nextNotifs = purchaseNotifications.filter(n => !selectedNotificationIds.includes(n.id));
+    savePurchaseNotifications(nextNotifs);
+    setSelectedNotificationIds([]);
+  };
+
+  const handleApplyBulkEditNotifications = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedNotificationIds.length === 0) return;
+
+    const nextNotifs = purchaseNotifications.map(n => {
+      if (!selectedNotificationIds.includes(n.id)) return n;
+      const updated = { ...n };
+      if (bulkNotificationForm.changeProduct && bulkNotificationForm.productName.trim()) {
+        updated.productName = bulkNotificationForm.productName.trim();
+        if (bulkNotificationForm.productImage.trim()) {
+          updated.productImage = bulkNotificationForm.productImage.trim();
+        }
+        if (bulkNotificationForm.productSlug.trim()) {
+          updated.productSlug = bulkNotificationForm.productSlug.trim();
+        }
+      }
+      if (bulkNotificationForm.changeCity && bulkNotificationForm.city.trim()) {
+        updated.city = bulkNotificationForm.city.trim();
+      }
+      if (bulkNotificationForm.changeCustomerName && bulkNotificationForm.customerName.trim()) {
+        updated.customerName = bulkNotificationForm.customerName.trim();
+      }
+      if (bulkNotificationForm.changeTimeAgo && bulkNotificationForm.timeAgo.trim()) {
+        updated.timeAgo = bulkNotificationForm.timeAgo.trim();
+      }
+      if (bulkNotificationForm.changeVerified) {
+        updated.verified = bulkNotificationForm.verified;
+      }
+      return updated;
+    });
+
+    savePurchaseNotifications(nextNotifs);
+    setShowBulkEditNotificationsModal(false);
+    setSelectedNotificationIds([]);
+  };
+
+  // Bulk actions for Customer Reviews
+  const handleSelectAllReviews = (checked: boolean, filteredReviewsList: CustomerReview[]) => {
+    if (checked) {
+      setSelectedReviewIds(filteredReviewsList.map(r => r.id));
+    } else {
+      setSelectedReviewIds([]);
+    }
+  };
+
+  const handleToggleReviewSelect = (id: string) => {
+    setSelectedReviewIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkDeleteReviews = () => {
+    if (selectedReviewIds.length === 0) return;
+    if (!confirm(`Delete ${selectedReviewIds.length} customer reviews?`)) return;
+    const nextReviews = customerReviews.filter(r => !selectedReviewIds.includes(r.id));
+    saveCustomerReviews(nextReviews);
+    setSelectedReviewIds([]);
+  };
+
+  const handleApplyBulkEditReviews = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedReviewIds.length === 0) return;
+
+    const nextReviews = customerReviews.map(r => {
+      if (!selectedReviewIds.includes(r.id)) return r;
+      const updated = { ...r };
+      if (bulkReviewForm.changeProduct && bulkReviewForm.productName.trim()) {
+        updated.productName = bulkReviewForm.productName.trim();
+        if (bulkReviewForm.productImage.trim()) {
+          updated.productImage = bulkReviewForm.productImage.trim();
+        }
+        if (bulkReviewForm.productId) {
+          updated.productId = Number(bulkReviewForm.productId);
+        }
+      }
+      if (bulkReviewForm.changeCity && bulkReviewForm.city.trim()) {
+        updated.city = bulkReviewForm.city.trim();
+      }
+      if (bulkReviewForm.changeCustomerName && bulkReviewForm.name.trim()) {
+        updated.name = bulkReviewForm.name.trim();
+      }
+      if (bulkReviewForm.changeRating) {
+        updated.rating = Number(bulkReviewForm.rating);
+      }
+      if (bulkReviewForm.changeVerified) {
+        updated.verified = bulkReviewForm.verified;
+      }
+      return updated;
+    });
+
+    saveCustomerReviews(nextReviews);
+    setShowBulkEditReviewsModal(false);
+    setSelectedReviewIds([]);
   };
 
   const resetReviewForm = () => {
@@ -4276,10 +4430,58 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
                   />
                 </div>
 
+                {selectedReviewIds.length > 0 && (
+                  <div style={{ backgroundColor: '#1a1a1a', color: '#ffffff', padding: '12px 20px', borderRadius: '8px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', flexWrap: 'wrap', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ fontWeight: '700', fontSize: '14px' }}>{selectedReviewIds.length} reviews selected</span>
+                      <span style={{ color: '#6d6d6d' }}>|</span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedReviewIds(filteredCustomerReviews.map(r => r.id))}
+                        style={{ background: 'none', border: 'none', color: '#ffffff', textDecoration: 'underline', fontSize: '13px', cursor: 'pointer', padding: 0 }}
+                      >
+                        Select All ({filteredCustomerReviews.length})
+                      </button>
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <button
+                        type="button"
+                        onClick={() => setShowBulkEditReviewsModal(true)}
+                        style={{ backgroundColor: '#ffffff', color: '#1a1a1a', border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                      >
+                        ✏️ Bulk Edit Selected
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleBulkDeleteReviews}
+                        style={{ backgroundColor: '#ffebe9', color: '#d72c0d', border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                      >
+                        🗑️ Bulk Delete ({selectedReviewIds.length})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedReviewIds([])}
+                        style={{ background: 'none', border: 'none', color: '#cccccc', fontSize: '16px', cursor: 'pointer', padding: '0 4px' }}
+                        title="Deselect all"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', overflow: 'hidden' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
                     <thead>
                       <tr style={{ backgroundColor: '#f9f9f9', borderBottom: '1px solid #e3e3e3', color: '#6d6d6d' }}>
+                        <th style={{ padding: '12px 16px', width: '40px', textAlign: 'center' }}>
+                          <input
+                            type="checkbox"
+                            checked={filteredCustomerReviews.length > 0 && selectedReviewIds.length === filteredCustomerReviews.length}
+                            onChange={(e) => handleSelectAllReviews(e.target.checked, filteredCustomerReviews)}
+                            style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                          />
+                        </th>
                         <th style={{ padding: '12px 16px' }}>Customer</th>
                         <th style={{ padding: '12px 16px' }}>Product</th>
                         <th style={{ padding: '12px 16px' }}>Review</th>
@@ -4291,37 +4493,48 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
                     <tbody>
                       {filteredCustomerReviews.length === 0 ? (
                         <tr>
-                          <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: '#8c8c8c' }}>No reviews found.</td>
+                          <td colSpan={7} style={{ padding: '24px', textAlign: 'center', color: '#8c8c8c' }}>No reviews found.</td>
                         </tr>
-                      ) : filteredCustomerReviews.map((review) => (
-                        <tr key={review.id} style={{ borderBottom: '1px solid #e3e3e3', verticalAlign: 'top' }}>
-                          <td style={{ padding: '12px 16px' }}>
-                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                              <img src={review.avatar} alt={review.name} style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', backgroundColor: '#f1f1f1' }} />
-                              <div>
-                                <div style={{ fontWeight: '700' }}>{review.name}</div>
-                                <div style={{ color: '#6d6d6d', fontSize: '12px' }}>{review.city} • {review.time}</div>
-                                {review.verified && <span style={{ display: 'inline-block', marginTop: '4px', color: '#2d7d46', fontSize: '11px', fontWeight: '700' }}>Verified</span>}
+                      ) : filteredCustomerReviews.map((review) => {
+                        const isSelected = selectedReviewIds.includes(review.id);
+                        return (
+                          <tr key={review.id} style={{ borderBottom: '1px solid #e3e3e3', verticalAlign: 'top', backgroundColor: isSelected ? '#f5f9ff' : 'transparent' }}>
+                            <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => handleToggleReviewSelect(review.id)}
+                                style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                              />
+                            </td>
+                            <td style={{ padding: '12px 16px' }}>
+                              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                <img src={review.avatar} alt={review.name} style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', backgroundColor: '#f1f1f1' }} />
+                                <div>
+                                  <div style={{ fontWeight: '700' }}>{review.name}</div>
+                                  <div style={{ color: '#6d6d6d', fontSize: '12px' }}>{review.city} • {review.time}</div>
+                                  {review.verified && <span style={{ display: 'inline-block', marginTop: '4px', color: '#2d7d46', fontSize: '11px', fontWeight: '700' }}>Verified</span>}
+                                </div>
                               </div>
-                            </div>
-                          </td>
-                          <td style={{ padding: '12px 16px' }}>
-                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', minWidth: '220px' }}>
-                              <img src={review.productImage} alt={review.productName} style={{ width: '46px', height: '46px', borderRadius: '6px', objectFit: 'cover', backgroundColor: '#f1f1f1' }} />
-                              <span style={{ fontWeight: '600' }}>{review.productName}</span>
-                            </div>
-                          </td>
-                          <td style={{ padding: '12px 16px', color: '#3d3d3d', maxWidth: '360px', lineHeight: 1.5 }}>{review.quote}</td>
-                          <td style={{ padding: '12px 16px', color: '#d59a3d', whiteSpace: 'nowrap' }}>{'★'.repeat(review.rating)}</td>
-                          <td style={{ padding: '12px 16px' }}>{review.helpful}</td>
-                          <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                              <button type="button" onClick={() => handleEditReview(review)} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '7px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>Edit</button>
-                              <button type="button" onClick={() => handleDeleteReview(review.id)} style={{ backgroundColor: '#ffebe9', color: '#d72c0d', border: '1px solid #ffd0cc', borderRadius: '6px', padding: '7px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>Delete</button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+                            <td style={{ padding: '12px 16px' }}>
+                              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', minWidth: '220px' }}>
+                                <img src={review.productImage} alt={review.productName} style={{ width: '46px', height: '46px', borderRadius: '6px', objectFit: 'cover', backgroundColor: '#f1f1f1' }} />
+                                <span style={{ fontWeight: '600' }}>{review.productName}</span>
+                              </div>
+                            </td>
+                            <td style={{ padding: '12px 16px', color: '#3d3d3d', maxWidth: '360px', lineHeight: 1.5 }}>{review.quote}</td>
+                            <td style={{ padding: '12px 16px', color: '#d59a3d', whiteSpace: 'nowrap' }}>{'★'.repeat(review.rating)}</td>
+                            <td style={{ padding: '12px 16px' }}>{review.helpful}</td>
+                            <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                <button type="button" onClick={() => handleEditReview(review)} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '7px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>Edit</button>
+                                <button type="button" onClick={() => handleDeleteReview(review.id)} style={{ backgroundColor: '#ffebe9', color: '#d72c0d', border: '1px solid #ffd0cc', borderRadius: '6px', padding: '7px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>Delete</button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -4486,10 +4699,58 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
                   </form>
                 )}
 
+                {selectedNotificationIds.length > 0 && (
+                  <div style={{ backgroundColor: '#1a1a1a', color: '#ffffff', padding: '12px 20px', borderRadius: '8px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', flexWrap: 'wrap', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ fontWeight: '700', fontSize: '14px' }}>{selectedNotificationIds.length} items selected</span>
+                      <span style={{ color: '#6d6d6d' }}>|</span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedNotificationIds(purchaseNotifications.map(n => n.id))}
+                        style={{ background: 'none', border: 'none', color: '#ffffff', textDecoration: 'underline', fontSize: '13px', cursor: 'pointer', padding: 0 }}
+                      >
+                        Select All ({purchaseNotifications.length})
+                      </button>
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <button
+                        type="button"
+                        onClick={() => setShowBulkEditNotificationsModal(true)}
+                        style={{ backgroundColor: '#ffffff', color: '#1a1a1a', border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                      >
+                        ✏️ Bulk Edit Selected
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleBulkDeleteNotifications}
+                        style={{ backgroundColor: '#ffebe9', color: '#d72c0d', border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                      >
+                        🗑️ Bulk Delete ({selectedNotificationIds.length})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedNotificationIds([])}
+                        style={{ background: 'none', border: 'none', color: '#cccccc', fontSize: '16px', cursor: 'pointer', padding: '0 4px' }}
+                        title="Deselect all"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '12px', overflow: 'hidden' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
                     <thead>
                       <tr style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #e3e3e3', color: '#6d6d6d', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        <th style={{ padding: '12px 16px', width: '40px', textAlign: 'center' }}>
+                          <input
+                            type="checkbox"
+                            checked={purchaseNotifications.length > 0 && selectedNotificationIds.length === purchaseNotifications.length}
+                            onChange={(e) => handleSelectAllNotifications(e.target.checked)}
+                            style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                          />
+                        </th>
                         <th style={{ padding: '12px 16px' }}>Product</th>
                         <th style={{ padding: '12px 16px' }}>Customer & Location</th>
                         <th style={{ padding: '12px 16px' }}>Time Ago</th>
@@ -4498,44 +4759,55 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
                       </tr>
                     </thead>
                     <tbody>
-                      {purchaseNotifications.map((notif) => (
-                        <tr key={notif.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                          <td style={{ padding: '12px 16px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                              <img src={notif.productImage} alt={notif.productName} style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover', border: '1px solid #eeeeee' }} />
-                              <strong style={{ fontSize: '13px', color: '#1a1a1a' }}>{notif.productName}</strong>
-                            </div>
-                          </td>
-                          <td style={{ padding: '12px 16px' }}>
-                            <span style={{ fontWeight: '600', color: '#1a1a1a' }}>{notif.customerName}</span>
-                            <span style={{ color: '#6d6d6d', marginLeft: '6px' }}>from {notif.city}</span>
-                          </td>
-                          <td style={{ padding: '12px 16px', color: '#6d6d6d' }}>{notif.timeAgo}</td>
-                          <td style={{ padding: '12px 16px' }}>
-                            <span style={{ fontSize: '11px', fontWeight: '600', padding: '3px 8px', borderRadius: '10px', backgroundColor: notif.verified !== false ? '#e2ece9' : '#f0f0f0', color: notif.verified !== false ? '#2d5c4d' : '#6d6d6d' }}>
-                              {notif.verified !== false ? '✓ Verified' : 'Standard'}
-                            </span>
-                          </td>
-                          <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                              <button
-                                type="button"
-                                onClick={() => handleEditNotification(notif)}
-                                style={{ backgroundColor: '#ffffff', color: '#1a1a1a', border: '1px solid #cccccc', borderRadius: '5px', padding: '5px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
-                              >
-                                Edit
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteNotification(notif.id)}
-                                style={{ backgroundColor: '#ffebe9', color: '#d72c0d', border: '1px solid #ffd0cc', borderRadius: '5px', padding: '5px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                      {purchaseNotifications.map((notif) => {
+                        const isSelected = selectedNotificationIds.includes(notif.id);
+                        return (
+                          <tr key={notif.id} style={{ borderBottom: '1px solid #f0f0f0', backgroundColor: isSelected ? '#f5f9ff' : 'transparent' }}>
+                            <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => handleToggleNotificationSelect(notif.id)}
+                                style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                              />
+                            </td>
+                            <td style={{ padding: '12px 16px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <img src={notif.productImage} alt={notif.productName} style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover', border: '1px solid #eeeeee' }} />
+                                <strong style={{ fontSize: '13px', color: '#1a1a1a' }}>{notif.productName}</strong>
+                              </div>
+                            </td>
+                            <td style={{ padding: '12px 16px' }}>
+                              <span style={{ fontWeight: '600', color: '#1a1a1a' }}>{notif.customerName}</span>
+                              <span style={{ color: '#6d6d6d', marginLeft: '6px' }}>from {notif.city}</span>
+                            </td>
+                            <td style={{ padding: '12px 16px', color: '#6d6d6d' }}>{notif.timeAgo}</td>
+                            <td style={{ padding: '12px 16px' }}>
+                              <span style={{ fontSize: '11px', fontWeight: '600', padding: '3px 8px', borderRadius: '10px', backgroundColor: notif.verified !== false ? '#e2ece9' : '#f0f0f0', color: notif.verified !== false ? '#2d5c4d' : '#6d6d6d' }}>
+                                {notif.verified !== false ? '✓ Verified' : 'Standard'}
+                              </span>
+                            </td>
+                            <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                <button
+                                  type="button"
+                                  onClick={() => handleEditNotification(notif)}
+                                  style={{ backgroundColor: '#ffffff', color: '#1a1a1a', border: '1px solid #cccccc', borderRadius: '5px', padding: '5px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteNotification(notif.id)}
+                                  style={{ backgroundColor: '#ffebe9', color: '#d72c0d', border: '1px solid #ffd0cc', borderRadius: '5px', padding: '5px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -8366,6 +8638,343 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
                     }}
                   >
                     {bulkUpdating ? 'Saving...' : 'Apply Changes'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Bulk Edit Notifications Modal */}
+        {showBulkEditNotificationsModal && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 3000,
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <div style={{
+              width: '480px', backgroundColor: '#ffffff', borderRadius: '12px',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column', overflow: 'hidden'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid #e3e3e3' }}>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#1a1a1a' }}>
+                  Bulk Edit {selectedNotificationIds.length} Notifications
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowBulkEditNotificationsModal(false)}
+                  style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#8c8c8c' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleApplyBulkEditNotifications} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
+                <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '12px', backgroundColor: '#fafafa' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', cursor: 'pointer', marginBottom: '6px' }}>
+                    <input
+                      type="checkbox"
+                      checked={bulkNotificationForm.changeProduct}
+                      onChange={e => setBulkNotificationForm(prev => ({ ...prev, changeProduct: e.target.checked }))}
+                    />
+                    Update Product for selected items
+                  </label>
+                  {bulkNotificationForm.changeProduct && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                      <select
+                        onChange={e => {
+                          const pId = e.target.value;
+                          if (!pId) return;
+                          const prod = products.find(p => String(p.id) === pId);
+                          if (prod) {
+                            setBulkNotificationForm(prev => ({
+                              ...prev,
+                              productName: prod.name,
+                              productImage: prod.image_url,
+                              productSlug: prod.slug
+                            }));
+                          }
+                        }}
+                        style={{ padding: '8px 12px', border: '1px solid #cccccc', borderRadius: '6px', backgroundColor: '#ffffff' }}
+                      >
+                        <option value="">-- Choose Store Product --</option>
+                        {products.filter(p => !p.deleted_at).map(p => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </select>
+                      <input
+                        value={bulkNotificationForm.productName}
+                        onChange={e => setBulkNotificationForm(prev => ({ ...prev, productName: e.target.value }))}
+                        placeholder="Product Name"
+                        style={{ padding: '8px 12px', border: '1px solid #cccccc', borderRadius: '6px' }}
+                      />
+                      <input
+                        value={bulkNotificationForm.productImage}
+                        onChange={e => setBulkNotificationForm(prev => ({ ...prev, productImage: e.target.value }))}
+                        placeholder="Product Image URL"
+                        style={{ padding: '8px 12px', border: '1px solid #cccccc', borderRadius: '6px' }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '12px', backgroundColor: '#fafafa' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={bulkNotificationForm.changeCity}
+                      onChange={e => setBulkNotificationForm(prev => ({ ...prev, changeCity: e.target.checked }))}
+                    />
+                    Update City / Location
+                  </label>
+                  {bulkNotificationForm.changeCity && (
+                    <input
+                      value={bulkNotificationForm.city}
+                      onChange={e => setBulkNotificationForm(prev => ({ ...prev, city: e.target.value }))}
+                      placeholder="e.g. Delhi, Mumbai, Jaipur"
+                      style={{ padding: '8px 12px', border: '1px solid #cccccc', borderRadius: '6px', width: '100%', marginTop: '8px' }}
+                    />
+                  )}
+                </div>
+
+                <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '12px', backgroundColor: '#fafafa' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={bulkNotificationForm.changeCustomerName}
+                      onChange={e => setBulkNotificationForm(prev => ({ ...prev, changeCustomerName: e.target.checked }))}
+                    />
+                    Update Customer Name
+                  </label>
+                  {bulkNotificationForm.changeCustomerName && (
+                    <input
+                      value={bulkNotificationForm.customerName}
+                      onChange={e => setBulkNotificationForm(prev => ({ ...prev, customerName: e.target.value }))}
+                      placeholder="e.g. Priya"
+                      style={{ padding: '8px 12px', border: '1px solid #cccccc', borderRadius: '6px', width: '100%', marginTop: '8px' }}
+                    />
+                  )}
+                </div>
+
+                <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '12px', backgroundColor: '#fafafa' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={bulkNotificationForm.changeTimeAgo}
+                      onChange={e => setBulkNotificationForm(prev => ({ ...prev, changeTimeAgo: e.target.checked }))}
+                    />
+                    Update Time Ago text
+                  </label>
+                  {bulkNotificationForm.changeTimeAgo && (
+                    <input
+                      value={bulkNotificationForm.timeAgo}
+                      onChange={e => setBulkNotificationForm(prev => ({ ...prev, timeAgo: e.target.value }))}
+                      placeholder="e.g. 5 minutes ago"
+                      style={{ padding: '8px 12px', border: '1px solid #cccccc', borderRadius: '6px', width: '100%', marginTop: '8px' }}
+                    />
+                  )}
+                </div>
+
+                <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '12px', backgroundColor: '#fafafa' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={bulkNotificationForm.changeVerified}
+                      onChange={e => setBulkNotificationForm(prev => ({ ...prev, changeVerified: e.target.checked }))}
+                    />
+                    Update Verified Purchase Status
+                  </label>
+                  {bulkNotificationForm.changeVerified && (
+                    <div style={{ marginTop: '8px' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
+                        <input
+                          type="checkbox"
+                          checked={bulkNotificationForm.verified}
+                          onChange={e => setBulkNotificationForm(prev => ({ ...prev, verified: e.target.checked }))}
+                        />
+                        Show Verified Badge (✓ Verified)
+                      </label>
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowBulkEditNotificationsModal(false)}
+                    style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #cccccc', backgroundColor: '#ffffff', cursor: 'pointer', fontWeight: '600' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', backgroundColor: '#1a1a1a', color: '#ffffff', cursor: 'pointer', fontWeight: '600' }}
+                  >
+                    Apply to {selectedNotificationIds.length} items
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Bulk Edit Reviews Modal */}
+        {showBulkEditReviewsModal && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 3000,
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <div style={{
+              width: '480px', backgroundColor: '#ffffff', borderRadius: '12px',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column', overflow: 'hidden'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid #e3e3e3' }}>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#1a1a1a' }}>
+                  Bulk Edit {selectedReviewIds.length} Reviews
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowBulkEditReviewsModal(false)}
+                  style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#8c8c8c' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleApplyBulkEditReviews} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
+                <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '12px', backgroundColor: '#fafafa' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', cursor: 'pointer', marginBottom: '6px' }}>
+                    <input
+                      type="checkbox"
+                      checked={bulkReviewForm.changeProduct}
+                      onChange={e => setBulkReviewForm(prev => ({ ...prev, changeProduct: e.target.checked }))}
+                    />
+                    Update Product for selected reviews
+                  </label>
+                  {bulkReviewForm.changeProduct && (
+                    <select
+                      onChange={e => {
+                        const pId = e.target.value;
+                        if (!pId) return;
+                        const prod = products.find(p => String(p.id) === pId);
+                        if (prod) {
+                          setBulkReviewForm(prev => ({
+                            ...prev,
+                            productId: String(prod.id),
+                            productName: prod.name,
+                            productImage: prod.image_url
+                          }));
+                        }
+                      }}
+                      style={{ padding: '8px 12px', border: '1px solid #cccccc', borderRadius: '6px', backgroundColor: '#ffffff', width: '100%', marginTop: '6px' }}
+                    >
+                      <option value="">-- Choose Store Product --</option>
+                      {products.filter(p => !p.deleted_at).map(p => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '12px', backgroundColor: '#fafafa' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={bulkReviewForm.changeCity}
+                      onChange={e => setBulkReviewForm(prev => ({ ...prev, changeCity: e.target.checked }))}
+                    />
+                    Update City / Location
+                  </label>
+                  {bulkReviewForm.changeCity && (
+                    <input
+                      value={bulkReviewForm.city}
+                      onChange={e => setBulkReviewForm(prev => ({ ...prev, city: e.target.value }))}
+                      placeholder="e.g. Delhi, Mumbai, Jaipur"
+                      style={{ padding: '8px 12px', border: '1px solid #cccccc', borderRadius: '6px', width: '100%', marginTop: '8px' }}
+                    />
+                  )}
+                </div>
+
+                <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '12px', backgroundColor: '#fafafa' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={bulkReviewForm.changeCustomerName}
+                      onChange={e => setBulkReviewForm(prev => ({ ...prev, changeCustomerName: e.target.checked }))}
+                    />
+                    Update Customer Name
+                  </label>
+                  {bulkReviewForm.changeCustomerName && (
+                    <input
+                      value={bulkReviewForm.name}
+                      onChange={e => setBulkReviewForm(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="e.g. Priya Mehra"
+                      style={{ padding: '8px 12px', border: '1px solid #cccccc', borderRadius: '6px', width: '100%', marginTop: '8px' }}
+                    />
+                  )}
+                </div>
+
+                <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '12px', backgroundColor: '#fafafa' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={bulkReviewForm.changeRating}
+                      onChange={e => setBulkReviewForm(prev => ({ ...prev, changeRating: e.target.checked }))}
+                    />
+                    Update Rating
+                  </label>
+                  {bulkReviewForm.changeRating && (
+                    <select
+                      value={bulkReviewForm.rating}
+                      onChange={e => setBulkReviewForm(prev => ({ ...prev, rating: Number(e.target.value) }))}
+                      style={{ padding: '8px 12px', border: '1px solid #cccccc', borderRadius: '6px', backgroundColor: '#ffffff', width: '100%', marginTop: '6px' }}
+                    >
+                      <option value="5">5 stars (★★★★★)</option>
+                      <option value="4">4 stars (★★★★☆)</option>
+                      <option value="3">3 stars (★★★☆☆)</option>
+                      <option value="2">2 stars (★★☆☆☆)</option>
+                      <option value="1">1 star (★☆☆☆☆)</option>
+                    </select>
+                  )}
+                </div>
+
+                <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '12px', backgroundColor: '#fafafa' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={bulkReviewForm.changeVerified}
+                      onChange={e => setBulkReviewForm(prev => ({ ...prev, changeVerified: e.target.checked }))}
+                    />
+                    Update Verified Purchase Status
+                  </label>
+                  {bulkReviewForm.changeVerified && (
+                    <div style={{ marginTop: '8px' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
+                        <input
+                          type="checkbox"
+                          checked={bulkReviewForm.verified}
+                          onChange={e => setBulkReviewForm(prev => ({ ...prev, verified: e.target.checked }))}
+                        />
+                        Show Verified Badge
+                      </label>
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowBulkEditReviewsModal(false)}
+                    style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #cccccc', backgroundColor: '#ffffff', cursor: 'pointer', fontWeight: '600' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', backgroundColor: '#1a1a1a', color: '#ffffff', cursor: 'pointer', fontWeight: '600' }}
+                  >
+                    Apply to {selectedReviewIds.length} reviews
                   </button>
                 </div>
               </form>
