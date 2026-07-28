@@ -63,6 +63,7 @@ export default async function Home() {
         <CustomerExperience
           promoBanner2Image={settings.contentPromoBanner2Image}
           promoBanner2Link={settings.contentPromoBanner2Link}
+          beforeAfterImage={settings.contentBeforeAfterImage}
         />
 
         {/* Brand Philosophy / Story Section */}
@@ -74,7 +75,7 @@ export default async function Home() {
               <div className={styles.imageGrid}>
                 <div className={styles.mainImageCol}>
                   <Image
-                    src="/images/category_banner_jewellery.png"
+                    src="https://www.deeraglow.shop/api/media/1785064718479-0bb1032e-87ee-4f63-9ce2-3ff86b0f0b59-ring-deera-glow.jpg"
                     alt="Premium fine jewellery selection"
                     width={450}
                     height={450}

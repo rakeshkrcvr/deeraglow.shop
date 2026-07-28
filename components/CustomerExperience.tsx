@@ -35,9 +35,11 @@ interface ReviewFormData {
 interface CustomerExperienceProps {
   promoBanner2Image?: string;
   promoBanner2Link?: string;
+  beforeAfterImage?: string;
 }
 
-export default function CustomerExperience({ promoBanner2Image, promoBanner2Link }: CustomerExperienceProps) {
+export default function CustomerExperience({ promoBanner2Image, promoBanner2Link, beforeAfterImage }: CustomerExperienceProps) {
+  const beforeAfterImg = beforeAfterImage || "https://www.deeraglow.shop/api/media/1785230756833-5ea86cd4-49f2-4af1-bdbe-81ebcc3460cc-afterbefore.png";
   // Modal & Slide States
   const [isReviewModalOpen, setIsReviewModalOpen] = useState<boolean>(false);
   const [isPhotoGalleryOpen, setIsPhotoGalleryOpen] = useState<boolean>(false);
@@ -561,7 +563,7 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
                   {/* Before (desaturated) */}
                   <div className={styles.beforeImageContainer}>
                     <img
-                      src="/images/category_banner_jewellery.png"
+                      src={beforeAfterImg}
                       alt="Dull Ordinary Look"
                       className={styles.sliderImg}
                       style={{ filter: 'grayscale(100%) contrast(90%) brightness(80%)' }}
@@ -575,7 +577,7 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
                     style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
                   >
                     <img
-                      src="/images/category_banner_jewellery.png"
+                      src={beforeAfterImg}
                       alt="Vibrant Deera Glow Look"
                       className={styles.sliderImg}
                     />

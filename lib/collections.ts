@@ -122,7 +122,7 @@ export async function getSliderCollections(): Promise<SliderCollectionItem[]> {
       name: 'Aura Sterling',
       slug: 'aura-sterling',
       description: 'Radiant 925 sterling silver statement pieces.',
-      image_url: '/images/category_banner_jewellery.png',
+      image_url: '/images/category_banner_jewelry.png',
       show_in_slider: true,
       slider_subtitle: 'Luminous Elegance for Everyday',
       products: bracelets.length >= 3 ? bracelets.slice(0, 3) : allProducts.slice(2, 5)
@@ -157,7 +157,7 @@ export async function getAllCollections(): Promise<CollectionItem[]> {
           } else if (lowerName.includes('gold') || lowerName.includes('royal')) {
             imageUrl = '/images/hero_slide_2.png';
           } else {
-            imageUrl = '/images/category_banner_jewellery.png';
+            imageUrl = '/images/category_banner_jewelry.png';
           }
         }
         return {

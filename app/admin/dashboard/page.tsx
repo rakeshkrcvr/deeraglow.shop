@@ -374,13 +374,14 @@ export default function AdminDashboard() {
   const [promoBannerLink, setPromoBannerLink] = useState('/category/necklaces');
   const [promoBanner2Image, setPromoBanner2Image] = useState('/images/jewellery_category_banner.png');
   const [promoBanner2Link, setPromoBanner2Link] = useState('/category/earrings');
+  const [beforeAfterImage, setBeforeAfterImage] = useState('https://www.deeraglow.shop/api/media/1785230756833-5ea86cd4-49f2-4af1-bdbe-81ebcc3460cc-afterbefore.png');
 
   // Media Files States
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [loadingMedia, setLoadingMedia] = useState(true);
   const [mediaError, setMediaError] = useState('');
   const [showMediaModal, setShowMediaModal] = useState(false);
-  const [mediaSelectorMode, setMediaSelectorMode] = useState<'product' | 'hero' | 'hero-mobile' | 'general' | 'collection' | 'category' | 'slider-collection' | 'promo-banner' | 'promo-banner-2'>('product');
+  const [mediaSelectorMode, setMediaSelectorMode] = useState<'product' | 'hero' | 'hero-mobile' | 'general' | 'collection' | 'category' | 'slider-collection' | 'promo-banner' | 'promo-banner-2' | 'before-after'>('product');
   const [heroMediaTargetIndex, setHeroMediaTargetIndex] = useState<number | null>(null);
   const [heroMediaTargetType, setHeroMediaTargetType] = useState<'desktop' | 'mobile'>('desktop');
   const [editingHeroSlideIndex, setEditingHeroSlideIndex] = useState<number | null>(0);
@@ -1269,6 +1270,7 @@ export default function AdminDashboard() {
         setPromoBannerLink(data.contentPromoBannerLink || '/category/necklaces');
         setPromoBanner2Image(data.contentPromoBanner2Image || '/images/jewellery_category_banner.png');
         setPromoBanner2Link(data.contentPromoBanner2Link || '/category/earrings');
+        setBeforeAfterImage(data.contentBeforeAfterImage || 'https://www.deeraglow.shop/api/media/1785230756833-5ea86cd4-49f2-4af1-bdbe-81ebcc3460cc-afterbefore.png');
         setHeroSliderSlides(normalizeHeroSlides(data.heroSliderImages));
         if (data.heroAnnouncementItems) {
           try {
@@ -1621,7 +1623,8 @@ export default function AdminDashboard() {
           contentPromoBannerImage: promoBannerImage,
           contentPromoBannerLink: promoBannerLink,
           contentPromoBanner2Image: promoBanner2Image,
-          contentPromoBanner2Link: promoBanner2Link
+          contentPromoBanner2Link: promoBanner2Link,
+          contentBeforeAfterImage: beforeAfterImage
         })
       });
 
@@ -5823,11 +5826,47 @@ export default function AdminDashboard() {
                   )}
                 </div>
 
+                {/* Before vs After Comparison Image */}
+                <div style={{ padding: '16px', border: '1px solid #e3e3e3', borderRadius: '8px' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600' }}>Before vs After Comparison Image (Center Slider Image)</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Comparison Image URL</label>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <input
+                        value={beforeAfterImage}
+                        onChange={e => setBeforeAfterImage(e.target.value)}
+                        placeholder="Image URL or browse"
+                        style={{ flexGrow: 1, padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setModalSearchQuery('');
+                          setMediaSelectorMode('before-after');
+                          setShowMediaModal(true);
+                        }}
+                        style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                      >
+                        Browse Media
+                      </button>
+                    </div>
+                  </div>
+                  {beforeAfterImage && (
+                    <div style={{ marginTop: '12px' }}>
+                      <img
+                        src={beforeAfterImage}
+                        alt="Before vs After Preview"
+                        style={{ width: '100%', maxHeight: '180px', borderRadius: '6px', objectFit: 'contain', backgroundColor: '#f9f9f9', padding: '8px', border: '1px solid #eee' }}
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <button
                   type="submit"
                   style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', alignSelf: 'flex-start' }}
                 >
-                  Save Promo Banners
+                  Save Promo Banners & Comparison Image
                 </button>
               </form>
             </div>
@@ -8319,6 +8358,8 @@ export default function AdminDashboard() {
                             setPromoBannerImage(data.url);
                           } else if (mediaSelectorMode === 'promo-banner-2') {
                             setPromoBanner2Image(data.url);
+                          } else if (mediaSelectorMode === 'before-after') {
+                            setBeforeAfterImage(data.url);
                           }
                           await fetchMediaFiles();
                           setShowMediaModal(false);
@@ -8390,6 +8431,8 @@ export default function AdminDashboard() {
                           setPromoBannerImage(file.url);
                         } else if (mediaSelectorMode === 'promo-banner-2') {
                           setPromoBanner2Image(file.url);
+                        } else if (mediaSelectorMode === 'before-after') {
+                          setBeforeAfterImage(file.url);
                         }
                         setShowMediaModal(false);
                       }}
