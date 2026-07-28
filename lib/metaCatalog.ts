@@ -49,20 +49,20 @@ export function formatProductsForMeta(products: Product[], baseUrl: string): Met
     const pSlug = p.slug || `product-${p.id}`;
     const productLink = getAbsoluteUrl(`/product/${pSlug}`, baseUrl);
     const imageLink = getAbsoluteUrl(p.image_url || '/images/earrings_category.png', baseUrl);
-    const category = p.collection || 'Jewelry';
+    const category = p.collection || 'jewellery';
 
     return {
       id: `DG-${p.id}`,
       title: p.name,
-      description: p.description || `${p.name} - Premium artificial jewelry by Deera Glow.`,
+      description: p.description || `${p.name} - Premium artificial jewellery by Deera Glow.`,
       availability: 'in stock',
       condition: 'new',
       price: `${p.price}.00 INR`,
       link: productLink,
       image_link: imageLink,
       brand: 'Deera Glow',
-      google_product_category: 'Apparel & Accessories > Jewelry',
-      fb_product_category: 'Jewelry',
+      google_product_category: 'Apparel & Accessories > jewellery',
+      fb_product_category: 'jewellery',
       custom_label_0: category,
     };
   });

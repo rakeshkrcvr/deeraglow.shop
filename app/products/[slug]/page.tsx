@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: PageProps) {
   if (!product) return { title: 'Product Not Found | Deera Glow' };
 
   return {
-    title: `${product.name} | Deera Glow Premium Jewelry`,
+    title: `${product.name} | Deera Glow Premium jewellery`,
     description: product.description,
   };
 }
@@ -35,7 +35,7 @@ export default async function ProductPage({ params }: PageProps) {
   let product = products.find(p => p.slug === slug || String(p.id) === slug || p.slug === `product-${slug}`);
 
   if (!product) {
-    product = products.find(p => 
+    product = products.find(p =>
       p.name.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-') === slug.toLowerCase()
     );
   }

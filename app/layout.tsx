@@ -4,9 +4,9 @@ import { getStoreSettings } from "@/lib/settings";
 import "./globals.css";
 
 export const metadata: Metadata = {
- title: "Deera Glow | Premium Artificial Jewelry Online in India",
-description: "Discover the latest collection of premium artificial jewelry at Deera Glow. Shop stylish earrings, necklaces, rings, bracelets, bangles, and fashion accessories for every occasion. Affordable prices, secure payments, and fast delivery across India.",
-metadataBase: new URL("https://deeraglow.shop"),
+  title: "Deera Glow | Premium Artificial jewellery Online in India",
+  description: "Discover the latest collection of premium artificial jewellery at Deera Glow. Shop stylish earrings, necklaces, rings, bracelets, bangles, and fashion accessories for every occasion. Affordable prices, secure payments, and fast delivery across India.",
+  metadataBase: new URL("https://deeraglow.shop"),
 };
 
 import RecentSalesPopup from "@/components/RecentSalesPopup";

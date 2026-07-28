@@ -44,13 +44,13 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
   const [activeReviewIndex, setActiveReviewIndex] = useState<number>(0);
   const [activeMomentIndex, setActiveMomentIndex] = useState<number>(0);
   const [sliderPosition, setSliderPosition] = useState<number>(50);
-  
+
   // Data States
   const [reviewCards, setReviewCards] = useState<CustomerReview[]>(defaultCustomerReviews);
   const [customerMoments, setCustomerMoments] = useState<CustomerMoment[]>(defaultCustomerMoments);
   const [customerVideos, setCustomerVideos] = useState<CustomerVideo[]>(defaultCustomerVideos);
   const [unmutedVideoIds, setUnmutedVideoIds] = useState<Record<string, boolean>>({});
-  
+
   // Form State
   const [reviewForm, setReviewForm] = useState<ReviewFormData>({
     name: '',
@@ -217,7 +217,7 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
       {/* Section: Testimonials & Reviews */}
       <section className={styles.testimonialsSection}>
         <div className="container">
-          
+
           <div className={styles.customerLoveHeader}>
             <div className={styles.customerLoveScore}>
               <span>★★★★★</span>
@@ -337,7 +337,7 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
                     <textarea
                       value={reviewForm.quote}
                       onChange={(event) => handleReviewFormChange('quote', event.target.value)}
-                      placeholder="Tell us what you loved about the jewelry..."
+                      placeholder="Tell us what you loved about the jewellery..."
                       required
                       rows={5}
                     />
@@ -490,7 +490,7 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
       </section>
 
       {/* Section: Promo Image Banner 2 */}
-      <ImageBanner 
+      <ImageBanner
         imageUrl={promoBanner2Image}
         linkHref={promoBanner2Link}
       />
@@ -498,7 +498,7 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
       {/* Section: Before vs After Deera Glow */}
       <section className={styles.comparisonSection}>
         <div className="container">
-          
+
           <div className={styles.storyHeader}>
             <span className={styles.storySubtitle}>EXPERIENCE THE DIFFERENCE</span>
             <h2 className={styles.storyTitle}>Before vs After Deera Glow</h2>
@@ -508,7 +508,7 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
 
           <div className={styles.comparisonContainer}>
             <div className={styles.comparisonSliderGrid}>
-              
+
               {/* Left Side: Before Text list */}
               <div className={styles.beforeTextCol}>
                 <div className={styles.columnHeader}>
@@ -535,7 +535,7 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
                     <span className={styles.featureEmoji}>💫</span>
                     <div>
                       <strong>Fading & Tarnishing</strong>
-                      <p>Cheap jewelry tarnishes after a few wears</p>
+                      <p>Cheap jewellery tarnishes after a few wears</p>
                     </div>
                   </li>
                   <li>
@@ -560,31 +560,31 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
                 <div className={styles.imageSlider}>
                   {/* Before (desaturated) */}
                   <div className={styles.beforeImageContainer}>
-                    <img 
-                      src="/images/category_banner_jewelry.png" 
-                      alt="Dull Ordinary Look" 
-                      className={styles.sliderImg} 
+                    <img
+                      src="/images/category_banner_jewellery.png"
+                      alt="Dull Ordinary Look"
+                      className={styles.sliderImg}
                       style={{ filter: 'grayscale(100%) contrast(90%) brightness(80%)' }}
                     />
                     <div className={styles.imageLabelLeft}>PLAIN LOOK</div>
                   </div>
-                  
+
                   {/* After (warm glow) */}
-                  <div 
-                    className={styles.afterImageContainer} 
+                  <div
+                    className={styles.afterImageContainer}
                     style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
                   >
-                    <img 
-                      src="/images/category_banner_jewelry.png" 
-                      alt="Vibrant Deera Glow Look" 
-                      className={styles.sliderImg} 
+                    <img
+                      src="/images/category_banner_jewellery.png"
+                      alt="Vibrant Deera Glow Look"
+                      className={styles.sliderImg}
                     />
                     <div className={styles.imageLabelRight}>DEERA GLOW</div>
                   </div>
 
                   {/* Drag Line divider */}
-                  <div 
-                    className={styles.sliderLine} 
+                  <div
+                    className={styles.sliderLine}
                     style={{ left: `${sliderPosition}%` }}
                   >
                     <div className={styles.sliderHandle}>
@@ -593,11 +593,11 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
                   </div>
 
                   {/* Range input Overlay */}
-                  <input 
-                    type="range" 
-                    min="0" 
-                    max="100" 
-                    value={sliderPosition} 
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={sliderPosition}
                     onChange={(e) => setSliderPosition(parseInt(e.target.value, 10))}
                     className={styles.rangeInput}
                     aria-label="Image comparison slider"
@@ -702,23 +702,23 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
       {/* Section: Instagram Video Grid */}
       <section id="instagram" className={styles.instagramSection}>
         <div className="container">
-          
+
           <div className={styles.storyHeader}>
             <span className={styles.storySubtitle}>#DEERAGLOW ON INSTAGRAM</span>
             <h2 className={styles.storyTitle}>Capture the Glow</h2>
             <div className={styles.storyLine}></div>
           </div>
-          
+
           <div className={styles.instagramGrid}>
             {customerVideos.map((video) => (
               <div key={video.id} className={styles.instagramCard}>
-                <video 
+                <video
                   src={video.videoUrl}
                   poster={video.thumbnail}
-                  loop 
+                  loop
                   muted={!unmutedVideoIds[`instagram-${video.id}`]}
                   autoPlay
-                  playsInline 
+                  playsInline
                   className={styles.instagramVideo}
                 />
                 <button

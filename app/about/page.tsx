@@ -32,14 +32,14 @@ export default function AboutPage() {
             fontWeight: '300'
           }}>
             <p style={{ marginBottom: '24px' }}>
-              Welcome to <strong>Deera Glow</strong>. Our journey began with a passion for creating elegant and affordable artificial jewelry that helps every woman express her unique style. From timeless classics to modern trends, each piece in our collection is carefully selected to bring confidence, beauty, and sophistication to your everyday look.
+              Welcome to <strong>Deera Glow</strong>. Our journey began with a passion for creating elegant and affordable artificial jewellery that helps every woman express her unique style. From timeless classics to modern trends, each piece in our collection is carefully selected to bring confidence, beauty, and sophistication to your everyday look.
 
-              At Deera Glow, we believe jewelry is more than just an accessory—it's a reflection of your personality. Whether you're dressing up for a wedding, festival, party, or adding a touch of elegance to your daily outfit, our thoughtfully curated collection is designed to make every moment shine.
+              At Deera Glow, we believe jewellery is more than just an accessory—it's a reflection of your personality. Whether you're dressing up for a wedding, festival, party, or adding a touch of elegance to your daily outfit, our thoughtfully curated collection is designed to make every moment shine.
 
             </p>
 
             <p style={{ marginBottom: '24px' }}>
-              Unlike mass-produced fashion accessories, every piece at <strong>Deera Glow</strong> is carefully selected for its quality, style, and craftsmanship. Our collection features premium artificial jewelry made with high-quality materials, elegant finishes, and trend-inspired designs, ensuring every piece adds beauty, confidence, and timeless charm to your look.
+              Unlike mass-produced fashion accessories, every piece at <strong>Deera Glow</strong> is carefully selected for its quality, style, and craftsmanship. Our collection features premium artificial jewellery made with high-quality materials, elegant finishes, and trend-inspired designs, ensuring every piece adds beauty, confidence, and timeless charm to your look.
             </p>
 
             <blockquote style={{
@@ -50,7 +50,7 @@ export default function AboutPage() {
               color: '#ffffff',
               fontSize: '18px'
             }}>
-              &quot;We believe that jewelry is not just an adornment, but a silent amplifier of your confidence, beauty, and quiet elegance.&quot;
+              &quot;We believe that jewellery is not just an adornment, but a silent amplifier of your confidence, beauty, and quiet elegance.&quot;
             </blockquote>
 
             <h3 style={{ color: '#ffffff', fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: '400', marginTop: '40px', marginBottom: '16px' }}>

@@ -48,9 +48,9 @@ export default async function Home() {
         <ShopByCollection categoriesJson={settings.contentCategoryGrid} />
 
         {/* Promo Image Banner Section */}
-        <ImageBanner 
-          imageUrl={settings.contentPromoBannerImage} 
-          linkHref={settings.contentPromoBannerLink} 
+        <ImageBanner
+          imageUrl={settings.contentPromoBannerImage}
+          linkHref={settings.contentPromoBannerLink}
         />
 
         {/* Curated Collection Slider (NEW LAUNCH) */}
@@ -60,7 +60,7 @@ export default async function Home() {
         <AuraCollection products={products} />
 
         {/* Customer Reviews, Galleries, Slider and Badges */}
-        <CustomerExperience 
+        <CustomerExperience
           promoBanner2Image={settings.contentPromoBanner2Image}
           promoBanner2Link={settings.contentPromoBanner2Link}
         />
@@ -68,24 +68,24 @@ export default async function Home() {
         {/* Brand Philosophy / Story Section */}
         <section id="story" className={styles.storySection}>
           <div className={`container ${styles.storyContainer}`}>
-            
+
             {/* Story Image Column */}
             <div className={styles.storyImageWrapper}>
               <div className={styles.imageGrid}>
                 <div className={styles.mainImageCol}>
-                  <Image 
-                    src="/images/category_banner_jewelry.png" 
-                    alt="Premium fine jewelry selection" 
-                    width={450} 
+                  <Image
+                    src="/images/category_banner_jewellery.png"
+                    alt="Premium fine jewellery selection"
+                    width={450}
                     height={450}
                     className={styles.storyImg1}
                   />
                 </div>
                 <div className={styles.subImageCol}>
-                  <Image 
-                    src="/images/earrings_category.png" 
-                    alt="Elegant gold plated earrings close-up" 
-                    width={220} 
+                  <Image
+                    src="/images/earrings_category.png"
+                    alt="Elegant gold plated earrings close-up"
+                    width={220}
                     height={220}
                     className={styles.storyImg2}
                   />
@@ -99,9 +99,9 @@ export default async function Home() {
               <span className={styles.storyTagline}>OUR PHILOSOPHY</span>
               <h2 className={styles.storyTitle}>Crafted for Elegance</h2>
               <div className={styles.storyDivider}></div>
-              
+
               <p className={styles.storyParagraph}>
-                At Deera Glow, we believe that jewelry is more than an accessory—it is an expression of your inner light. Each piece is meticulously designed and created, carrying the promise of warmth, confidence, and timeless elegance for every moment.
+                At Deera Glow, we believe that jewellery is more than an accessory—it is an expression of your inner light. Each piece is meticulously designed and created, carrying the promise of warmth, confidence, and timeless elegance for every moment.
               </p>
 
               <div className={styles.storyPoints}>
@@ -109,7 +109,7 @@ export default async function Home() {
                   <div className={styles.pointNumber}>01</div>
                   <div className={styles.pointText}>
                     <h3>Premium Materials</h3>
-                    <p>We use 925 sterling silver, 18k gold plating, and AAA+ cubic zirconia that mimic the luxury of fine jewelry.</p>
+                    <p>We use 925 sterling silver, 18k gold plating, and AAA+ cubic zirconia that mimic the luxury of fine jewellery.</p>
                   </div>
                 </div>
 

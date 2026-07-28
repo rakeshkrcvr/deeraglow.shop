@@ -13,7 +13,7 @@ export interface Product {
   description: string;
   image_url: string;
   features: string;
-  
+
   // Customizable template fields
   tagline?: string;
   fragrances?: string;
@@ -51,7 +51,7 @@ export async function getProducts(options: { includeDeleted?: boolean } = {}): P
         acc_burn_time TEXT DEFAULT 'Tarnish-free polish lifetime durability',
         acc_ingredients TEXT DEFAULT '925 Sterling Silver base, 18k gold plating, AAA+ cubic zirconia, skin-friendly and completely lead and nickel free. Crafted to ensure lifetime durability and shine.',
         acc_instructions TEXT DEFAULT 'Avoid direct contact with water, sweat, perfumes, or harsh chemicals. Clean gently with a dry microfibre cloth and store in an airtight zip-lock bag when not in use.',
-        acc_shipping TEXT DEFAULT 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewelry is completely unused and in its original packaging.',
+        acc_shipping TEXT DEFAULT 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewellery is completely unused and in its original packaging.',
         images TEXT DEFAULT '',
         deleted_at TIMESTAMPTZ DEFAULT NULL
       )
@@ -60,7 +60,7 @@ export async function getProducts(options: { includeDeleted?: boolean } = {}): P
     // 2. Safely run schema migrations
     try {
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS slug VARCHAR(255) UNIQUE`;
-    } catch {}
+    } catch { }
 
     const migrations = ['tagline', 'fragrances', 'dimensions', 'weight', 'burn_hours', 'acc_burn_time', 'acc_ingredients', 'acc_instructions', 'acc_shipping', 'images', 'deleted_at'];
     for (const m of migrations) {
@@ -73,7 +73,7 @@ export async function getProducts(options: { includeDeleted?: boolean } = {}): P
         if (m === 'acc_burn_time') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS acc_burn_time TEXT DEFAULT 'Tarnish-free polish lifetime durability'`;
         if (m === 'acc_ingredients') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS acc_ingredients TEXT DEFAULT '925 Sterling Silver base, 18k gold plating, AAA+ cubic zirconia, skin-friendly and completely lead and nickel free. Crafted to ensure lifetime durability and shine.'`;
         if (m === 'acc_instructions') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS acc_instructions TEXT DEFAULT 'Avoid direct contact with water, sweat, perfumes, or harsh chemicals. Clean gently with a dry microfibre cloth and store in an airtight zip-lock bag when not in use.'`;
-        if (m === 'acc_shipping') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS acc_shipping TEXT DEFAULT 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewelry is completely unused and in its original packaging.'`;
+        if (m === 'acc_shipping') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS acc_shipping TEXT DEFAULT 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewellery is completely unused and in its original packaging.'`;
         if (m === 'images') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS images TEXT DEFAULT ''`;
         if (m === 'deleted_at') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ DEFAULT NULL`;
       } catch (e) {
@@ -293,9 +293,9 @@ export async function getProducts(options: { includeDeleted?: boolean } = {}): P
           }
         }
       } else if (dbProdByName) {
-        const isStale = 
-          dbProdByName.image_url !== prod.image_url || 
-          dbProdByName.slug !== prod.slug || 
+        const isStale =
+          dbProdByName.image_url !== prod.image_url ||
+          dbProdByName.slug !== prod.slug ||
           (dbProdByName.tagline && dbProdByName.tagline.includes('wax')) ||
           (dbProdByName.acc_ingredients && dbProdByName.acc_ingredients.includes('wax'));
 
@@ -315,7 +315,7 @@ export async function getProducts(options: { includeDeleted?: boolean } = {}): P
                 acc_burn_time = 'Tarnish-free polish lifetime durability',
                 acc_ingredients = '925 Sterling Silver base, 18k gold plating, AAA+ cubic zirconia, skin-friendly and completely lead and nickel free. Crafted to ensure lifetime durability and shine.',
                 acc_instructions = 'Avoid direct contact with water, sweat, perfumes, or harsh chemicals. Clean gently with a dry microfibre cloth and store in an airtight zip-lock bag when not in use.',
-                acc_shipping = 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewelry is completely unused and in its original packaging.'
+                acc_shipping = 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewellery is completely unused and in its original packaging.'
               WHERE id = ${dbProdByName.id}
             `;
             needsRequery = true;
@@ -335,7 +335,7 @@ export async function getProducts(options: { includeDeleted?: boolean } = {}): P
           acc_ingredients = REPLACE(REPLACE(acc_ingredients, 'Handcrafted', 'Exquisite'), 'handcrafted', 'exquisite')
         WHERE description ILIKE '%handcrafted%' OR features ILIKE '%handcrafted%' OR acc_ingredients ILIKE '%handcrafted%'
       `;
-    } catch (e) {}
+    } catch (e) { }
 
     const sanitizedProducts = allProducts.map(p => ({
       ...p,

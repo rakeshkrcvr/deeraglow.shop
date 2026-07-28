@@ -28,9 +28,9 @@ export async function GET() {
 
     // Check if we need to migrate/seed
     const existingCollections = await sql`SELECT name FROM collections` as unknown as CollectionNameRow[];
-    const hasCandleCollections = existingCollections.some(c => 
-      c.name.toLowerCase().includes('candle') || 
-      c.name.toLowerCase().includes('scent') || 
+    const hasCandleCollections = existingCollections.some(c =>
+      c.name.toLowerCase().includes('candle') ||
+      c.name.toLowerCase().includes('scent') ||
       c.name.toLowerCase().includes('wax')
     );
 
@@ -73,23 +73,23 @@ export async function GET() {
 
         // 5. Accessories & Materials
         { name: 'Charms', desc: 'Dainty clip-on charms for chains, bracelets, and bangles.', slug: 'charms' },
-        { name: '925 Sterling Silver', desc: 'Anti-tarnish, hypoallergenic premium silver jewelry.', slug: 'sterling-silver' },
+        { name: '925 Sterling Silver', desc: 'Anti-tarnish, hypoallergenic premium silver jewellery.', slug: 'sterling-silver' },
         { name: '18k Gold Plated', desc: 'Luxurious warm gold finishes over sterling silver and brass.', slug: 'gold-plated' },
-        { name: 'Rose Gold Jewelry', desc: 'Romantic and modern pink-gold plated accessories.', slug: 'rose-gold' },
-        { name: 'Gemstone Jewelry', desc: 'Adorned with high-quality emeralds, rubies, and premium crystals.', slug: 'gemstone-jewelry' },
+        { name: 'Rose Gold jewellery', desc: 'Romantic and modern pink-gold plated accessories.', slug: 'rose-gold' },
+        { name: 'Gemstone jewellery', desc: 'Adorned with high-quality emeralds, rubies, and premium crystals.', slug: 'gemstone-jewellery' },
 
         // 6. Occasions & Gifting
-        { name: 'Birthday Gifts', desc: 'Make their birthday memorable with personalized jewelry gifts.', slug: 'birthday-gifts' },
+        { name: 'Birthday Gifts', desc: 'Make their birthday memorable with personalized jewellery gifts.', slug: 'birthday-gifts' },
         { name: 'Anniversary Gifts', desc: 'Celebrate beautiful milestones with timeless rings and necklaces.', slug: 'anniversary-gifts' },
-        { name: 'Wedding Jewelry', desc: 'Bridal and bridesmaid statement collections that shine.', slug: 'wedding-jewelry' },
-        { name: 'Festive Collection', desc: 'Shining jewelry perfect for Diwali, Eid, and family celebrations.', slug: 'festive-collection' },
+        { name: 'Wedding jewellery', desc: 'Bridal and bridesmaid statement collections that shine.', slug: 'wedding-jewellery' },
+        { name: 'Festive Collection', desc: 'Shining jewellery perfect for Diwali, Eid, and family celebrations.', slug: 'festive-collection' },
         { name: 'Daily Wear', desc: 'Hypoallergenic, lightweight pieces comfortable for long daily hours.', slug: 'daily-wear' },
         { name: 'Office Wear', desc: 'Sleek, professional, and subtle accessories for the workplace.', slug: 'office-wear' },
-        { name: 'Party Wear', desc: 'Bold, eye-catching jewelry designed to steal the spotlight.', slug: 'party-wear' },
+        { name: 'Party Wear', desc: 'Bold, eye-catching jewellery designed to steal the spotlight.', slug: 'party-wear' },
         { name: 'Valentine\'s Day', desc: 'Romantic heart pendants and promise rings for your loved one.', slug: 'valentines-day' },
 
         // 7. Curations
-        { name: 'Best Sellers', desc: 'The most popular and loved jewelry pieces chosen by our customers.', slug: 'best-sellers' },
+        { name: 'Best Sellers', desc: 'The most popular and loved jewellery pieces chosen by our customers.', slug: 'best-sellers' },
         { name: 'New Arrivals', desc: 'Freshly launched trend-setting designs for this season.', slug: 'new-arrivals' },
         { name: 'Gift Sets', desc: 'Beautifully boxed matching necklace and earring combinations.', slug: 'gift-sets' }
       ];

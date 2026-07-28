@@ -321,7 +321,7 @@ export default function AdminDashboard() {
   const [accBurnTime, setAccBurnTime] = useState('Tarnish-free polish lifetime durability');
   const [accIngredients, setAccIngredients] = useState("925 Sterling Silver base, 18k gold plating, AAA+ cubic zirconia, skin-friendly and completely lead and nickel free. Crafted to ensure lifetime durability and shine.");
   const [accInstructions, setAccInstructions] = useState("Avoid direct contact with water, sweat, perfumes, or harsh chemicals. Clean gently with a dry microfibre cloth and store in an airtight zip-lock bag when not in use.");
-  const [accShipping, setAccShipping] = useState("Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewelry is completely unused and in its original packaging.");
+  const [accShipping, setAccShipping] = useState("Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewellery is completely unused and in its original packaging.");
 
   // New Draft Form States
   const [draftCustomer, setDraftCustomer] = useState('');
@@ -370,9 +370,9 @@ export default function AdminDashboard() {
   ]);
   const [editingCategoryIndex, setEditingCategoryIndex] = useState<number | null>(null);
   const [editingSliderCollectionId, setEditingSliderCollectionId] = useState<number | null>(null);
-  const [promoBannerImage, setPromoBannerImage] = useState('/images/category_banner_jewelry.png');
+  const [promoBannerImage, setPromoBannerImage] = useState('/images/category_banner_jewellery.png');
   const [promoBannerLink, setPromoBannerLink] = useState('/category/necklaces');
-  const [promoBanner2Image, setPromoBanner2Image] = useState('/images/jewelry_category_banner.png');
+  const [promoBanner2Image, setPromoBanner2Image] = useState('/images/jewellery_category_banner.png');
   const [promoBanner2Link, setPromoBanner2Link] = useState('/category/earrings');
 
   // Media Files States
@@ -436,8 +436,8 @@ export default function AdminDashboard() {
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [heroEyebrow, setHeroEyebrow] = useState('DEERA GLOW');
   const [heroTitle, setHeroTitle] = useState('Exquisite');
-  const [heroItalicTitle, setHeroItalicTitle] = useState('Fine Jewelry');
-  const [heroDescription, setHeroDescription] = useState('Premium artificial jewelry crafted for everyday elegance and special moments. Anti-tarnish, skin-friendly, and designed to shine.');
+  const [heroItalicTitle, setHeroItalicTitle] = useState('Fine jewellery');
+  const [heroDescription, setHeroDescription] = useState('Premium artificial jewellery crafted for everyday elegance and special moments. Anti-tarnish, skin-friendly, and designed to shine.');
   const [heroPrimaryButtonText, setHeroPrimaryButtonText] = useState('Shop Collections');
   const [heroPrimaryButtonHref, setHeroPrimaryButtonHref] = useState('#products');
   const [heroSecondaryButtonText, setHeroSecondaryButtonText] = useState('Our Philosophy');
@@ -447,7 +447,7 @@ export default function AdminDashboard() {
   const [announcementItems, setAnnouncementItems] = useState<AnnouncementItem[]>([
     { id: '1', text: 'Buy 2 Get 2 Free', icon: 'gift', link: '/collections' },
     { id: '2', text: '100% Secure Checkout', icon: 'shield', link: '' },
-    { id: '3', text: 'Premium Fine Jewelry', icon: 'star', link: '' }
+    { id: '3', text: 'Premium Fine jewellery', icon: 'star', link: '' }
   ]);
   const [contentSuccess, setContentSuccess] = useState('');
   const [contentError, setContentError] = useState('');
@@ -483,12 +483,12 @@ export default function AdminDashboard() {
   const campaigns: Campaign[] = [
     { name: 'Instagram Influencer Collab', impressions: '142,500', clicks: '8,420', conversions: 184, spend: '₹25,000', sales: '₹1,24,000', roi: '4.96x' },
     { name: 'Diwali Early Bird Google Ads', impressions: '280,000', clicks: '14,280', conversions: 312, spend: '₹40,000', sales: '₹2,18,000', roi: '5.45x' },
-    { name: 'Facebook Jewelry Retargeting', impressions: '64,200', clicks: '3,810', conversions: 96, spend: '₹15,000', sales: '₹68,400', roi: '4.56x' }
+    { name: 'Facebook jewellery Retargeting', impressions: '64,200', clicks: '3,810', conversions: 96, spend: '₹15,000', sales: '₹68,400', roi: '4.56x' }
   ];
 
   // Blog Posts Mock Data (Content)
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([
-    { id: 1, title: 'How to Clean and Store Your Sterling Silver Jewelry', author: 'Deera Glow', date: 'Jul 2, 2026', status: 'Published' },
+    { id: 1, title: 'How to Clean and Store Your Sterling Silver jewellery', author: 'Deera Glow', date: 'Jul 2, 2026', status: 'Published' },
     { id: 2, title: '925 Sterling Silver vs Brass: Which Should You Choose?', author: 'Deera Glow', date: 'Jun 28, 2026', status: 'Published' },
     { id: 3, title: 'The Art of Layering: How to Stack Necklaces & Rings', author: 'Rohan Sen', date: 'Jun 24, 2026', status: 'Published' }
   ]);
@@ -501,7 +501,7 @@ export default function AdminDashboard() {
   const [navigationMenus, setNavigationMenus] = useState<NavigationMenu[]>([
     { id: 1, menu: 'Main Menu', links: 'Home - Shop - collections - Occasions - About Us - Blogs' },
     { id: 2, menu: 'Footer Collection List', links: 'Rings - Necklaces - Earrings - Bracelets - Charms' },
-    { id: 3, menu: 'Footer Scent Categories', links: 'Silver Plated - Gold Plated - Pearl Accessories - Gemstone Jewelry' }
+    { id: 3, menu: 'Footer Scent Categories', links: 'Silver Plated - Gold Plated - Pearl Accessories - Gemstone jewellery' }
   ]);
   const [navMenuName, setNavMenuName] = useState('');
   const [navMenuLinks, setNavMenuLinks] = useState('');
@@ -875,7 +875,7 @@ export default function AdminDashboard() {
         uploadedMoments.push({
           id: `moment-${imageSlug || uploadedMoments.length}`,
           image: data.url,
-          alt: data.filename.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ') || 'Customer jewelry moment'
+          alt: data.filename.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ') || 'Customer jewellery moment'
         });
       }
       saveCustomerMoments([...uploadedMoments, ...customerMoments]);
@@ -1249,7 +1249,7 @@ export default function AdminDashboard() {
         setHeroEyebrow(data.heroEyebrow || 'TIMELESS BEAUTY');
         setHeroTitle(data.heroTitle || 'Shine Brighter');
         setHeroItalicTitle(data.heroItalicTitle || 'Every Day');
-        setHeroDescription(data.heroDescription || 'Discover exquisite jewelry that celebrates your unique style and every special moment.');
+        setHeroDescription(data.heroDescription || 'Discover exquisite jewellery that celebrates your unique style and every special moment.');
         setHeroPrimaryButtonText(data.heroPrimaryButtonText || 'Shop Collection');
         setHeroPrimaryButtonHref(data.heroPrimaryButtonHref || '#shop-by-collection');
         setHeroSecondaryButtonText(data.heroSecondaryButtonText || 'New Arrivals');
@@ -1265,9 +1265,9 @@ export default function AdminDashboard() {
             console.error('Error parsing category grid settings:', e);
           }
         }
-        setPromoBannerImage(data.contentPromoBannerImage || '/images/category_banner_jewelry.png');
+        setPromoBannerImage(data.contentPromoBannerImage || '/images/category_banner_jewellery.png');
         setPromoBannerLink(data.contentPromoBannerLink || '/category/necklaces');
-        setPromoBanner2Image(data.contentPromoBanner2Image || '/images/jewelry_category_banner.png');
+        setPromoBanner2Image(data.contentPromoBanner2Image || '/images/jewellery_category_banner.png');
         setPromoBanner2Link(data.contentPromoBanner2Link || '/category/earrings');
         setHeroSliderSlides(normalizeHeroSlides(data.heroSliderImages));
         if (data.heroAnnouncementItems) {
@@ -1381,88 +1381,88 @@ export default function AdminDashboard() {
     }
   };
 
-const normalizeHeroSlides = (raw: any): HeroSlide[] => {
-  const defaults: HeroSlide[] = [
-    {
-      image: '/images/hero_slide_1.png',
-      mobileImage: '',
-      showText: true,
-      showMobileText: true,
-      eyebrow: 'TIMELESS BEAUTY',
-      title: 'Shine Brighter Every Day',
-      description: 'Discover exquisite jewelry that celebrates your unique style and every special moment.',
-      btnText: 'Shop Collection',
-      btnHref: '#shop-by-collection'
-    },
-    {
-      image: '/images/hero_slide_2.png',
-      mobileImage: '',
-      showText: true,
-      showMobileText: true,
-      eyebrow: 'LUXURY CRAFTSMANSHIP',
-      title: 'Elegance in Every Detail',
-      description: 'Adorn yourself with masterfully crafted necklaces, bracelets, and charms made to last.',
-      btnText: 'Explore New Arrivals',
-      btnHref: '/category/new-arrivals'
-    },
-    {
-      image: '/images/hero_slide_3.png',
-      mobileImage: '',
-      showText: true,
-      showMobileText: true,
-      eyebrow: 'THE GOLDEN HOUR',
-      title: 'Modern Classics',
-      description: 'Find the perfect signature pieces that seamlessly transitions from day to night.',
-      btnText: 'Shop Best Sellers',
-      btnHref: '/category/best-sellers'
-    }
-  ];
+  const normalizeHeroSlides = (raw: any): HeroSlide[] => {
+    const defaults: HeroSlide[] = [
+      {
+        image: '/images/hero_slide_1.png',
+        mobileImage: '',
+        showText: true,
+        showMobileText: true,
+        eyebrow: 'TIMELESS BEAUTY',
+        title: 'Shine Brighter Every Day',
+        description: 'Discover exquisite jewellery that celebrates your unique style and every special moment.',
+        btnText: 'Shop Collection',
+        btnHref: '#shop-by-collection'
+      },
+      {
+        image: '/images/hero_slide_2.png',
+        mobileImage: '',
+        showText: true,
+        showMobileText: true,
+        eyebrow: 'LUXURY CRAFTSMANSHIP',
+        title: 'Elegance in Every Detail',
+        description: 'Adorn yourself with masterfully crafted necklaces, bracelets, and charms made to last.',
+        btnText: 'Explore New Arrivals',
+        btnHref: '/category/new-arrivals'
+      },
+      {
+        image: '/images/hero_slide_3.png',
+        mobileImage: '',
+        showText: true,
+        showMobileText: true,
+        eyebrow: 'THE GOLDEN HOUR',
+        title: 'Modern Classics',
+        description: 'Find the perfect signature pieces that seamlessly transitions from day to night.',
+        btnText: 'Shop Best Sellers',
+        btnHref: '/category/best-sellers'
+      }
+    ];
 
-  if (!raw) return defaults;
+    if (!raw) return defaults;
 
-  try {
-    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed.map((item, idx) => {
-        if (typeof item === 'string') {
-          const match = defaults.find(d => d.image === item);
-          if (match) return match;
+    try {
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map((item, idx) => {
+          if (typeof item === 'string') {
+            const match = defaults.find(d => d.image === item);
+            if (match) return match;
+            return {
+              image: item,
+              mobileImage: '',
+              showText: true,
+              showMobileText: true,
+              eyebrow: idx === 0 ? 'TIMELESS BEAUTY' : idx === 1 ? 'LUXURY CRAFTSMANSHIP' : 'THE GOLDEN HOUR',
+              title: idx === 0 ? 'Shine Brighter Every Day' : idx === 1 ? 'Elegance in Every Detail' : 'Modern Classics',
+              description: idx === 0 ? 'Discover exquisite jewellery that celebrates your unique style and every special moment.' : idx === 1 ? 'Adorn yourself with masterfully crafted necklaces, bracelets, and charms made to last.' : 'Find the perfect signature pieces that seamlessly transitions from day to night.',
+              btnText: idx === 0 ? 'Shop Collection' : idx === 1 ? 'Explore New Arrivals' : 'Shop Best Sellers',
+              btnHref: idx === 0 ? '#shop-by-collection' : idx === 1 ? '/category/new-arrivals' : '/category/best-sellers'
+            };
+          }
           return {
-            image: item,
-            mobileImage: '',
-            showText: true,
-            showMobileText: true,
-            eyebrow: idx === 0 ? 'TIMELESS BEAUTY' : idx === 1 ? 'LUXURY CRAFTSMANSHIP' : 'THE GOLDEN HOUR',
-            title: idx === 0 ? 'Shine Brighter Every Day' : idx === 1 ? 'Elegance in Every Detail' : 'Modern Classics',
-            description: idx === 0 ? 'Discover exquisite jewelry that celebrates your unique style and every special moment.' : idx === 1 ? 'Adorn yourself with masterfully crafted necklaces, bracelets, and charms made to last.' : 'Find the perfect signature pieces that seamlessly transitions from day to night.',
-            btnText: idx === 0 ? 'Shop Collection' : idx === 1 ? 'Explore New Arrivals' : 'Shop Best Sellers',
-            btnHref: idx === 0 ? '#shop-by-collection' : idx === 1 ? '/category/new-arrivals' : '/category/best-sellers'
+            image: item.image || '/images/hero_slide_1.png',
+            mobileImage: item.mobileImage || '',
+            showText: item.showText !== undefined ? Boolean(item.showText) : true,
+            showMobileText: item.showMobileText !== undefined ? Boolean(item.showMobileText) : true,
+            eyebrow: item.eyebrow ?? '',
+            title: item.title ?? '',
+            description: item.description ?? '',
+            btnText: item.btnText ?? '',
+            btnHref: item.btnHref ?? '',
+            mobileEyebrow: item.mobileEyebrow ?? '',
+            mobileTitle: item.mobileTitle ?? '',
+            mobileDescription: item.mobileDescription ?? '',
+            mobileBtnText: item.mobileBtnText ?? '',
+            mobileBtnHref: item.mobileBtnHref ?? ''
           };
-        }
-        return {
-          image: item.image || '/images/hero_slide_1.png',
-          mobileImage: item.mobileImage || '',
-          showText: item.showText !== undefined ? Boolean(item.showText) : true,
-          showMobileText: item.showMobileText !== undefined ? Boolean(item.showMobileText) : true,
-          eyebrow: item.eyebrow ?? '',
-          title: item.title ?? '',
-          description: item.description ?? '',
-          btnText: item.btnText ?? '',
-          btnHref: item.btnHref ?? '',
-          mobileEyebrow: item.mobileEyebrow ?? '',
-          mobileTitle: item.mobileTitle ?? '',
-          mobileDescription: item.mobileDescription ?? '',
-          mobileBtnText: item.mobileBtnText ?? '',
-          mobileBtnHref: item.mobileBtnHref ?? ''
-        };
-      });
+        });
+      }
+    } catch (e) {
+      console.error("Error parsing hero slides:", e);
     }
-  } catch (e) {
-    console.error("Error parsing hero slides:", e);
-  }
 
-  return defaults;
-};
+    return defaults;
+  };
 
   const applyHeroImageSelection = (imageUrl: string) => {
     setHeroSliderSlides((prev) => {
@@ -1475,7 +1475,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
           showMobileText: true,
           eyebrow: 'NEW ARRIVAL',
           title: 'Special Collection',
-          description: 'Exquisite luxury jewelry.',
+          description: 'Exquisite luxury jewellery.',
           btnText: 'Shop Now',
           btnHref: '#products'
         });
@@ -1772,8 +1772,8 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
           setPrice('');
           setDescription('');
           setFeatures('');
-          setImageUrl('/images/category_banner_jewelry.png');
-          setGalleryImages(['/images/category_banner_jewelry.png']);
+          setImageUrl('/images/category_banner_jewellery.png');
+          setGalleryImages(['/images/category_banner_jewellery.png']);
           setTagline('100% tarnish-free — 925 sterling silver — premium cubic zirconia');
           setFragrances('925 Sterling Silver, Gold Plated, Cubic Zirconia');
           setDimensions('Adjustable Ring Size / Standard Size');
@@ -1782,7 +1782,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
           setAccBurnTime('Tarnish-free polish lifetime durability');
           setAccIngredients("925 Sterling Silver base, 18k gold plating, AAA+ cubic zirconia, skin-friendly and completely lead and nickel free. Crafted to ensure lifetime durability and shine.");
           setAccInstructions("Avoid direct contact with water, sweat, perfumes, or harsh chemicals. Clean gently with a dry microfibre cloth and store in an airtight zip-lock bag when not in use.");
-          setAccShipping("Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewelry is completely unused and in its original packaging.");
+          setAccShipping("Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewellery is completely unused and in its original packaging.");
         };
 
         resetForm();
@@ -1811,7 +1811,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
     if (prod.images && prod.images.trim()) {
       setGalleryImages(prod.images.split(',').map(s => s.trim()).filter(Boolean));
     } else {
-      setGalleryImages([prod.image_url || '/images/category_banner_jewelry.png']);
+      setGalleryImages([prod.image_url || '/images/category_banner_jewellery.png']);
     }
 
     // Set custom spec states
@@ -1823,7 +1823,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
     setAccBurnTime(prod.acc_burn_time || 'Tarnish-free polish lifetime durability');
     setAccIngredients(prod.acc_ingredients || '925 Sterling Silver base, 18k gold plating, AAA+ cubic zirconia, skin-friendly and completely lead and nickel free. Crafted to ensure lifetime durability and shine.');
     setAccInstructions(prod.acc_instructions || 'Avoid direct contact with water, sweat, perfumes, or harsh chemicals. Clean gently with a dry microfibre cloth and store in an airtight zip-lock bag when not in use.');
-    setAccShipping(prod.acc_shipping || 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewelry is completely unused and in its original packaging.');
+    setAccShipping(prod.acc_shipping || 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewellery is completely unused and in its original packaging.');
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -1863,7 +1863,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
         acc_burn_time: prod.acc_burn_time || 'Tarnish-free polish lifetime durability',
         acc_ingredients: prod.acc_ingredients || '925 Sterling Silver base, 18k gold plating, AAA+ cubic zirconia, skin-friendly and completely lead and nickel free. Crafted to ensure lifetime durability and shine.',
         acc_instructions: prod.acc_instructions || 'Avoid direct contact with water, sweat, perfumes, or harsh chemicals. Clean gently with a dry microfibre cloth and store in an airtight zip-lock bag when not in use.',
-        acc_shipping: prod.acc_shipping || 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewelry is completely unused and in its original packaging.',
+        acc_shipping: prod.acc_shipping || 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewellery is completely unused and in its original packaging.',
         images: prod.images || prod.image_url
       };
 
@@ -3538,7 +3538,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
             {showCollForm && (
               <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', marginBottom: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
                 <h3 style={{ fontSize: '14px', fontWeight: '700', margin: '0 0 16px 0' }}>
-                  {editingCollId ? 'Edit Collection Details' : 'Create New Jewelry Collection'}
+                  {editingCollId ? 'Edit Collection Details' : 'Create New jewellery Collection'}
                 </h3>
                 <form onSubmit={handleSaveCollection} style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '300px' }}>
@@ -4001,9 +4001,9 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
                 <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', color: '#1a1a1a' }}>
                   {editingDiscountId ? 'Edit' : 'Configure'}: {selectedDiscountType}
                 </h3>
-                
+
                 <form onSubmit={handleCreateDiscount} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  
+
                   {/* Row 1: Method & Title */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -4381,7 +4381,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
                       <label style={{ display: 'flex', flexDirection: 'column', gap: '5px', fontWeight: '600' }}>
                         Product
                         <select value={reviewForm.productId} onChange={e => setReviewForm(prev => ({ ...prev, productId: e.target.value }))} style={{ padding: '9px 12px', border: '1px solid #cccccc', borderRadius: '6px', backgroundColor: '#ffffff' }}>
-                          <option value="">Generic Deera Glow Jewelry</option>
+                          <option value="">Generic Deera Glow jewellery</option>
                           {products.filter(product => !product.deleted_at).map(product => (
                             <option key={product.id} value={product.id}>{product.name}</option>
                           ))}
@@ -5273,7 +5273,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
                           showMobileText: true,
                           eyebrow: 'NEW ARRIVAL',
                           title: 'New Collection',
-                          description: 'Exquisite luxury jewelry.',
+                          description: 'Exquisite luxury jewellery.',
                           btnText: 'Explore Now',
                           btnHref: '#products',
                           mobileBtnHref: ''
@@ -5386,12 +5386,12 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
                         {/* Expanded Slide Detail Form */}
                         {isEditing && (
                           <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', fontSize: '13px' }}>
-                            
+
                             {/* 1. Images Selection */}
                             <div style={{ backgroundColor: '#ffffff', padding: '16px', borderRadius: '8px', border: '1px solid #e3e3e3' }}>
                               <h4 style={{ margin: '0 0 14px 0', fontSize: '14px', fontWeight: '700', color: '#1a1a1a' }}>🖼️ Slide Images (Desktop & Mobile)</h4>
                               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
-                                
+
                                 {/* Desktop Image */}
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                   <label style={{ fontWeight: '600', color: '#1a1a1a' }}>Desktop Image URL</label>
@@ -5521,7 +5521,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
                             {/* 3. Text Content & Links (Desktop & Mobile) */}
                             <div style={{ backgroundColor: '#ffffff', padding: '16px', borderRadius: '8px', border: '1px solid #e3e3e3' }}>
                               <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: '700', color: '#1a1a1a' }}>✍️ Text Content & Links</h4>
-                              
+
                               {/* Desktop Text Fields */}
                               <div style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px dashed #e3e3e3' }}>
                                 <h5 style={{ margin: '0 0 12px 0', fontSize: '13px', fontWeight: '700', color: '#2d5c4d', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -6948,7 +6948,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
           </div>
         )}
 
-        {/* TAB 2: PRODUCTS MANAGER (JEWELRY INVENTORY) */}
+        {/* TAB 2: PRODUCTS MANAGER (jewellery INVENTORY) */}
         {activeTab === 'products' && (() => {
           const isAllSelected = filteredProducts.length > 0 && filteredProducts.every(p => selectedCatalogProductIds.includes(p.id));
           const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -6987,7 +6987,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
                 {/* Add form */}
                 <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                   <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>
-                    {editingProductId ? 'Edit Jewelry Details' : 'Add New Jewelry'}
+                    {editingProductId ? 'Edit jewellery Details' : 'Add New jewellery'}
                   </h3>
 
                   {formError && (
@@ -7003,7 +7003,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
 
                   <form onSubmit={handleAddProduct} style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Jewelry Name</label>
+                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>jewellery Name</label>
                       <input
                         type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder="e.g. Royal Pearl Drops"
                         style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
@@ -7228,7 +7228,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
                                 const file = e.target.files[0];
                                 try {
                                   const data = await uploadMediaFile(file);
-                                  setGalleryImages((prev) => [...prev.filter(img => img !== '/images/category_banner_jewelry.png'), data.url]);
+                                  setGalleryImages((prev) => [...prev.filter(img => img !== '/images/category_banner_jewellery.png'), data.url]);
                                   await fetchMediaFiles();
                                 } catch (err) {
                                   alert(err instanceof Error ? err.message : 'Error uploading file.');
@@ -7246,7 +7246,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Description</label>
                       <textarea
-                        value={description} onChange={(e) => setDescription(e.target.value)} required rows={4} placeholder="Describe the jewelry design and details..."
+                        value={description} onChange={(e) => setDescription(e.target.value)} required rows={4} placeholder="Describe the jewellery design and details..."
                         style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'none' }}
                       />
                     </div>
@@ -7283,7 +7283,7 @@ const normalizeHeroSlides = (raw: any): HeroSlide[] => {
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Jewelry Weight</label>
+                            <label style={{ fontWeight: '600', color: '#6d6d6d' }}>jewellery Weight</label>
                             <input
                               type="text" value={weight} onChange={(e) => setWeight(e.target.value)} required placeholder="15 gms"
                               style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}

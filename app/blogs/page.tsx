@@ -8,7 +8,7 @@ import Link from 'next/link';
 export default function BlogsPage() {
   const blogs = [
     {
-      title: "How to Clean and Store Your Sterling Silver Jewelry",
+      title: "How to Clean and Store Your Sterling Silver jewellery",
       excerpt: "Explore the best practices behind sterling silver care and how to protect your favorite pieces from tarnish and oxidation.",
       date: "June 28, 2026",
       readTime: "4 min read",
@@ -16,7 +16,7 @@ export default function BlogsPage() {
     },
     {
       title: "925 Sterling Silver vs Brass: Which Should You Choose?",
-      excerpt: "Learn the core differences in durability, weight, plating lifespan, and skin-friendliness to make the perfect jewelry investment.",
+      excerpt: "Learn the core differences in durability, weight, plating lifespan, and skin-friendliness to make the perfect jewellery investment.",
       date: "May 15, 2026",
       readTime: "6 min read",
       slug: "sterling-silver-vs-brass"
@@ -26,7 +26,7 @@ export default function BlogsPage() {
       excerpt: "A simple guide to stacking necklaces, bangles, and statement rings beautifully to elevate any outfit effortlessly.",
       date: "April 22, 2026",
       readTime: "3 min read",
-      slug: "jewelry-layering-guide"
+      slug: "jewellery-layering-guide"
     }
   ];
 
@@ -42,7 +42,7 @@ export default function BlogsPage() {
               The Journal
             </span>
             <h1 style={{ fontSize: '46px', fontWeight: '300', margin: '12px 0 20px 0', fontFamily: 'var(--font-serif)', color: '#FAF8F5' }}>
-              Jewelry Styling & Care
+              jewellery Styling & Care
             </h1>
             <div style={{ width: '60px', height: '1.5px', backgroundColor: 'var(--accent)', margin: '0 auto' }}></div>
           </div>

@@ -27,21 +27,21 @@ export const defaultStoreSettings: Record<string, string> = {
   heroEyebrow: 'TIMELESS BEAUTY',
   heroTitle: 'Shine Brighter',
   heroItalicTitle: 'Every Day',
-  heroDescription: 'Discover exquisite jewelry that celebrates your unique style and every special moment.',
+  heroDescription: 'Discover exquisite jewellery that celebrates your unique style and every special moment.',
   heroPrimaryButtonText: 'Shop Collection',
   heroPrimaryButtonHref: '#shop-by-collection',
   heroSecondaryButtonText: 'New Arrivals',
   heroSecondaryButtonHref: '#products',
   heroFloatingTag: '925 Sterling Silver',
   heroSliderImages: '["/images/hero_slide_1.png", "/images/hero_slide_2.png", "/images/hero_slide_3.png"]',
-  contentBlogPosts: '[{"id":1,"title":"How to Style Minimalist Gold Jewelry","author":"Deera Sharma","date":"Jul 2, 2026","status":"Published"},{"id":2,"title":"The Ultimate Guide to Stacking Rings","author":"Deera Sharma","date":"Jun 28, 2026","status":"Published"},{"id":3,"title":"Why 925 Sterling Silver is Perfect for Daily Wear","author":"Rohan Sen","date":"Jun 24, 2026","status":"Published"}]',
+  contentBlogPosts: '[{"id":1,"title":"How to Style Minimalist Gold jewellery","author":"Deera Sharma","date":"Jul 2, 2026","status":"Published"},{"id":2,"title":"The Ultimate Guide to Stacking Rings","author":"Deera Sharma","date":"Jun 28, 2026","status":"Published"},{"id":3,"title":"Why 925 Sterling Silver is Perfect for Daily Wear","author":"Rohan Sen","date":"Jun 24, 2026","status":"Published"}]',
   contentNavigationMenus: '[{"id":1,"menu":"Main Menu","links":"Home - Shop - Rings - Necklaces - About Us - Blogs"},{"id":2,"menu":"Footer Collection List","links":"Rings - Bracelets - Necklaces - Earrings"},{"id":3,"menu":"Footer Scent Categories","links":"Gold Plated - Sterling Silver - Charms - Best Sellers"}]',
   contentCategoryGrid: '[{"id":"rings","title":"SHOP RINGS","link":"/category/rings","image":"/images/rings_category.png"},{"id":"bracelets","title":"SHOP BRACELETS","link":"/category/bracelets","image":"/images/bracelets_category.png"},{"id":"necklaces","title":"SHOP NECKLACES","link":"/category/necklaces","image":"/images/necklaces_category.png"},{"id":"earrings","title":"SHOP EARRINGS","link":"/category/earrings","image":"/images/earrings_category.png"},{"id":"charm","title":"SHOP CHARM","link":"/category/charms","image":"/images/charm_category.png"}]',
-  contentPromoBannerImage: '/images/category_banner_jewelry.png',
+  contentPromoBannerImage: '/images/category_banner_jewellery.png',
   contentPromoBannerLink: '/category/necklaces',
-  contentPromoBanner2Image: '/images/jewelry_category_banner.png',
+  contentPromoBanner2Image: '/images/jewellery_category_banner.png',
   contentPromoBanner2Link: '/category/earrings',
-  heroAnnouncementItems: '[{"id":"1","text":"Buy 2 Get 2 Free","icon":"gift","link":"/collections"},{"id":"2","text":"100% Secure Checkout","icon":"shield","link":""},{"id":"3","text":"Premium Fine Jewelry","icon":"star","link":""}]'
+  heroAnnouncementItems: '[{"id":"1","text":"Buy 2 Get 2 Free","icon":"gift","link":"/collections"},{"id":"2","text":"100% Secure Checkout","icon":"shield","link":""},{"id":"3","text":"Premium Fine jewellery","icon":"star","link":""}]'
 };
 
 export async function ensureStoreSettingsTable() {
@@ -87,16 +87,16 @@ export async function getStoreSettings() {
   try {
     await sql`
       UPDATE store_settings
-      SET value = REPLACE(REPLACE(value, 'Premium Handcrafted Jewelry', 'Premium Fine Jewelry'), 'handcrafted', 'exquisite')
+      SET value = REPLACE(REPLACE(value, 'Premium Handcrafted jewellery', 'Premium Fine jewellery'), 'handcrafted', 'exquisite')
       WHERE value ILIKE '%handcrafted%'
     `;
-  } catch (e) {}
+  } catch (e) { }
 
   const mergedSettings = { ...defaultStoreSettings, ...settings };
   Object.keys(mergedSettings).forEach(key => {
     if (typeof mergedSettings[key] === 'string' && /handcrafted/i.test(mergedSettings[key])) {
       mergedSettings[key] = mergedSettings[key]
-        .replace(/Premium Handcrafted Jewelry/gi, 'Premium Fine Jewelry')
+        .replace(/Premium Handcrafted jewellery/gi, 'Premium Fine jewellery')
         .replace(/handcrafted/gi, 'exquisite');
     }
   });

@@ -53,7 +53,7 @@ export async function getSliderCollections(): Promise<SliderCollectionItem[]> {
         SET description = REPLACE(REPLACE(description, 'Handcrafted', 'Exquisite'), 'handcrafted', 'exquisite')
         WHERE description ILIKE '%handcrafted%'
       `;
-    } catch (e) {}
+    } catch (e) { }
 
     // Query active slider collections
     const rows = await sql`
@@ -122,7 +122,7 @@ export async function getSliderCollections(): Promise<SliderCollectionItem[]> {
       name: 'Aura Sterling',
       slug: 'aura-sterling',
       description: 'Radiant 925 sterling silver statement pieces.',
-      image_url: '/images/category_banner_jewelry.png',
+      image_url: '/images/category_banner_jewellery.png',
       show_in_slider: true,
       slider_subtitle: 'Luminous Elegance for Everyday',
       products: bracelets.length >= 3 ? bracelets.slice(0, 3) : allProducts.slice(2, 5)
@@ -157,7 +157,7 @@ export async function getAllCollections(): Promise<CollectionItem[]> {
           } else if (lowerName.includes('gold') || lowerName.includes('royal')) {
             imageUrl = '/images/hero_slide_2.png';
           } else {
-            imageUrl = '/images/category_banner_jewelry.png';
+            imageUrl = '/images/category_banner_jewellery.png';
           }
         }
         return {
@@ -210,7 +210,7 @@ export async function getAllCollections(): Promise<CollectionItem[]> {
       id: 6,
       name: 'Sterling Silver',
       slug: 'sterling-silver',
-      description: 'Genuine 925 sterling silver rings & jewelry crafted with sparkling cubic zirconia.',
+      description: 'Genuine 925 sterling silver rings & jewellery crafted with sparkling cubic zirconia.',
       image_url: '/images/hero_slide_1.png'
     },
     {
@@ -224,7 +224,7 @@ export async function getAllCollections(): Promise<CollectionItem[]> {
       id: 8,
       name: 'Best Sellers',
       slug: 'best-sellers',
-      description: 'The most popular and loved jewelry pieces chosen by our customers.',
+      description: 'The most popular and loved jewellery pieces chosen by our customers.',
       image_url: '/images/hero_slide_3.png'
     }
   ];

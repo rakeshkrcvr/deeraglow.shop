@@ -17,8 +17,8 @@ export async function generateMetadata({ params }: PageProps) {
     .join(' ');
 
   return {
-    title: `${title} Collection | Deera Glow Premium Jewelry`,
-    description: `Shop exquisite ${title} artificial jewelry by Deera Glow. Discover luxury rings, necklaces, earrings, bracelets, sterling silver, gold-plated jewelry and more.`,
+    title: `${title} Collection | Deera Glow Premium jewellery`,
+    description: `Shop exquisite ${title} artificial jewellery by Deera Glow. Discover luxury rings, necklaces, earrings, bracelets, sterling silver, gold-plated jewellery and more.`,
   };
 }
 
@@ -37,8 +37,8 @@ export default async function CategoryPage({ params }: PageProps) {
 
   // Filter products matching category
   let filteredProducts: Product[] = [];
-  
-  if (slug === 'all-jewelry' || slug === 'all-candles' || slug === 'all') {
+
+  if (slug === 'all-jewellery' || slug === 'all-candles' || slug === 'all') {
     filteredProducts = products;
   } else {
     filteredProducts = products.filter(p => {

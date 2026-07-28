@@ -98,7 +98,7 @@ export default function CategoryPageClient({ slug, title, products }: CategoryPa
           <div className={styles.heroRight}>
             <Image
               src="/images/featured_rings_bg.png"
-              alt="Luxury Jewelry"
+              alt="Luxury jewellery"
               fill
               sizes="380px"
               className={styles.heroRightImg}
@@ -285,7 +285,7 @@ export default function CategoryPageClient({ slug, title, products }: CategoryPa
                   {/* Bottom Cream Details Container */}
                   <div className={styles.productBottom}>
                     <span className={styles.categoryTag}>
-                      {prod.collection ? prod.collection.toUpperCase() : 'JEWELRY'}
+                      {prod.collection ? prod.collection.toUpperCase() : 'jewellery'}
                     </span>
 
                     <Link href={`/products/${prod.slug}`} className={styles.productTitle}>

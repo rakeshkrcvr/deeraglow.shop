@@ -14,7 +14,7 @@ export const CUSTOMER_VIDEOS_STORAGE_KEY = 'deeraglow_customer_videos';
 export const defaultCustomerVideos: CustomerVideo[] = [
   {
     id: 'video-unboxing',
-    title: 'Jewelry Unboxing Experience',
+    title: 'jewellery Unboxing Experience',
     author: 'Neha S.',
     duration: '0:18',
     videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-lighted-candle-in-a-glass-jar-42340-large.mp4',

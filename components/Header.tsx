@@ -55,7 +55,7 @@ type AnnouncementItem = {
 const defaultAnnouncements: AnnouncementItem[] = [
   { id: '1', text: 'Buy 2 Get 2 Free', icon: 'gift', link: '/collections' },
   { id: '2', text: '100% Secure Checkout', icon: 'shield', link: '' },
-  { id: '3', text: 'Premium Fine Jewelry', icon: 'star', link: '' }
+  { id: '3', text: 'Premium Fine jewellery', icon: 'star', link: '' }
 ];
 
 const renderAnnouncementIcon = (icon?: string) => {
@@ -333,7 +333,7 @@ export default function Header() {
         currency: "INR",
         name: "Deera Glow",
         description: `Order Payment for ${cartCount} items`,
-        image: "/images/category_banner_jewelry.png",
+        image: "/images/category_banner_jewellery.png",
         handler: async function (response: RazorpayResponse) {
           setIsProcessingCheckout(false);
           await markDiscountUsed();
@@ -502,8 +502,8 @@ export default function Header() {
     setAppliedDiscount(discount);
     setCouponCode(discount.title);
     setCouponMessage(`${discount.title} applied. You saved ${discount.value_type === 'percentage'
-        ? `${valueAmount}%`
-        : `₹${valueAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+      ? `${valueAmount}%`
+      : `₹${valueAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
       }.`);
   };
 
@@ -633,7 +633,7 @@ export default function Header() {
             ) : (
               <>
                 <span className={styles.logoTitle}>D E E R A  G L O W</span>
-                <span className={styles.logoSubtitle}>PREMIUM ARTIFICIAL JEWELRY</span>
+                <span className={styles.logoSubtitle}>PREMIUM ARTIFICIAL jewellery</span>
               </>
             )}
           </Link>
@@ -649,7 +649,7 @@ export default function Header() {
                 <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M1 1l4 4 4-4" /></svg>
               </span>
               <div className={styles.dropdownMenu}>
-                <Link href="/category/all-jewelry" onClick={() => setMobileMenuOpen(false)}>All Jewelry</Link>
+                <Link href="/category/all-jewellery" onClick={() => setMobileMenuOpen(false)}>All jewellery</Link>
                 <Link href="/collections" onClick={() => setMobileMenuOpen(false)}>All Collections</Link>
                 <Link href="/category/best-sellers" onClick={() => setMobileMenuOpen(false)}>Best Sellers</Link>
                 <Link href="/category/new-arrivals" onClick={() => setMobileMenuOpen(false)}>New Arrivals</Link>
@@ -803,9 +803,9 @@ export default function Header() {
                     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                   </svg>
                   <p>Your cart is empty.</p>
-                  <p className={styles.emptySub}>Fill it with premium, exquisite jewelry designed for you.</p>
+                  <p className={styles.emptySub}>Fill it with premium, exquisite jewellery designed for you.</p>
                   <button className={styles.shopBtn} onClick={() => setIsCartOpen(false)}>
-                    Browse Jewelry
+                    Browse jewellery
                   </button>
                 </div>
               ) : (

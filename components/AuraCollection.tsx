@@ -18,7 +18,7 @@ export default function AuraCollection({ products }: AuraCollectionProps) {
   const handleAddToCart = (product: Product) => {
     setAddingId(product.id);
     addToCart(product, 1, 'Standard');
-    
+
     setTimeout(() => {
       setAddingId(null);
     }, 1500);
@@ -27,7 +27,7 @@ export default function AuraCollection({ products }: AuraCollectionProps) {
   return (
     <section id="products" className={styles.section}>
       <div className="container">
-        
+
         {/* Section Header */}
         <div className={styles.sectionHeader}>
           <span className={styles.subtitle}>OUR ELEGANT CREATIONS</span>
@@ -38,16 +38,16 @@ export default function AuraCollection({ products }: AuraCollectionProps) {
           </p>
         </div>
 
-        {/* Jewelry Card Grid */}
+        {/* jewellery Card Grid */}
         <div className={styles.grid}>
           {products.map((product, index) => {
             const isAdding = addingId === product.id;
             const originalPrice = Math.round((product.price / 0.7) / 100) * 100 - 1;
             const discountPercent = Math.round(((originalPrice - product.price) / originalPrice) * 100);
-            
+
             return (
-              <div key={product.id} className={styles.jewelryCard}>
-                
+              <div key={product.id} className={styles.jewelleryCard}>
+
                 {/* Image Container with Badges */}
                 <div className={styles.imageSection}>
                   {index === 0 && (
@@ -64,8 +64,8 @@ export default function AuraCollection({ products }: AuraCollectionProps) {
 
                   <Link href={`/products/${product.slug}`} className={styles.imageLink}>
                     <div className={styles.imageContainer}>
-                      <Image 
-                        src={product.image_url} 
+                      <Image
+                        src={product.image_url}
                         alt={product.name}
                         width={400}
                         height={400}
@@ -78,11 +78,11 @@ export default function AuraCollection({ products }: AuraCollectionProps) {
                 {/* Content details */}
                 <div className={styles.info}>
                   <span className={styles.features}>{product.collection.toUpperCase()}</span>
-                  
+
                   <Link href={`/products/${product.slug}`}>
                     <h3 className={styles.productName}>{product.name}</h3>
                   </Link>
-                  
+
                   <div className={styles.ratingRow}>
                     <div className={styles.stars}>★★★★★</div>
                     <span className={styles.ratingValue}>{product.rating}</span>
@@ -100,7 +100,7 @@ export default function AuraCollection({ products }: AuraCollectionProps) {
 
                   {/* Action row matching second image */}
                   <div className={styles.actionRow}>
-                    <button 
+                    <button
                       className={styles.addBagBtn}
                       onClick={() => handleAddToCart(product)}
                       disabled={isAdding}
@@ -113,7 +113,7 @@ export default function AuraCollection({ products }: AuraCollectionProps) {
                       <span>{isAdding ? "ADDED" : "ADD TO BAG"}</span>
                     </button>
 
-                    <button 
+                    <button
                       className={styles.buyNowBtn}
                       onClick={() => {
                         handleAddToCart(product);

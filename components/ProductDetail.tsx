@@ -42,7 +42,7 @@ interface ReviewFormData {
 
 export default function ProductDetail({ product, allProducts }: ProductDetailProps) {
   const { addToCart, setIsCartOpen } = useCart();
-  
+
   // Interactivity States
   const [quantity, setQuantity] = useState<number>(1);
   const [adding, setAdding] = useState<boolean>(false);
@@ -142,12 +142,12 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
   return (
     <div className={styles.productDetailContainer}>
       <div className="container">
-        
+
         {/* Top Breadcrumb Navigation */}
         <nav className={styles.breadcrumb} aria-label="Breadcrumb">
           <Link href="/" className={styles.breadcrumbLink}>Home</Link>
           <span className={styles.separator}>›</span>
-          <span className={styles.breadcrumbLink}>Jewelry</span>
+          <span className={styles.breadcrumbLink}>jewellery</span>
           <span className={styles.separator}>›</span>
           <Link href={`/category/${categoryName.toLowerCase()}`} className={styles.breadcrumbLink}>{categoryName}</Link>
           <span className={styles.separator}>›</span>
@@ -156,26 +156,26 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
 
         {/* Main 2-Column Split */}
         <div className={styles.layoutGrid}>
-          
+
           {/* Left Column: Product Gallery & Badges */}
           <div className={styles.galleryColumn}>
             <div className={styles.galleryFlexWrapper}>
-              
+
               {/* Thumbnail Vertical Column */}
               <div className={styles.thumbnailsVertical}>
                 {images.map((img, idx) => (
-                  <button 
-                    key={idx} 
+                  <button
+                    key={idx}
                     type="button"
                     className={`${styles.thumbBtn} ${activeImgIndex === idx ? styles.thumbActive : ''}`}
                     onClick={() => setActiveImgIndex(idx)}
                   >
-                    <Image 
-                      src={img} 
-                      alt={`Thumbnail ${idx + 1}`} 
-                      width={64} 
-                      height={64} 
-                      className={styles.thumbImg} 
+                    <Image
+                      src={img}
+                      alt={`Thumbnail ${idx + 1}`}
+                      width={64}
+                      height={64}
+                      className={styles.thumbImg}
                     />
                     {idx === 2 && <span className={styles.videoPlayThumb}>▶</span>}
                   </button>
@@ -197,8 +197,8 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
                   {isWishlisted ? '❤️' : '♡'}
                 </button>
 
-                <Image 
-                  src={images[activeImgIndex]} 
+                <Image
+                  src={images[activeImgIndex]}
                   alt={product.name}
                   fill
                   priority
@@ -253,7 +253,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
 
           {/* Right Column: Details & Purchase Options */}
           <div className={styles.infoColumn}>
-            
+
             {/* Top Badges */}
             <div className={styles.topBadgesRow}>
               <span className={styles.badgePillGold}>🏆 Bestseller</span>
@@ -431,7 +431,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
 
               <div className={styles.accordionCard}>
                 <button className={styles.accordionHeader} onClick={() => toggleAccordion('burning')}>
-                  <span>Jewelry Care Instructions</span>
+                  <span>jewellery Care Instructions</span>
                   <span className={styles.accordionIcon}>{openAccordion === 'burning' ? '−' : '+'}</span>
                 </button>
                 {openAccordion === 'burning' && (
@@ -451,7 +451,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
                 {openAccordion === 'shipping' && (
                   <div className={styles.accordionBody}>
                     <p>
-                      {product.acc_shipping || "Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewelry is completely unused and in its original packaging."}
+                      {product.acc_shipping || "Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewellery is completely unused and in its original packaging."}
                     </p>
                   </div>
                 )}
@@ -509,7 +509,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             <div className={styles.storyCard}>
               <span className={styles.storyCardIcon}>✨</span>
               <h3>Premium Quality</h3>
-              <p>Crafted with high-quality materials and fine finishes, our artificial jewelry is designed to offer lasting beauty, comfort, and everyday elegance.</p>
+              <p>Crafted with high-quality materials and fine finishes, our artificial jewellery is designed to offer lasting beauty, comfort, and everyday elegance.</p>
             </div>
 
             <div className={styles.storyCard}>
@@ -521,7 +521,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             <div className={styles.storyCard}>
               <span className={styles.storyCardIcon}>❤️</span>
               <h3>Made for Every Occasion</h3>
-              <p>Whether it&apos;s a wedding, festival, party, or everyday wear, Deera Glow offers stylish jewelry that completes your look with confidence and grace.</p>
+              <p>Whether it&apos;s a wedding, festival, party, or everyday wear, Deera Glow offers stylish jewellery that completes your look with confidence and grace.</p>
             </div>
           </div>
         </section>

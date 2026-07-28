@@ -46,7 +46,7 @@ const defaultCollections: SliderCollectionItem[] = [
     name: 'Aura Sterling',
     slug: 'aura-sterling',
     description: 'Radiant 925 sterling silver statement pieces.',
-    image_url: '/images/category_banner_jewelry.png',
+    image_url: '/images/category_banner_jewellery.png',
     show_in_slider: true,
     slider_subtitle: 'Luminous Elegance for Everyday',
     products: []
@@ -82,8 +82,8 @@ export default function CollectionSlider({ collections }: CollectionSliderProps)
         {/* Slider Track Wrapper */}
         <div className={styles.sliderWrapper}>
           {/* Navigation Arrows */}
-          <button 
-            onClick={scrollLeft} 
+          <button
+            onClick={scrollLeft}
             className={`${styles.navButton} ${styles.navPrev}`}
             aria-label="Previous Collections"
             type="button"
@@ -93,8 +93,8 @@ export default function CollectionSlider({ collections }: CollectionSliderProps)
             </svg>
           </button>
 
-          <button 
-            onClick={scrollRight} 
+          <button
+            onClick={scrollRight}
             className={`${styles.navButton} ${styles.navNext}`}
             aria-label="Next Collections"
             type="button"
@@ -129,9 +129,9 @@ export default function CollectionSlider({ collections }: CollectionSliderProps)
                 <div className={styles.thumbnailsRow}>
                   {item.products && item.products.length > 0 ? (
                     item.products.slice(0, 3).map((prod) => (
-                      <Link 
-                        key={prod.id} 
-                        href={`/products/${prod.slug}`} 
+                      <Link
+                        key={prod.id}
+                        href={`/products/${prod.slug}`}
                         className={styles.thumbnailCard}
                         title={prod.name}
                       >

@@ -72,7 +72,7 @@ const ALL_CATEGORY_CARDS: CategoryCardItem[] = [
     count: '22 Products',
     slug: 'necklaces',
     category: 'necklaces',
-    image: '/images/category_banner_jewelry.png'
+    image: '/images/category_banner_jewellery.png'
   },
   {
     id: 'pendant-necklaces',
@@ -105,7 +105,7 @@ const ALL_CATEGORY_CARDS: CategoryCardItem[] = [
     count: '30 Products',
     slug: 'earrings',
     category: 'earrings',
-    image: '/images/jewelry_category_banner.png'
+    image: '/images/jewellery_category_banner.png'
   },
   {
     id: 'jhumka-earrings',
@@ -617,7 +617,7 @@ export default function CollectionsClient() {
                 '/images/featured_necklaces_bg.png',
                 '/images/hero_slide_2.png',
                 '/images/featured_earrings_bg.png',
-                '/images/category_banner_jewelry.png',
+                '/images/category_banner_jewellery.png',
                 '/images/featured_bracelets_bg.png',
                 '/images/hero_slide_3.png'
               ].map((imgUrl, idx) => (

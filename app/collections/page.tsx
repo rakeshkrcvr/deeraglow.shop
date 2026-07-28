@@ -5,8 +5,8 @@ import CollectionsClient from './CollectionsClient';
 import styles from './page.module.css';
 
 export const metadata = {
-  title: 'All Collections | Deera Glow Premium Artificial Jewelry',
-  description: 'Explore all curated artificial jewelry collections by Deera Glow. Discover rings, necklaces, earrings, bracelets, sterling silver, gold-plated jewelry and more.',
+  title: 'All Collections | Deera Glow Premium Artificial jewellery',
+  description: 'Explore all curated artificial jewellery collections by Deera Glow. Discover rings, necklaces, earrings, bracelets, sterling silver, gold-plated jewellery and more.',
 };
 
 export default function CollectionsPage() {

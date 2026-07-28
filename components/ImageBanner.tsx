@@ -10,11 +10,11 @@ interface ImageBannerProps {
   linkHref?: string;
 }
 
-export default function ImageBanner({ 
-  imageUrl, 
-  linkHref = '/category/necklaces' 
+export default function ImageBanner({
+  imageUrl,
+  linkHref = '/category/necklaces'
 }: ImageBannerProps) {
-  const finalImage = imageUrl || '/images/category_banner_jewelry.png';
+  const finalImage = imageUrl || '/images/category_banner_jewellery.png';
 
   const content = (
     <div className={styles.bannerWrapper}>

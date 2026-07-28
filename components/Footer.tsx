@@ -52,7 +52,7 @@ export default function Footer() {
   return (
     <footer className={styles.footer}>
       <div className={`container ${styles.container}`}>
-        
+
         {/* Brand Column */}
         <div className={styles.brandCol}>
           <Link href="/" className={styles.logo}>
@@ -61,12 +61,12 @@ export default function Footer() {
             ) : (
               <>
                 <span className={styles.logoText}>D E E R A  G L O W</span>
-                <span className={styles.logoSub}>PREMIUM ARTIFICIAL JEWELRY</span>
+                <span className={styles.logoSub}>PREMIUM ARTIFICIAL jewellery</span>
               </>
             )}
           </Link>
           <p className={styles.bio}>
-            Discover the latest collection of premium artificial jewelry at Deera Glow. Shop stylish earrings, necklaces, rings, bracelets, and fashion accessories.
+            Discover the latest collection of premium artificial jewellery at Deera Glow. Shop stylish earrings, necklaces, rings, bracelets, and fashion accessories.
           </p>
           <div className={styles.socials}>
             <a href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className={styles.socialLink}>
@@ -76,7 +76,7 @@ export default function Footer() {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
             </a>
             <a href={pinterestUrl} target="_blank" rel="noopener noreferrer" aria-label="Pinterest" className={styles.socialLink}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 22a9 9 0 0 1-1.91-8.3C6.73 9.4 10.3 6 15 6a5 5 0 0 1 5 5 8 8 0 0 1-3.66 7.36A3.08 3.08 0 0 1 14 15.5c0-.62.34-1.2.66-1.76.66-1.16 1.34-2.34 1.34-3.74a4 4 0 0 0-8 0 3 3 0 0 0 .5 1.5c.24.4.15.8-.1 1.2-.5 1-1.2 2-1.2 3.3a3.5 3.5 0 0 0 1.5 2.8C9.5 20.2 9 21.2 8 22Z"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 22a9 9 0 0 1-1.91-8.3C6.73 9.4 10.3 6 15 6a5 5 0 0 1 5 5 8 8 0 0 1-3.66 7.36A3.08 3.08 0 0 1 14 15.5c0-.62.34-1.2.66-1.76.66-1.16 1.34-2.34 1.34-3.74a4 4 0 0 0-8 0 3 3 0 0 0 .5 1.5c.24.4.15.8-.1 1.2-.5 1-1.2 2-1.2 3.3a3.5 3.5 0 0 0 1.5 2.8C9.5 20.2 9 21.2 8 22Z" /></svg>
             </a>
           </div>
         </div>
@@ -102,7 +102,7 @@ export default function Footer() {
             <li><Link href="/category/sterling-silver">Sterling Silver</Link></li>
             <li><Link href="/category/gold-plated">Gold Plated</Link></li>
             <li><Link href="/category/rose-gold">Rose Gold Plated</Link></li>
-            <li><Link href="/category/pearls">Pearl Jewelry</Link></li>
+            <li><Link href="/category/pearls">Pearl jewellery</Link></li>
             <li><Link href="/category/cubic-zirconia">Cubic Zirconia</Link></li>
             <li><Link href="/category/solitaire">Solitaire</Link></li>
           </ul>
@@ -116,7 +116,7 @@ export default function Footer() {
             <li><Link href="/category/office-wear">Office Wear</Link></li>
             <li><Link href="/category/festive-wear">Festive Wear</Link></li>
             <li><Link href="/category/party-wear">Party Wear</Link></li>
-            <li><Link href="/category/wedding-jewelry">Wedding Jewelry</Link></li>
+            <li><Link href="/category/wedding-jewellery">Wedding jewellery</Link></li>
             <li><Link href="/category/anniversary-gifts">Anniversary Gifts</Link></li>
           </ul>
         </div>
