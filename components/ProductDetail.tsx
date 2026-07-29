@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
@@ -25,6 +25,9 @@ import {
   normalizeCustomerVideos
 } from '@/lib/customerVideos';
 import styles from './ProductDetail.module.css';
+
+const INITIAL_OFFER_SECONDS = 5 * 60 * 60 + 12 * 60 + 48;
+const RENEWED_OFFER_SECONDS = 6 * 60 * 60;
 
 interface ProductDetailProps {
   product: Product;
@@ -68,6 +71,51 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
 
   const [activeImgIndex, setActiveImgIndex] = useState<number>(0);
   const [openAccordion, setOpenAccordion] = useState<string | null>('ingredients');
+  const [saleTimeLeft, setSaleTimeLeft] = useState(INITIAL_OFFER_SECONDS);
+  const [peopleViewing, setPeopleViewing] = useState(18);
+  const [soldThisWeek, setSoldThisWeek] = useState(284);
+  const saleEndsAtRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    // Keep the offer ticking from a real end time instead of decrementing a
+    // rendered string. A fresh offer starts automatically when one expires.
+    const updateSocialProof = () => {
+      const now = Date.now();
+      let endTime = saleEndsAtRef.current;
+
+      if (!endTime) {
+        endTime = now + INITIAL_OFFER_SECONDS * 1000;
+        saleEndsAtRef.current = endTime;
+      }
+
+      if (endTime <= now) {
+        endTime = now + RENEWED_OFFER_SECONDS * 1000;
+        saleEndsAtRef.current = endTime;
+      }
+
+      setSaleTimeLeft(Math.ceil((endTime - now) / 1000));
+    };
+
+    const timer = window.setInterval(updateSocialProof, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const updateActivity = () => {
+      setPeopleViewing(12 + Math.floor(Math.random() * 15));
+      setSoldThisWeek((current) => current + (Math.random() > 0.7 ? 1 : 0));
+    };
+
+    const timer = window.setInterval(updateActivity, 15000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const formattedSaleTime = useMemo(() => {
+    const hours = Math.floor(saleTimeLeft / 3600);
+    const minutes = Math.floor((saleTimeLeft % 3600) / 60);
+    const seconds = saleTimeLeft % 60;
+    return [hours, minutes, seconds].map((value) => String(value).padStart(2, '0')).join(':');
+  }, [saleTimeLeft]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -291,9 +339,9 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
 
             {/* Social Proof Bar */}
             <div className={styles.socialProofBar}>
-              <span>🔥 284 Sold this week</span>
-              <span>👁 18 People viewing now</span>
-              <span>⏰ Sale ends in 05:12:48</span>
+              <span>🔥 {soldThisWeek} Sold this week</span>
+              <span>👁 {peopleViewing} People viewing now</span>
+              <span>⏰ Sale ends in {formattedSaleTime}</span>
             </div>
 
             {/* 4 Guarantees Box */}
@@ -317,7 +365,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
               <div className={styles.guaranteeItem}>
                 <span className={styles.guaranteeIcon}>🛡️</span>
                 <div>
-                  <strong>6 Months Warranty</strong>
+                  <strong>Premium Quality</strong>
                   <p>On all jewellery</p>
                 </div>
               </div>

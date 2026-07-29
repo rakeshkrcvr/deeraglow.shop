@@ -14,7 +14,7 @@ export default function ImageBanner({
   imageUrl,
   linkHref = '/category/necklaces'
 }: ImageBannerProps) {
-  const finalImage = imageUrl || '/images/category_banner_jewellery.png';
+  const finalImage = imageUrl || 'https://www.deeraglow.shop/api/media/1785356756847-7be99e9d-4659-46f1-9f04-7d2e91c8d8f0-category_banner_jewellery.png';
 
   const content = (
     <div className={styles.bannerWrapper}>

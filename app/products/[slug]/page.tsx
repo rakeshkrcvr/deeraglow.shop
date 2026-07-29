@@ -5,6 +5,11 @@ import Footer from '@/components/Footer';
 import ProductDetail from '@/components/ProductDetail';
 import { getProducts } from '@/lib/products';
 
+// Products are edited from the admin dashboard, so never serve a build-time copy.
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
@@ -19,13 +24,6 @@ export async function generateMetadata({ params }: PageProps) {
     title: `${product.name} | Deera Glow Premium jewellery`,
     description: product.description,
   };
-}
-
-export async function generateStaticParams() {
-  const products = await getProducts();
-  return products.map((product) => ({
-    slug: product.slug,
-  }));
 }
 
 export default async function ProductPage({ params }: PageProps) {

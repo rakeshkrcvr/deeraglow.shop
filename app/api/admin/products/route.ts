@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { sql } from '@/lib/db';
 import { getErrorMessage } from '@/lib/errors';
 import { getProducts } from '@/lib/products';
@@ -12,6 +13,13 @@ const generateSlug = (name: string) => {
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '');
 };
+
+function revalidateProductStorefront() {
+  revalidatePath('/');
+  revalidatePath('/products/[slug]', 'page');
+  revalidatePath('/product/[slug]', 'page');
+  revalidatePath('/category/[slug]', 'page');
+}
 
 // GET: Fetch products for admin, including trash
 export async function GET() {
@@ -65,6 +73,8 @@ export async function POST(request: Request) {
       )
     `;
 
+    revalidateProductStorefront();
+
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     console.error('Error adding product:', error);
@@ -101,6 +111,8 @@ export async function PUT(request: Request) {
       WHERE id = ${parseInt(id, 10)}
     `;
 
+    revalidateProductStorefront();
+
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     console.error('Error updating product:', error);
@@ -120,6 +132,7 @@ export async function PATCH(request: Request) {
 
     await getProducts({ includeDeleted: true });
     await sql`UPDATE products SET deleted_at = NULL WHERE id = ${parseInt(id, 10)}`;
+    revalidateProductStorefront();
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
@@ -146,6 +159,8 @@ export async function DELETE(request: Request) {
     } else {
       await sql`UPDATE products SET deleted_at = NOW() WHERE id = ${parseInt(id, 10)}`;
     }
+
+    revalidateProductStorefront();
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
