@@ -8,6 +8,8 @@ export interface Product {
   slug: string;
   collection: string;
   price: number;
+  compare_price?: number | null;
+  inventory?: number | null;
   rating: number;
   reviews_count: number;
   description: string;
@@ -365,6 +367,8 @@ export async function getProducts(options: { includeDeleted?: boolean } = {}): P
         name VARCHAR(255) NOT NULL,
         collection VARCHAR(255) NOT NULL,
         price INT NOT NULL,
+        compare_price INT DEFAULT NULL,
+        inventory INT NOT NULL DEFAULT 10,
         rating DECIMAL(3, 1) NOT NULL,
         reviews_count INT NOT NULL,
         description TEXT NOT NULL,
@@ -390,9 +394,11 @@ export async function getProducts(options: { includeDeleted?: boolean } = {}): P
       await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS slug VARCHAR(255) UNIQUE`;
     } catch { }
 
-    const migrations = ['tagline', 'fragrances', 'dimensions', 'weight', 'burn_hours', 'acc_burn_time', 'acc_ingredients', 'acc_instructions', 'acc_shipping', 'images', 'deleted_at'];
+    const migrations = ['compare_price', 'inventory', 'tagline', 'fragrances', 'dimensions', 'weight', 'burn_hours', 'acc_burn_time', 'acc_ingredients', 'acc_instructions', 'acc_shipping', 'images', 'deleted_at'];
     for (const m of migrations) {
       try {
+        if (m === 'compare_price') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS compare_price INT DEFAULT NULL`;
+        if (m === 'inventory') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS inventory INT NOT NULL DEFAULT 10`;
         if (m === 'tagline') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS tagline VARCHAR(500) DEFAULT '100% tarnish-free — 925 sterling silver — premium cubic zirconia'`;
         if (m === 'fragrances') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS fragrances VARCHAR(500) DEFAULT '925 Sterling Silver, Gold Plated, Cubic Zirconia'`;
         if (m === 'dimensions') await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS dimensions VARCHAR(255) DEFAULT 'Adjustable Ring Size / Standard Size'`;

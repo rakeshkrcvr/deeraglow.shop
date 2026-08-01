@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { Product } from '@/lib/products';
 
 export interface CartItem {
@@ -43,6 +43,8 @@ const writeCartItems = (items: CartItem[]) => {
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
+  const [cartNotice, setCartNotice] = useState<string | null>(null);
+  const cartNoticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load cart from localStorage, then refresh each product from the live catalog.
   useEffect(() => {
@@ -98,6 +100,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     writeCartItems(items);
   };
 
+  const showCartNotice = (productName: string) => {
+    if (cartNoticeTimer.current) clearTimeout(cartNoticeTimer.current);
+    setCartNotice(productName);
+    cartNoticeTimer.current = setTimeout(() => setCartNotice(null), 3200);
+  };
+
+  useEffect(() => () => {
+    if (cartNoticeTimer.current) clearTimeout(cartNoticeTimer.current);
+  }, []);
+
   const addToCart = (product?: Product, quantity: number = 1, selectedFragrance: string = 'Standard') => {
     let targetProduct = product;
     if (!targetProduct) {
@@ -127,7 +139,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     saveCartItems(newItems);
-    setIsCartOpen(true);
+    showCartNotice(targetProduct.name);
   };
 
   const removeFromCart = (productId: number, selectedFragrance: string) => {
@@ -171,6 +183,32 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setIsCartOpen 
     }}>
       {children}
+      {cartNotice && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'fixed',
+            top: '88px',
+            right: '20px',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            maxWidth: 'calc(100vw - 40px)',
+            padding: '12px 16px',
+            borderRadius: '10px',
+            background: '#1f1421',
+            color: '#ffffff',
+            border: '1px solid rgba(216, 180, 126, 0.65)',
+            boxShadow: '0 10px 28px rgba(0, 0, 0, 0.28)',
+            fontFamily: 'inherit'
+          }}
+        >
+          <span aria-hidden="true" style={{ color: '#dfc297', fontSize: '18px', lineHeight: 1 }}>✓</span>
+          <span><strong>Added to cart</strong><br /><small style={{ color: '#eadac1' }}>{cartNotice}</small></span>
+        </div>
+      )}
     </CartContext.Provider>
   );
 }

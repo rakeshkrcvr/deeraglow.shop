@@ -395,14 +395,31 @@
   transform: scale(1.06);
 }
 
-.bestsellerTag {
+.productBadgeRow {
   position: absolute;
   top: 12px;
   left: 12px;
   z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bestsellerTag {
   padding: 4px 10px;
   border-radius: 3px;
   background: #c89547;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.soldOutTag {
+  padding: 4px 10px;
+  border-radius: 3px;
+  background: #991b1b;
   color: #ffffff;
   font-size: 9px;
   font-weight: 700;
@@ -662,6 +679,10 @@
   }
   .productTop {
     height: 170px;
+  }
+  .productBottom {
+    padding: 3px 6px;
+    gap: 1px;
   }
   .productTitle {
     font-size: 12px;

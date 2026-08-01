@@ -12,7 +12,7 @@ interface FeaturedProductsProps {
 }
 
 export default function FeaturedProducts({ products }: FeaturedProductsProps) {
-  const { addToCart } = useCart();
+  const { addToCart, setIsCartOpen } = useCart();
   const [addingId, setAddingId] = useState<number | null>(null);
 
   const handleAddToCart = (product: Product) => {
@@ -117,9 +117,7 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
                       className={styles.buyNowBtn}
                       onClick={() => {
                         handleAddToCart(product);
-                        setTimeout(() => {
-                          alert(`Proceeding to checkout with ${product.name}!`);
-                        }, 500);
+                        setIsCartOpen(true);
                       }}
                     >
                       <span>BUY NOW</span>

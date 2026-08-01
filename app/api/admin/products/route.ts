@@ -37,7 +37,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { 
-      name, collection, price, description, image_url, features,
+      name, collection, price, compare_price, inventory, description, image_url, features,
       tagline, fragrances, dimensions, weight, burn_hours,
       acc_burn_time, acc_ingredients, acc_instructions, acc_shipping,
       images
@@ -51,15 +51,19 @@ export async function POST(request: Request) {
     const rating = 4.8; // Default rating for new products
     const reviews_count = 12; // Default starting reviews
     const parsedPrice = parseInt(price, 10);
+    const comparePriceValue = parseInt(compare_price, 10);
+    const parsedComparePrice = Number.isFinite(comparePriceValue) ? comparePriceValue : null;
+    const inventoryValue = parseInt(inventory, 10);
+    const parsedInventory = Number.isFinite(inventoryValue) && inventoryValue >= 0 ? inventoryValue : 10;
 
     await sql`
       INSERT INTO products (
-        name, slug, collection, price, rating, reviews_count, description, image_url, features,
+        name, slug, collection, price, compare_price, inventory, rating, reviews_count, description, image_url, features,
         tagline, fragrances, dimensions, weight, burn_hours, acc_burn_time, acc_ingredients, acc_instructions, acc_shipping,
         images
       )
       VALUES (
-        ${name}, ${slug}, ${collection}, ${parsedPrice}, ${rating}, ${reviews_count}, ${description}, ${image_url}, ${features},
+        ${name}, ${slug}, ${collection}, ${parsedPrice}, ${parsedComparePrice}, ${parsedInventory}, ${rating}, ${reviews_count}, ${description}, ${image_url}, ${features},
         ${tagline || '100% natural soy wax — wooden wick — 30-40 hours burn time'},
         ${fragrances || 'Oud, Jasmin, Rose, Vanilla'},
         ${dimensions || 'W: 2.5 inch x H: 3 inch'},
@@ -87,7 +91,7 @@ export async function PUT(request: Request) {
   try {
     const body = await request.json();
     const { 
-      id, name, collection, price, description, image_url, features,
+      id, name, collection, price, compare_price, inventory, description, image_url, features,
       tagline, fragrances, dimensions, weight, burn_hours,
       acc_burn_time, acc_ingredients, acc_instructions, acc_shipping,
       images
@@ -99,10 +103,14 @@ export async function PUT(request: Request) {
 
     const slug = generateSlug(name);
     const parsedPrice = parseInt(price, 10);
+    const comparePriceValue = parseInt(compare_price, 10);
+    const parsedComparePrice = Number.isFinite(comparePriceValue) ? comparePriceValue : null;
+    const inventoryValue = parseInt(inventory, 10);
+    const parsedInventory = Number.isFinite(inventoryValue) && inventoryValue >= 0 ? inventoryValue : 10;
 
     await sql`
       UPDATE products
-      SET name = ${name}, slug = ${slug}, collection = ${collection}, price = ${parsedPrice}, 
+      SET name = ${name}, slug = ${slug}, collection = ${collection}, price = ${parsedPrice}, compare_price = ${parsedComparePrice}, inventory = ${parsedInventory},
           description = ${description}, image_url = ${image_url}, features = ${features},
           tagline = ${tagline}, fragrances = ${fragrances}, dimensions = ${dimensions}, 
           weight = ${weight}, burn_hours = ${burn_hours}, acc_burn_time = ${acc_burn_time}, 

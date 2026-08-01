@@ -45,12 +45,20 @@ interface ReviewFormData {
 
 export default function ProductDetail({ product, allProducts }: ProductDetailProps) {
   const { addToCart, setIsCartOpen } = useCart();
+  const finishes = useMemo(() => {
+    const configuredFinishes = product.features
+      ?.split(/[•,]/)
+      .map((finish) => finish.trim())
+      .filter(Boolean);
+
+    return configuredFinishes?.length ? configuredFinishes : ['Gold Plated', 'Silver', 'Rose Gold'];
+  }, [product.features]);
 
   // Interactivity States
   const [quantity, setQuantity] = useState<number>(1);
   const [adding, setAdding] = useState<boolean>(false);
   const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
-  const [selectedFinish, setSelectedFinish] = useState<string>('Gold Plated');
+  const [selectedFinish, setSelectedFinish] = useState<string>(() => finishes[0]);
   const [showStickyActions, setShowStickyActions] = useState<boolean>(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState<boolean>(false);
   const [isPhotoGalleryOpen, setIsPhotoGalleryOpen] = useState<boolean>(false);
@@ -141,24 +149,29 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
     loadReviews();
   }, []);
 
-  const currentPrice = product.price;
-  const originalPrice = Math.round(currentPrice * 1.45);
-  const discountPercent = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+  const currentPrice = Number(product.price);
+  const comparePrice = Number(product.compare_price);
+  const hasComparePrice = Number.isFinite(comparePrice) && comparePrice > currentPrice;
+  const discountPercent = hasComparePrice ? Math.round(((comparePrice - currentPrice) / comparePrice) * 100) : 0;
+  const inventoryValue = product.inventory == null ? NaN : Number(product.inventory);
+  const inventoryQuantity = Number.isFinite(inventoryValue) ? inventoryValue : 10;
+  const isSoldOut = inventoryQuantity <= 0;
 
   const handleIncrement = () => setQuantity(q => q + 1);
   const handleDecrement = () => setQuantity(q => (q > 1 ? q - 1 : 1));
 
   const handleAddToCart = () => {
+    if (isSoldOut) return;
     setAdding(true);
     addToCart({
       ...product,
       name: `${product.name} (${selectedFinish})`,
     }, quantity);
-    setIsCartOpen(true);
     setTimeout(() => setAdding(false), 1200);
   };
 
   const handleBuyNow = () => {
+    if (isSoldOut) return;
     addToCart({
       ...product,
       name: `${product.name} (${selectedFinish})`,
@@ -233,7 +246,10 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
               {/* Main Image Box */}
               <div className={styles.mainImageCard}>
                 <div className={styles.imageTagsContainer}>
-                  <span className={styles.bestSellerImgTag}>🔥 BEST SELLER</span>
+                  <div className={styles.topImageTags}>
+                    <span className={styles.bestSellerImgTag}>🔥 BEST SELLER</span>
+                    {isSoldOut && <span className={styles.soldOutImgTag}>SOLD OUT</span>}
+                  </div>
                   <span className={styles.buy2Get2ImgTag}>🎁 BUY 2 GET 2 FREE</span>
                 </div>
                 <button
@@ -333,8 +349,8 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             {/* Price Row */}
             <div className={styles.priceRow}>
               <span className={styles.priceVal}>₹{currentPrice}</span>
-              <span className={styles.originalPriceVal}>₹{originalPrice}</span>
-              <span className={styles.discountBadgeTag}>{discountPercent}% OFF</span>
+              {hasComparePrice && <span className={styles.originalPriceVal}>₹{comparePrice}</span>}
+              {hasComparePrice && <span className={styles.discountBadgeTag}>{discountPercent}% OFF</span>}
             </div>
 
             {/* Social Proof Bar */}
@@ -383,7 +399,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             <div className={styles.finishSection}>
               <label className={styles.finishLabel}>SELECT FINISH</label>
               <div className={styles.finishGrid}>
-                {['Gold Plated', 'Silver', 'Rose Gold'].map((finish) => (
+                {finishes.map((finish) => (
                   <button
                     key={finish}
                     type="button"
@@ -419,17 +435,19 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
                       type="button"
                       onClick={handleAddToCart}
                       className={styles.addCartBtn}
+                      disabled={isSoldOut}
                     >
                       <span className={styles.cartIcon}>🛒</span>
-                      {adding ? 'ADDED ✓' : freeUnits > 0 ? `ADD TO CART — ₹${effectiveTotalPrice.toLocaleString('en-IN')} (${freeUnits} FREE)` : `ADD TO CART — ₹${rawTotalPrice.toLocaleString('en-IN')}`}
+                      {isSoldOut ? 'SOLD OUT' : adding ? 'ADDED ✓' : freeUnits > 0 ? `ADD TO CART — ₹${effectiveTotalPrice.toLocaleString('en-IN')} (${freeUnits} FREE)` : `ADD TO CART — ₹${rawTotalPrice.toLocaleString('en-IN')}`}
                     </button>
 
                     <button
                       type="button"
                       onClick={handleBuyNow}
                       className={styles.buyNowBtn}
+                      disabled={isSoldOut}
                     >
-                      <span>⚡ BUY NOW</span>
+                      <span>{isSoldOut ? 'SOLD OUT' : '⚡ BUY NOW'}</span>
                     </button>
                   </div>
                 </div>
@@ -452,17 +470,46 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             {/* Stock Urgency Progress Box */}
             <div className={styles.stockProgressBox}>
               <div className={styles.stockHeader}>
-                <span>🔥 <strong>Only 7 Pieces Left</strong></span>
-                <span>Next Restock in 18 Days</span>
+                <span>{isSoldOut ? '⛔' : '🔥'} <strong>{isSoldOut ? 'Sold Out' : `${inventoryQuantity} Pieces Available`}</strong></span>
+                <span>{isSoldOut ? 'Restock coming soon' : 'In stock'}</span>
               </div>
               <div className={styles.stockTrack}>
-                <div className={styles.stockBar} style={{ width: '80%' }}></div>
+                <div className={styles.stockBar} style={{ width: `${isSoldOut ? 0 : Math.min(inventoryQuantity, 10) * 10}%` }}></div>
               </div>
-              <span className={styles.stockPercentText}>80% Sold</span>
+              <span className={styles.stockPercentText}>{isSoldOut ? '0 available' : `${inventoryQuantity} available`}</span>
             </div>
 
             {/* Description & Accordions */}
             <div className={styles.accordions}>
+              <div className={styles.accordionCard}>
+                <button className={styles.accordionHeader} onClick={() => toggleAccordion('product-details')}>
+                  <span>Product Details</span>
+                  <span className={styles.accordionIcon}>{openAccordion === 'product-details' ? '−' : '+'}</span>
+                </button>
+                {openAccordion === 'product-details' && (
+                  <div className={styles.accordionBody}>
+                    <dl className={styles.productSpecs}>
+                      <div><dt>Materials</dt><dd>{product.fragrances || 'Not specified'}</dd></div>
+                      <div><dt>Dimensions</dt><dd>{product.dimensions || 'Not specified'}</dd></div>
+                      <div><dt>Jewellery Weight</dt><dd>{product.weight || 'Not specified'}</dd></div>
+                      <div><dt>Durability / Polish</dt><dd>{product.burn_hours || 'Not specified'}</dd></div>
+                    </dl>
+                  </div>
+                )}
+              </div>
+
+              <div className={styles.accordionCard}>
+                <button className={styles.accordionHeader} onClick={() => toggleAccordion('description')}>
+                  <span>Description</span>
+                  <span className={styles.accordionIcon}>{openAccordion === 'description' ? '−' : '+'}</span>
+                </button>
+                {openAccordion === 'description' && (
+                  <div className={styles.accordionBody}>
+                    <p>{product.description}</p>
+                  </div>
+                )}
+              </div>
+
               <div className={styles.accordionCard}>
                 <button className={styles.accordionHeader} onClick={() => toggleAccordion('ingredients')}>
                   <span>Materials & Craftsmanship</span>

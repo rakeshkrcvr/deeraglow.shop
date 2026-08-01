@@ -28,7 +28,6 @@ export default function CategoryPageClient({ slug, title, products }: CategoryPa
   const handleAddToCart = (product: Product, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     addToCart(product);
-    setIsCartOpen(true);
   };
 
   const handleBuyNow = (product: Product, e?: React.MouseEvent) => {
@@ -252,14 +251,18 @@ export default function CategoryPageClient({ slug, title, products }: CategoryPa
               const originalPrice = Math.round(prod.price * 1.35);
               const discountPercent = Math.round(((originalPrice - prod.price) / originalPrice) * 100);
               const isBestseller = prod.rating >= 4.8;
+              const isSoldOut = prod.inventory != null && Number(prod.inventory) <= 0;
               const isWishlisted = wishlist.includes(prod.id);
 
               return (
                 <div key={prod.id} className={styles.productCard}>
                   {/* Top Dark Container */}
                   <div className={styles.productTop}>
-                    {isBestseller && (
-                      <span className={styles.bestsellerTag}>★ BEST SELLER</span>
+                    {(isBestseller || isSoldOut) && (
+                      <div className={styles.productBadgeRow}>
+                        {isBestseller && <span className={styles.bestsellerTag}>★ BEST SELLER</span>}
+                        {isSoldOut && <span className={styles.soldOutTag}>SOLD OUT</span>}
+                      </div>
                     )}
 
                     <button

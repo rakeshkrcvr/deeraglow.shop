@@ -136,11 +136,29 @@
   gap: 6px;
 }
 
+.topImageTags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .bestSellerImgTag {
   padding: 5px 12px;
   border-radius: 20px;
   background: linear-gradient(135deg, #e6a853 0%, #c48328 100%);
   color: #120413;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  white-space: nowrap;
+}
+
+.soldOutImgTag {
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: #991b1b;
+  color: #ffffff;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -585,6 +603,13 @@
   color: #150516;
 }
 
+.addCartBtn:disabled,
+.buyNowBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+
 /* Payment Badges */
 .paymentsRow {
   display: flex;
@@ -669,6 +694,33 @@
 
 .accordionCard {
   border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.productSpecs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 24px;
+  margin: 0;
+}
+
+.productSpecs div {
+  min-width: 0;
+}
+
+.productSpecs dt {
+  margin-bottom: 3px;
+  color: #cfae7d;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.productSpecs dd {
+  margin: 0;
+  color: #ded1be;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .accordionHeader {
@@ -887,6 +939,10 @@
 }
 
 @media (max-width: 768px) {
+  .productSpecs {
+    grid-template-columns: 1fr;
+  }
+
   .storyGrid {
     grid-template-columns: 1fr;
     gap: 16px;

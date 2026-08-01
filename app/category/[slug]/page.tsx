@@ -40,11 +40,26 @@ export default async function CategoryPage({ params }: PageProps) {
 
   const title = formatTitle(slug);
 
-  // Filter products matching category
+  // Core product categories must match the product's assigned collection exactly.
+  // Matching product names/features here can put a necklace in Earrings merely
+  // because its copy mentions earrings.
   let filteredProducts: Product[] = [];
+  const normalizedCollection = (collection: string) => collection.trim().toLowerCase();
+  const collectionAliases: Record<string, string[]> = {
+    earrings: ['earring', 'earrings'],
+    necklaces: ['necklace', 'necklaces'],
+    rings: ['ring', 'rings'],
+    bracelets: ['bracelet', 'bracelets'],
+    charms: ['charm', 'charms'],
+    bangles: ['bangle', 'bangles']
+  };
 
   if (slug === 'all-jewellery' || slug === 'all-candles' || slug === 'all') {
     filteredProducts = products;
+  } else if (collectionAliases[slug]) {
+    filteredProducts = products.filter((product) =>
+      collectionAliases[slug].includes(normalizedCollection(product.collection || ''))
+    );
   } else {
     filteredProducts = products.filter(p => {
       const matchTerm = slug.toLowerCase().replace('-', ' ');
@@ -62,7 +77,7 @@ export default async function CategoryPage({ params }: PageProps) {
     });
   }
 
-  const displayProducts = filteredProducts.length > 0 ? filteredProducts : products;
+  const displayProducts = filteredProducts;
 
   return (
     <div className={styles.page}>

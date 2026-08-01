@@ -591,26 +591,27 @@ export default function Header() {
 
   return (
     <>
-      {/* Top Banner Marquee Bar */}
-      <div className={styles.promoBar}>
-        <div className={styles.marqueeTrack}>
-          {[...announcements, ...announcements, ...announcements, ...announcements].map((item, index) => (
-            <div key={`${item.id}-${index}`} className={styles.promoItem}>
-              {renderAnnouncementIcon(item.icon)}
-              {item.link ? (
-                <Link href={item.link} className={styles.promoLink}>
-                  {item.text}
-                </Link>
-              ) : (
-                <span>{item.text}</span>
-              )}
-            </div>
-          ))}
+      <div className={styles.stickyHeader}>
+        {/* Top Banner Marquee Bar */}
+        <div className={styles.promoBar}>
+          <div className={styles.marqueeTrack}>
+            {[...announcements, ...announcements, ...announcements, ...announcements].map((item, index) => (
+              <div key={`${item.id}-${index}`} className={styles.promoItem}>
+                {renderAnnouncementIcon(item.icon)}
+                {item.link ? (
+                  <Link href={item.link} className={styles.promoLink}>
+                    {item.text}
+                  </Link>
+                ) : (
+                  <span>{item.text}</span>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Main Navigation Header */}
-      <header className={styles.header}>
+        {/* Main Navigation Header */}
+        <header className={styles.header}>
         <div className={`container ${styles.headerContainer}`}>
 
           {/* Mobile Menu Button */}
@@ -731,7 +732,8 @@ export default function Header() {
             </button>
           </div>
         </div>
-      </header>
+        </header>
+      </div>
 
       {/* Cart Drawer Overlay */}
       {isCartOpen && (

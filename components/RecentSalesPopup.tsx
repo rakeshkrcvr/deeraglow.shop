@@ -8,6 +8,7 @@ import {
   defaultPurchaseNotifications,
   normalizePurchaseNotifications
 } from '@/lib/purchaseNotifications';
+import { useCart } from '@/context/CartContext';
 import styles from './RecentSalesPopup.module.css';
 
 // Fisher-Yates Shuffle helper for array of indices
@@ -21,6 +22,7 @@ function generateShuffledOrder(length: number): number[] {
 }
 
 export default function RecentSalesPopup() {
+  const { isCartOpen } = useCart();
   const [notifications, setNotifications] = useState<PurchaseNotification[]>(defaultPurchaseNotifications);
   const [visible, setVisible] = useState(false);
   const [currentSale, setCurrentSale] = useState<PurchaseNotification | null>(null);
@@ -53,8 +55,27 @@ export default function RecentSalesPopup() {
     }
   };
 
+  const loadSyncedNotifications = async () => {
+    try {
+      const response = await fetch('/api/admin/purchase-notifications', { cache: 'no-store' });
+      if (!response.ok) return;
+
+      const data = await response.json() as { notifications?: PurchaseNotification[] | null };
+      if (!Array.isArray(data.notifications) || data.notifications.length < 50) return;
+
+      const list = normalizePurchaseNotifications(data.notifications);
+      localStorage.setItem(CUSTOMER_NOTIFICATIONS_STORAGE_KEY, JSON.stringify(list));
+      setNotifications(list);
+      shuffledQueueRef.current = generateShuffledOrder(list.length);
+      pointerRef.current = 0;
+    } catch {
+      // The saved browser copy remains available when the API is temporarily unavailable.
+    }
+  };
+
   useEffect(() => {
     loadAndShuffleNotifications();
+    void loadSyncedNotifications();
     window.addEventListener('storage', loadAndShuffleNotifications);
     window.addEventListener('deeksha-notifications-updated', loadAndShuffleNotifications);
     return () => {
@@ -105,7 +126,7 @@ export default function RecentSalesPopup() {
     };
   }, [notifications]);
 
-  if (!currentSale) return null;
+  if (!currentSale || isCartOpen) return null;
 
   const productUrl = currentSale.productSlug
     ? `/products/${currentSale.productSlug}`

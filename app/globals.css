@@ -270,6 +270,10 @@ img {
     overflow: visible !important;
   }
 
+  .product-editor-header {
+    top: 58px !important;
+  }
+
   .admin-main>div>div[style*="justify-content: space-between"] {
     flex-wrap: wrap;
     gap: 12px;

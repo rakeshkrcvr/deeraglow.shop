@@ -24,6 +24,31 @@ type OrderRow = {
   order_items?: string | null;
 };
 
+type PurchasedItem = {
+  product_id?: unknown;
+  quantity?: unknown;
+};
+
+async function decrementPurchasedInventory(items: unknown) {
+  if (!Array.isArray(items)) return;
+
+  const quantities = new Map<number, number>();
+  for (const item of items as PurchasedItem[]) {
+    const productId = Number(item.product_id);
+    const quantity = Number(item.quantity);
+    if (!Number.isInteger(productId) || productId <= 0 || !Number.isFinite(quantity) || quantity <= 0) continue;
+    quantities.set(productId, (quantities.get(productId) || 0) + Math.floor(quantity));
+  }
+
+  for (const [productId, quantity] of quantities) {
+    await sql`
+      UPDATE products
+      SET inventory = GREATEST(0, COALESCE(inventory, 10) - ${quantity})
+      WHERE id = ${productId}
+    `;
+  }
+}
+
 const ensureOrdersTable = async () => {
   await sql`
     CREATE TABLE IF NOT EXISTS orders (
@@ -211,6 +236,8 @@ export async function POST(request: Request) {
         ${JSON.stringify(Array.isArray(order_items) ? order_items : [])}
       )
     `;
+
+    await decrementPurchasedInventory(order_items);
 
     return NextResponse.json({ success: true, order_number });
   } catch (error: unknown) {

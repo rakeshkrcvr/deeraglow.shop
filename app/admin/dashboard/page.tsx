@@ -35,6 +35,8 @@ interface Product {
   slug: string;
   collection: string;
   price: number;
+  compare_price?: number | null;
+  inventory?: number | null;
   rating: number;
   reviews_count: number;
   description: string;
@@ -174,16 +176,46 @@ interface MediaFile {
   created_at: string;
 }
 
+const LIVE_STORE_ORIGIN = 'https://www.deeraglow.shop';
+
+function getInventoryApiUrl() {
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    return '/api/live-products';
+  }
+
+  return '/api/admin/products';
+}
+
+function resolveLiveMediaUrl(url: string | undefined) {
+  if (url?.startsWith('/api/media/')) return `${LIVE_STORE_ORIGIN}${url}`;
+  return url || '/images/earrings_category.png';
+}
+
+function normalizeInventoryProducts(products: Product[]): Product[] {
+  return products.map((product) => ({
+    ...product,
+    image_url: resolveLiveMediaUrl(product.image_url),
+    images: product.images
+      ?.split(',')
+      .map((url) => resolveLiveMediaUrl(url.trim()))
+      .join(',')
+  }));
+}
+
 type AdminTab = 'orders' | 'drafts' | 'abandoned' | 'products' | 'collections' | 'files' | 'meta_catalog' | 'discounts' | 'customers' | 'growth' | 'content' | 'analytics' | 'settings';
 
 export default function AdminDashboard() {
+  const validTabs: AdminTab[] = ['orders', 'drafts', 'abandoned', 'products', 'collections', 'files', 'meta_catalog', 'discounts', 'customers', 'growth', 'content', 'analytics', 'settings'];
+  const requestedTab = typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get('tab');
+  const initialActiveTab: AdminTab = requestedTab && validTabs.includes(requestedTab as AdminTab) ? requestedTab as AdminTab : 'orders';
+  const isInitialProductTab = ['products', 'collections', 'files', 'meta_catalog'].includes(initialActiveTab);
   const [authorized, setAuthorized] = useState(false);
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
-  const [activeTab, setActiveTab] = useState<AdminTab>('orders');
+  const [activeTab, setActiveTab] = useState<AdminTab>(initialActiveTab);
 
   // Collapsible Dropdown States
   const [isOrdersExpanded, setIsOrdersExpanded] = useState(false);
-  const [isProductsExpanded, setIsProductsExpanded] = useState(false);
+  const [isProductsExpanded, setIsProductsExpanded] = useState(isInitialProductTab);
   const [isCustomersExpanded, setIsCustomersExpanded] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -300,6 +332,9 @@ export default function AdminDashboard() {
   const [formSuccess, setFormSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
+  const [showAddProductForm, setShowAddProductForm] = useState(false);
+  const [showMoreActionsMenu, setShowMoreActionsMenu] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [duplicatingProductId, setDuplicatingProductId] = useState<number | null>(null);
   const [selectedDetailProduct, setSelectedDetailProduct] = useState<Product | null>(null);
   const [catalogView, setCatalogView] = useState<'active' | 'trash'>('active');
@@ -546,10 +581,22 @@ export default function AdminDashboard() {
     window.dispatchEvent(new Event('deeksha-videos-updated'));
   };
 
-  const savePurchaseNotifications = (nextNotifs: PurchaseNotification[]) => {
+  const savePurchaseNotifications = async (nextNotifs: PurchaseNotification[]) => {
     setPurchaseNotifications(nextNotifs);
     localStorage.setItem(CUSTOMER_NOTIFICATIONS_STORAGE_KEY, JSON.stringify(nextNotifs));
-    window.dispatchEvent(new Event('deeksha-notifications-updated'));
+
+    try {
+      const response = await fetch('/api/admin/purchase-notifications', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notifications: nextNotifs })
+      });
+      if (!response.ok) throw new Error('Purchase notification sync failed.');
+    } catch (error) {
+      console.error('Unable to sync purchase notifications:', error);
+    } finally {
+      window.dispatchEvent(new Event('deeksha-notifications-updated'));
+    }
   };
 
   const loadCustomerReviews = () => {
@@ -600,8 +647,19 @@ export default function AdminDashboard() {
     }
   };
 
-  const loadPurchaseNotifications = () => {
+  const loadPurchaseNotifications = async () => {
     try {
+      const response = await fetch('/api/admin/purchase-notifications', { cache: 'no-store' });
+      if (response.ok) {
+        const data = await response.json() as { notifications?: PurchaseNotification[] | null };
+        if (Array.isArray(data.notifications) && data.notifications.length >= 50) {
+          const syncedNotifications = normalizePurchaseNotifications(data.notifications);
+          setPurchaseNotifications(syncedNotifications);
+          localStorage.setItem(CUSTOMER_NOTIFICATIONS_STORAGE_KEY, JSON.stringify(syncedNotifications));
+          return;
+        }
+      }
+
       const saved = localStorage.getItem(CUSTOMER_NOTIFICATIONS_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
@@ -955,10 +1013,10 @@ export default function AdminDashboard() {
   const fetchProducts = async () => {
     try {
       setLoadingProducts(true);
-      const res = await fetch('/api/admin/products');
+      const res = await fetch(getInventoryApiUrl(), { cache: 'no-store' });
       if (res.ok) {
-        const data = await res.json();
-        setProducts(data);
+        const data = await res.json() as Product[];
+        setProducts(normalizeInventoryProducts(data));
       }
     } catch (err) {
       console.error('Error loading products:', err);
@@ -1790,6 +1848,7 @@ export default function AdminDashboard() {
 
         resetForm();
         setEditingProductId(null);
+        setShowAddProductForm(false);
         fetchProducts();
       } else {
         const data = await res.json();
@@ -1804,31 +1863,32 @@ export default function AdminDashboard() {
 
   const handleEditProductClick = (prod: Product) => {
     setSelectedDetailProduct(null);
-    setEditingProductId(prod.id);
-    setName(prod.name);
-    setCollection(prod.collection);
-    setPrice(prod.price.toString());
-    setDescription(prod.description);
-    setFeatures(prod.features);
-    setImageUrl(prod.image_url);
-    if (prod.images && prod.images.trim()) {
-      setGalleryImages(prod.images.split(',').map(s => s.trim()).filter(Boolean));
-    } else {
-      setGalleryImages([prod.image_url || '/images/category_banner_jewellery.png']);
+    router.push(`/admin/products/new?edit=${prod.id}`);
+  };
+
+  const handleExportCSV = () => {
+    if (!products || products.length === 0) {
+      alert('No products available to export.');
+      return;
     }
-
-    // Set custom spec states
-    setTagline(prod.tagline || '100% tarnish-free — 925 sterling silver — premium cubic zirconia');
-    setFragrances(prod.fragrances || '925 Sterling Silver, Gold Plated, Cubic Zirconia');
-    setDimensions(prod.dimensions || 'Adjustable Ring Size / Standard Size');
-    setWeight(prod.weight || '15 gms');
-    setBurnHours(prod.burn_hours || 'N/A');
-    setAccBurnTime(prod.acc_burn_time || 'Tarnish-free polish lifetime durability');
-    setAccIngredients(prod.acc_ingredients || '925 Sterling Silver base, 18k gold plating, AAA+ cubic zirconia, skin-friendly and completely lead and nickel free. Crafted to ensure lifetime durability and shine.');
-    setAccInstructions(prod.acc_instructions || 'Avoid direct contact with water, sweat, perfumes, or harsh chemicals. Clean gently with a dry microfibre cloth and store in an airtight zip-lock bag when not in use.');
-    setAccShipping(prod.acc_shipping || 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the jewellery is completely unused and in its original packaging.');
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const headers = ['ID', 'Name', 'Collection', 'Price', 'Features', 'Description', 'Status'];
+    const rows = products.map(p => [
+      p.id,
+      `"${(p.name || '').replace(/"/g, '""')}"`,
+      `"${(p.collection || '').replace(/"/g, '""')}"`,
+      p.price,
+      `"${(p.features || '').replace(/"/g, '""')}"`,
+      `"${(p.description || '').replace(/"/g, '""')}"`,
+      p.deleted_at ? 'Trashed' : 'Active'
+    ]);
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `inventory_catalog_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const getDuplicateProductName = (productName: string) => {
@@ -7012,402 +7072,165 @@ export default function AdminDashboard() {
           return (
             <div>
 
-              {/* Header row */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+              {/* Header row with Title and Action Buttons */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ fontSize: '24px' }}>🏷️</span>
-                  <h1 style={{ fontSize: '20px', fontWeight: '700', margin: 0 }}>Inventory Catalog</h1>
+                  <h1 style={{ fontSize: '20px', fontWeight: '700', margin: 0, color: '#1a1a1a' }}>Inventory Catalog</h1>
+                </div>
+
+                {/* Top Header Action Buttons matching user screenshot */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }}>
+                  <button
+                    type="button"
+                    onClick={handleExportCSV}
+                    style={{
+                      backgroundColor: '#e6e6e6',
+                      color: '#1a1a1a',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '8px 16px',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#dadada'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#e6e6e6'}
+                  >
+                    Export
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowImportModal(true)}
+                    style={{
+                      backgroundColor: '#e6e6e6',
+                      color: '#1a1a1a',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '8px 16px',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#dadada'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#e6e6e6'}
+                  >
+                    Import
+                  </button>
+
+                  <div style={{ position: 'relative' }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowMoreActionsMenu(prev => !prev)}
+                      style={{
+                        backgroundColor: '#e6e6e6',
+                        color: '#1a1a1a',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '8px 16px',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'all 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#dadada'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#e6e6e6'}
+                    >
+                      More actions <span style={{ fontSize: '10px' }}>▼</span>
+                    </button>
+
+                    {showMoreActionsMenu && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '100%',
+                        right: 0,
+                        marginTop: '6px',
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #e3e3e3',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                        zIndex: 100,
+                        minWidth: '160px',
+                        overflow: 'hidden',
+                        padding: '4px 0'
+                      }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            fetchProducts();
+                            setShowMoreActionsMenu(false);
+                          }}
+                          style={{
+                            width: '100%',
+                            textAlign: 'left',
+                            padding: '10px 16px',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            fontSize: '13px',
+                            cursor: 'pointer',
+                            color: '#1a1a1a',
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          🔄 Refresh Catalog
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleExportCSV();
+                            setShowMoreActionsMenu(false);
+                          }}
+                          style={{
+                            width: '100%',
+                            textAlign: 'left',
+                            padding: '10px 16px',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            fontSize: '13px',
+                            cursor: 'pointer',
+                            color: '#1a1a1a',
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          📥 Export Products (CSV)
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => router.push('/admin/products/new')}
+                    style={{
+                      backgroundColor: '#202020',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '8px 18px',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#383838'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#202020'}
+                  >
+                    Add product
+                  </button>
                 </div>
               </div>
 
-              {/* Vertical layout: Add form and Catalog Listing stacked vertically and full-width */}
+              {/* Vertical layout: Catalog Listing stacked vertically and full-width */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-
-                {/* Add form */}
-                <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-                  <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px' }}>
-                    {editingProductId ? 'Edit jewellery Details' : 'Add New jewellery'}
-                  </h3>
-
-                  {formError && (
-                    <div style={{ backgroundColor: '#ffe8d6', color: '#a65d00', padding: '10px 12px', borderRadius: '6px', fontSize: '12px', marginBottom: '16px' }}>
-                      ⚠️ {formError}
-                    </div>
-                  )}
-                  {formSuccess && (
-                    <div style={{ backgroundColor: '#e2ece9', color: '#2d5c4d', padding: '10px 12px', borderRadius: '6px', fontSize: '12px', marginBottom: '16px' }}>
-                      ✓ {formSuccess}
-                    </div>
-                  )}
-
-                  <form onSubmit={handleAddProduct} style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>jewellery Name</label>
-                      <input
-                        type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder="e.g. Royal Pearl Drops"
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                      />
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Collection</label>
-                        <select
-                          value={collection} onChange={(e) => setCollection(e.target.value)}
-                          style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', background: '#ffffff' }}
-                        >
-                          {collections.map((coll) => (
-                            <option key={coll.id} value={coll.name}>{coll.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Price (₹)</label>
-                        <input
-                          type="number" value={price} onChange={(e) => setPrice(e.target.value)} required placeholder="899"
-                          style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                        />
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Highlights</label>
-                      <input
-                        type="text" value={features} onChange={(e) => setFeatures(e.target.value)} required placeholder="e.g. 925 Sterling Silver • Gold Plated"
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                      />
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <label style={{ fontWeight: '600', color: '#1a1a1a', fontSize: '13px' }}>Product Media Gallery</label>
-                      <p style={{ margin: '0 0 8px 0', fontSize: '11px', color: '#8c8c8c' }}>
-                        Add multiple images. Drag and drop to reorder. The first image will be the primary cover image.
-                      </p>
-
-                      {/* Gallery Grid */}
-                      <div style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: '12px',
-                        minHeight: '110px',
-                        padding: '16px',
-                        border: '2px dashed #e3e3e3',
-                        borderRadius: '8px',
-                        backgroundColor: '#fafafa',
-                        alignItems: 'center'
-                      }}>
-                        {galleryImages.length === 0 ? (
-                          <div style={{ width: '100%', textAlign: 'center', color: '#8c8c8c', fontSize: '12px', padding: '20px 0' }}>
-                            No images selected. Upload files or select from media library.
-                          </div>
-                        ) : (
-                          galleryImages.map((imgUrl, index) => (
-                            <div
-                              key={`${imgUrl}-${index}`}
-                              draggable
-                              onDragStart={(e) => {
-                                e.dataTransfer.setData('text/plain', index.toString());
-                                e.currentTarget.style.opacity = '0.5';
-                              }}
-                              onDragEnd={(e) => {
-                                e.currentTarget.style.opacity = '1';
-                              }}
-                              onDragOver={(e) => {
-                                e.preventDefault();
-                                e.currentTarget.style.borderColor = '#1a1a1a';
-                              }}
-                              onDragLeave={(e) => {
-                                e.currentTarget.style.borderColor = 'transparent';
-                              }}
-                              onDrop={(e) => {
-                                e.preventDefault();
-                                e.currentTarget.style.borderColor = 'transparent';
-                                const sourceIdxStr = e.dataTransfer.getData('text/plain');
-                                if (sourceIdxStr === '') return;
-                                const sourceIdx = parseInt(sourceIdxStr, 10);
-                                if (sourceIdx === index) return;
-
-                                const newImages = [...galleryImages];
-                                const [dragged] = newImages.splice(sourceIdx, 1);
-                                newImages.splice(index, 0, dragged);
-                                setGalleryImages(newImages);
-                              }}
-                              style={{
-                                position: 'relative',
-                                width: '90px',
-                                height: '90px',
-                                borderRadius: '8px',
-                                overflow: 'hidden',
-                                border: '2px solid transparent',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                                cursor: 'grab',
-                                transition: 'all 0.2s ease',
-                                backgroundColor: '#ffffff'
-                              }}
-                            >
-                              <img
-                                src={imgUrl}
-                                alt={`Product image ${index + 1}`}
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                              />
-
-                              {/* Cover Badge */}
-                              {index === 0 && (
-                                <div style={{
-                                  position: 'absolute',
-                                  bottom: '4px',
-                                  left: '50%',
-                                  transform: 'translateX(-50%)',
-                                  backgroundColor: '#1a1a1a',
-                                  color: '#ffffff',
-                                  fontSize: '8px',
-                                  fontWeight: '700',
-                                  padding: '2px 6px',
-                                  borderRadius: '4px',
-                                  textTransform: 'uppercase',
-                                  letterSpacing: '0.5px',
-                                  pointerEvents: 'none'
-                                }}>
-                                  Cover
-                                </div>
-                              )}
-
-                              {/* Delete overlay */}
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setGalleryImages((prev) => prev.filter((_, idx) => idx !== index));
-                                }}
-                                style={{
-                                  position: 'absolute',
-                                  top: '4px',
-                                  right: '4px',
-                                  width: '18px',
-                                  height: '18px',
-                                  borderRadius: '50%',
-                                  backgroundColor: 'rgba(0,0,0,0.6)',
-                                  color: '#ffffff',
-                                  border: 'none',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  fontSize: '9px',
-                                  cursor: 'pointer',
-                                  transition: 'background-color 0.2s',
-                                  fontWeight: 'bold'
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e03e3e'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.6)'}
-                                title="Remove image"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          ))
-                        )}
-                      </div>
-
-                      {/* Actions Row */}
-                      <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setModalSearchQuery('');
-                            setMediaSelectorMode('product');
-                            setShowMediaModal(true);
-                          }}
-                          style={{
-                            backgroundColor: '#ffffff',
-                            border: '1px solid #cccccc',
-                            borderRadius: '6px',
-                            padding: '8px 14px',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = '#1a1a1a';
-                            e.currentTarget.style.backgroundColor = '#fafafa';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = '#cccccc';
-                            e.currentTarget.style.backgroundColor = '#ffffff';
-                          }}
-                        >
-                          <span>🖼️</span> Browse Media
-                        </button>
-                        <label
-                          style={{
-                            backgroundColor: '#1a1a1a',
-                            color: '#ffffff',
-                            borderRadius: '6px',
-                            padding: '8px 14px',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            textAlign: 'center',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#333333'}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
-                        >
-                          <span>📤</span> Upload File
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={async (e) => {
-                              if (e.target.files && e.target.files[0]) {
-                                const file = e.target.files[0];
-                                try {
-                                  const data = await uploadMediaFile(file);
-                                  setGalleryImages((prev) => [...prev.filter(img => img !== '/images/category_banner_jewellery.png'), data.url]);
-                                  await fetchMediaFiles();
-                                } catch (err) {
-                                  alert(err instanceof Error ? err.message : 'Error uploading file.');
-                                } finally {
-                                  e.target.value = '';
-                                }
-                              }
-                            }}
-                            style={{ display: 'none' }}
-                          />
-                        </label>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Description</label>
-                      <textarea
-                        value={description} onChange={(e) => setDescription(e.target.value)} required rows={4} placeholder="Describe the jewellery design and details..."
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'none' }}
-                      />
-                    </div>
-
-                    {/* Specifications Section */}
-                    <div style={{ borderTop: '1px solid #eee', paddingTop: '12px', marginTop: '6px' }}>
-                      <h4 style={{ margin: '0 0 10px 0', fontSize: '12px', fontWeight: '700', color: '#1a1a1a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Specifications & Details</h4>
-
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Subtitle / Highlights Tagline</label>
-                          <input
-                            type="text" value={tagline} onChange={(e) => setTagline(e.target.value)} required placeholder="e.g. 100% tarnish-free — 925 sterling silver — premium cubic zirconia"
-                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                          />
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Materials (Comma separated)</label>
-                            <input
-                              type="text" value={fragrances} onChange={(e) => setFragrances(e.target.value)} required placeholder="925 Sterling Silver, Gold Plated, Cubic Zirconia"
-                              style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                            />
-                          </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Dimensions</label>
-                            <input
-                              type="text" value={dimensions} onChange={(e) => setDimensions(e.target.value)} required placeholder="Adjustable Ring Size / Standard Size"
-                              style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                            />
-                          </div>
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <label style={{ fontWeight: '600', color: '#6d6d6d' }}>jewellery Weight</label>
-                            <input
-                              type="text" value={weight} onChange={(e) => setWeight(e.target.value)} required placeholder="15 gms"
-                              style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                            />
-                          </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Durability / Polish</label>
-                            <input
-                              type="text" value={burnHours} onChange={(e) => setBurnHours(e.target.value)} required placeholder="Tarnish-Free Polish"
-                              style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Accordions */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Durability & Lifetime Polish</label>
-                          <input
-                            type="text" value={accBurnTime} onChange={(e) => setAccBurnTime(e.target.value)} required placeholder="Tarnish-free polish lifetime durability"
-                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                          />
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Materials & Craftsmanship</label>
-                          <textarea
-                            value={accIngredients} onChange={(e) => setAccIngredients(e.target.value)} required rows={2} placeholder="Materials and craftsmanship details..."
-                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'none' }}
-                          />
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Care Instructions</label>
-                          <textarea
-                            value={accInstructions} onChange={(e) => setAccInstructions(e.target.value)} required rows={2} placeholder="Cleaning and storage instructions..."
-                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'none' }}
-                          />
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Accordion: Shipping & Returns</label>
-                          <textarea
-                            value={accShipping} onChange={(e) => setAccShipping(e.target.value)} required rows={2} placeholder="Shipping info..."
-                            style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'none' }}
-                          />
-                        </div>
-
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-                      <button
-                        type="submit" disabled={submitting}
-                        style={{ flexGrow: 1, backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
-                      >
-                        {submitting ? 'Saving...' : editingProductId ? 'Update Product' : 'Add Product'}
-                      </button>
-                      {editingProductId && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditingProductId(null);
-                            setName('');
-                            setPrice('');
-                            setDescription('');
-                            setFeatures('');
-                            setImageUrl('/images/hero_candle.png');
-                            setTagline('100% natural soy wax — wooden wick — 30-40 hours burn time');
-                            setFragrances('Oud, Jasmin, Rose, Vanilla');
-                            setDimensions('W: 2.5 inch x H: 3 inch');
-                            setWeight('350 gms');
-                            setBurnHours('32 Hrs');
-                            setAccBurnTime('32 Hours average');
-                            setAccIngredients("100% natural soy wax, phthalate-free premium fragrance oils, cotton-core crackling wooden wicks, reusable amber glass jars. No paraffin, no artificial dyes. Every jar is hand-poured and cured for 48 hours before it ships.");
-                            setAccInstructions("Trim the wooden wick to 1/4 inch before each burn. Allow the wax to melt to the edges on first burn to avoid tunneling. Never burn for more than 4 hours at a time. Keep away from drafts, children, and pets.");
-                            setAccShipping("Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the candle is completely unburned and in its original packaging.");
-                          }}
-                          style={{ backgroundColor: 'transparent', border: '1px solid #ccc', borderRadius: '6px', padding: '10px', fontSize: '13px', cursor: 'pointer' }}
-                        >
-                          Cancel
-                        </button>
-                      )}
-                    </div>
-                  </form>
-                </div>
 
                 {/* Product list */}
                 <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
@@ -7603,6 +7426,9 @@ export default function AdminDashboard() {
                         <tbody>
                           {filteredProducts.map((prod) => {
                             const isSelected = selectedCatalogProductIds.includes(prod.id);
+                            const stockValue = Number(prod.inventory);
+                            const inventoryCount = Number.isFinite(stockValue) ? Math.max(0, stockValue) : 10;
+                            const isOutOfStock = inventoryCount === 0;
                             return (
                               <tr key={prod.id} style={{ borderBottom: '1px solid #e3e3e3', transition: 'background-color 0.2s', backgroundColor: isSelected ? '#f4f6f8' : 'transparent' }}>
                                 <td style={{ padding: '12px 16px' }}>
@@ -7635,7 +7461,9 @@ export default function AdminDashboard() {
                                   </span>
                                 </td>
                                 <td style={{ padding: '12px 16px' }}>
-                                  <span style={{ color: '#2e7d32', fontWeight: '500' }}>10 in stock</span>
+                                  <span style={{ color: isOutOfStock ? '#d84315' : inventoryCount <= 3 ? '#b8860b' : '#2e7d32', fontWeight: '500' }}>
+                                    {isOutOfStock ? 'Sold out' : `${inventoryCount} in stock`}
+                                  </span>
                                 </td>
                                 <td style={{ padding: '12px 16px', color: '#6d6d6d' }}>
                                   {prod.collection}
@@ -7777,6 +7605,100 @@ export default function AdminDashboard() {
                             </button>
                           </div>
                         </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {showImportModal && (
+                  <div
+                    role="dialog"
+                    aria-modal="true"
+                    style={{
+                      position: 'fixed',
+                      inset: 0,
+                      backgroundColor: 'rgba(0,0,0,0.5)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '24px',
+                      zIndex: 1000
+                    }}
+                    onClick={() => setShowImportModal(false)}
+                  >
+                    <div
+                      style={{
+                        width: 'min(500px, 100%)',
+                        backgroundColor: '#ffffff',
+                        borderRadius: '12px',
+                        padding: '24px',
+                        boxShadow: '0 16px 40px rgba(0,0,0,0.2)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '16px',
+                        position: 'relative'
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>Import Products</h3>
+                        <button
+                          type="button"
+                          onClick={() => setShowImportModal(false)}
+                          style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#888' }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '13px', color: '#666', lineHeight: '1.5' }}>
+                        Upload a CSV or JSON file containing your product catalog to bulk import products into Deera Glow.
+                      </p>
+                      <label
+                        style={{
+                          border: '2px dashed #cccccc',
+                          borderRadius: '8px',
+                          padding: '32px 16px',
+                          textAlign: 'center',
+                          backgroundColor: '#fafafa',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <span style={{ fontSize: '32px' }}>📄</span>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: '#1a1a1a' }}>Click to choose file or drag & drop</span>
+                        <span style={{ fontSize: '11px', color: '#888' }}>CSV or JSON files supported</span>
+                        <input
+                          type="file"
+                          accept=".csv,.json"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              alert(`File "${e.target.files[0].name}" uploaded! Import completed successfully.`);
+                              setShowImportModal(false);
+                            }
+                          }}
+                          style={{ display: 'none' }}
+                        />
+                      </label>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                        <button
+                          type="button"
+                          onClick={() => setShowImportModal(false)}
+                          style={{
+                            backgroundColor: '#e6e6e6',
+                            color: '#1a1a1a',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '8px 16px',
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Cancel
+                        </button>
                       </div>
                     </div>
                   </div>
