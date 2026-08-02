@@ -198,10 +198,17 @@ function ProductFormContent() {
   const fetchMediaFiles = async () => {
     setLoadingMedia(true);
     try {
-      const res = await fetch('/api/admin/media');
+      const res = await fetch('/api/admin/media', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
-        setMediaFiles(data.files || []);
+        const rawFiles = Array.isArray(data) ? data : (data.files || []);
+        const formattedFiles: MediaFile[] = rawFiles.map((f: any) => ({
+          id: String(f.id || f.storage_key || f.url),
+          name: String(f.filename || f.name || 'image'),
+          url: String(f.url || ''),
+          size: Number(f.file_size || f.size || 0)
+        }));
+        setMediaFiles(formattedFiles);
       }
     } catch (err) {
       console.error('Error fetching media:', err);
@@ -224,13 +231,19 @@ function ProductFormContent() {
       throw new Error(data?.error || 'Failed to upload image.');
     }
 
-    if (data?.file) {
-      setMediaFiles((prev) => [data.file, ...prev.filter((item) => item.id !== data.file.id)]);
-    }
-
     const url = data?.file?.url || data?.url;
     if (!url) {
       throw new Error('Upload finished, but the server did not return an image URL.');
+    }
+
+    if (data?.file) {
+      const formattedItem: MediaFile = {
+        id: String(data.file.id || data.file.storage_key || data.file.url),
+        name: String(data.file.filename || data.file.name || file.name),
+        url,
+        size: Number(data.file.file_size || file.size)
+      };
+      setMediaFiles((prev) => [formattedItem, ...prev.filter((item) => item.id !== formattedItem.id)]);
     }
 
     return { url };
@@ -727,7 +740,10 @@ function ProductFormContent() {
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button
                   type="button"
-                  onClick={() => setShowMediaModal(true)}
+                  onClick={() => {
+                    fetchMediaFiles();
+                    setShowMediaModal(true);
+                  }}
                   style={{
                     backgroundColor: '#ffffff',
                     border: '1px solid #cccccc',
