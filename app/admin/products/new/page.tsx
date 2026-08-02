@@ -178,17 +178,7 @@ function ProductFormContent() {
     }
   }, [name, collection, price, comparePrice, inventory, description, features, galleryImages, editId]);
 
-  // Window beforeunload warning to prevent accidental data loss
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (name || price || description || features) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [name, price, description, features]);
+
 
   const fetchCollections = async () => {
     try {
@@ -303,7 +293,7 @@ function ProductFormContent() {
         }
 
         setTimeout(() => {
-          window.location.assign('/admin/dashboard?tab=products');
+          router.push('/admin/dashboard?tab=products');
         }, 1200);
       } else {
         const data = await res.json();
@@ -418,13 +408,7 @@ function ProductFormContent() {
           <button
             type="button"
             onClick={() => {
-              if (name || price || description) {
-                if (confirm('Leave page? Any unsaved changes will be kept in draft.')) {
-                  router.push('/admin/dashboard?tab=products');
-                }
-              } else {
-                router.push('/admin/dashboard?tab=products');
-              }
+              router.push('/admin/dashboard?tab=products');
             }}
             style={{
               backgroundColor: '#f1f1f1',

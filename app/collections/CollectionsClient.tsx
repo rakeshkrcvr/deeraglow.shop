@@ -4,6 +4,9 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import CustomerExperience from '@/components/CustomerExperience';
+import type { CollectionItem } from '@/lib/collections';
+import { normalizeImageUrl } from '@/lib/imageUtils';
+import { Product } from '@/lib/products';
 import styles from './page.module.css';
 
 interface CategoryCardItem {
@@ -16,12 +19,17 @@ interface CategoryCardItem {
   badge?: 'BESTSELLER' | 'NEW';
 }
 
+interface CollectionsClientProps {
+  dbCollections?: CollectionItem[];
+  dbProducts?: Product[];
+}
+
 const ALL_CATEGORY_CARDS: CategoryCardItem[] = [
   {
     id: 'gold-plated-rings',
     name: 'GOLD PLATED RINGS',
     count: '42 Products',
-    slug: 'rings',
+    slug: 'gold-plated-rings',
     category: 'rings',
     image: '/images/rings_category.png'
   },
@@ -29,7 +37,7 @@ const ALL_CATEGORY_CARDS: CategoryCardItem[] = [
     id: 'sterling-silver-rings',
     name: 'STERLING SILVER RINGS',
     count: '36 Products',
-    slug: 'sterling-silver',
+    slug: 'sterling-silver-rings',
     category: 'rings',
     image: '/images/hero_slide_1.png'
   },
@@ -46,7 +54,7 @@ const ALL_CATEGORY_CARDS: CategoryCardItem[] = [
     id: 'solitaire-rings',
     name: 'SOLITAIRE RINGS',
     count: '24 Products',
-    slug: 'rings',
+    slug: 'solitaire-rings',
     category: 'rings',
     image: '/images/hero_slide_3.png'
   },
@@ -62,7 +70,7 @@ const ALL_CATEGORY_CARDS: CategoryCardItem[] = [
     id: 'layered-necklaces',
     name: 'LAYERED NECKLACES',
     count: '34 Products',
-    slug: 'necklaces',
+    slug: 'layered-necklaces',
     category: 'necklaces',
     image: '/images/featured_necklaces_bg.png'
   },
@@ -70,7 +78,7 @@ const ALL_CATEGORY_CARDS: CategoryCardItem[] = [
     id: 'choker-necklaces',
     name: 'CHOKER NECKLACES',
     count: '22 Products',
-    slug: 'necklaces',
+    slug: 'choker-necklaces',
     category: 'necklaces',
     image: '/images/category_banner_jewellery.png'
   },
@@ -78,7 +86,7 @@ const ALL_CATEGORY_CARDS: CategoryCardItem[] = [
     id: 'pendant-necklaces',
     name: 'PENDANT NECKLACES',
     count: '26 Products',
-    slug: 'necklaces',
+    slug: 'pendant-necklaces',
     category: 'necklaces',
     badge: 'NEW',
     image: '/images/hero_slide_2.png'
@@ -87,7 +95,7 @@ const ALL_CATEGORY_CARDS: CategoryCardItem[] = [
     id: 'stud-earrings',
     name: 'STUD EARRINGS',
     count: '40 Products',
-    slug: 'earrings',
+    slug: 'stud-earrings',
     category: 'earrings',
     image: '/images/earrings_category.png'
   },
@@ -95,7 +103,7 @@ const ALL_CATEGORY_CARDS: CategoryCardItem[] = [
     id: 'drop-earrings',
     name: 'DROP EARRINGS',
     count: '30 Products',
-    slug: 'earrings',
+    slug: 'drop-earrings',
     category: 'earrings',
     image: '/images/featured_earrings_bg.png'
   },
@@ -103,7 +111,7 @@ const ALL_CATEGORY_CARDS: CategoryCardItem[] = [
     id: 'hoop-earrings',
     name: 'HOOP EARRINGS',
     count: '30 Products',
-    slug: 'earrings',
+    slug: 'hoop-earrings',
     category: 'earrings',
     image: '/images/jewellery_category_banner.png'
   },
@@ -111,7 +119,7 @@ const ALL_CATEGORY_CARDS: CategoryCardItem[] = [
     id: 'jhumka-earrings',
     name: 'JHUMKA EARRINGS',
     count: '18 Products',
-    slug: 'earrings',
+    slug: 'jhumka-earrings',
     category: 'earrings',
     image: '/images/collection_card.png'
   },
@@ -127,7 +135,7 @@ const ALL_CATEGORY_CARDS: CategoryCardItem[] = [
     id: 'bangles-cuffs',
     name: 'CHARM BANGLES',
     count: '18 Products',
-    slug: 'bracelets',
+    slug: 'bangles',
     category: 'bangles',
     image: '/images/featured_bracelets_bg.png'
   },
@@ -135,7 +143,7 @@ const ALL_CATEGORY_CARDS: CategoryCardItem[] = [
     id: 'gift-combos',
     name: 'ROYAL GIFT SETS',
     count: '15 Products',
-    slug: 'best-sellers',
+    slug: 'birthday-gifts',
     category: 'gifts',
     badge: 'BESTSELLER',
     image: '/images/collections_hero_bg.png'
@@ -144,14 +152,14 @@ const ALL_CATEGORY_CARDS: CategoryCardItem[] = [
     id: 'new-arrivals-cat',
     name: 'NEW SEASON ARRIVALS',
     count: '20 Products',
-    slug: 'best-sellers',
+    slug: 'new-arrivals',
     category: 'new arrivals',
     badge: 'NEW',
     image: '/images/charm_category.png'
   }
 ];
 
-export default function CollectionsClient() {
+export default function CollectionsClient({ dbCollections, dbProducts }: CollectionsClientProps) {
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('popular');
   const [visibleCount, setVisibleCount] = useState<number>(12);
@@ -180,6 +188,54 @@ export default function CollectionsClient() {
       .catch((err) => console.error('Error loading instagram settings:', err));
   }, []);
 
+  const dynamicCards: CategoryCardItem[] = React.useMemo(() => {
+    if (!dbCollections || dbCollections.length === 0) return ALL_CATEGORY_CARDS;
+
+    return dbCollections.map((coll) => {
+      const collNameLower = coll.name.toLowerCase();
+      let category: 'rings' | 'necklaces' | 'earrings' | 'bracelets' | 'bangles' | 'gifts' | 'new arrivals' = 'rings';
+      if (collNameLower.includes('necklace') || collNameLower.includes('choker') || collNameLower.includes('pendant')) {
+        category = 'necklaces';
+      } else if (collNameLower.includes('earring') || collNameLower.includes('jhumka') || collNameLower.includes('stud') || collNameLower.includes('hoop') || collNameLower.includes('chandelier')) {
+        category = 'earrings';
+      } else if (collNameLower.includes('bracelet')) {
+        category = 'bracelets';
+      } else if (collNameLower.includes('bangle') || collNameLower.includes('cuff')) {
+        category = 'bangles';
+      } else if (collNameLower.includes('gift')) {
+        category = 'gifts';
+      } else if (collNameLower.includes('new')) {
+        category = 'new arrivals';
+      }
+
+      const count = dbProducts
+        ? dbProducts.filter(p => (p.collection || '').toLowerCase().includes(collNameLower) || collNameLower.includes((p.collection || '').toLowerCase())).length
+        : 0;
+
+      let badge: 'BESTSELLER' | 'NEW' | undefined = undefined;
+      if (collNameLower.includes('best') || collNameLower.includes('bridal')) badge = 'BESTSELLER';
+      if (collNameLower.includes('new')) badge = 'NEW';
+
+      const image = normalizeImageUrl(coll.image_url) || (
+        collNameLower.includes('ring') ? '/images/rings_category.png' :
+        collNameLower.includes('necklace') ? '/images/necklaces_category.png' :
+        collNameLower.includes('earring') ? '/images/earrings_category.png' :
+        collNameLower.includes('bracelet') ? '/images/bracelets_category.png' :
+        '/images/category_banner_jewellery.png'
+      );
+
+      return {
+        id: coll.slug,
+        name: coll.name.toUpperCase(),
+        count: count > 0 ? `${count} Product${count > 1 ? 's' : ''}` : 'View Collection',
+        slug: coll.slug,
+        category,
+        image,
+        badge
+      };
+    });
+  }, [dbCollections, dbProducts]);
+
   const categories = [
     { id: 'all', label: 'ALL' },
     { id: 'rings', label: 'RINGS' },
@@ -192,7 +248,7 @@ export default function CollectionsClient() {
   ];
 
   // Filter cards
-  const filteredCards = ALL_CATEGORY_CARDS.filter(card => {
+  const filteredCards = dynamicCards.filter(card => {
     if (activeCategory === 'all') return true;
     return card.category === activeCategory;
   });
@@ -556,12 +612,11 @@ export default function CollectionsClient() {
                   <span className={`${styles.cardBadge} ${styles.badgeNew}`}>NEW</span>
                 )}
 
-                <Image
+                <img
                   src={card.image}
                   alt={card.name}
-                  fill
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   className={styles.categoryCardImage}
+                  style={{ objectFit: 'cover', width: '100%', height: '100%' }}
                 />
                 <div className={styles.categoryCardOverlay}></div>
                 <div className={styles.categoryCardContent}>

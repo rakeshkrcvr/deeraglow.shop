@@ -12,9 +12,11 @@ interface CategoryPageClientProps {
   slug: string;
   title: string;
   products: Product[];
+  bannerImage?: string;
+  description?: string;
 }
 
-export default function CategoryPageClient({ slug, title, products }: CategoryPageClientProps) {
+export default function CategoryPageClient({ slug, title, products, bannerImage, description }: CategoryPageClientProps) {
   const { addToCart, setIsCartOpen } = useCart();
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [selectedMaxPrice, setSelectedMaxPrice] = useState<number | null>(null);
@@ -42,12 +44,21 @@ export default function CategoryPageClient({ slug, title, products }: CategoryPa
     : products;
 
   const getCollectionTitle = () => {
-    if (slug === 'rings') return 'LUXURY RINGS COLLECTION';
-    if (slug === 'necklaces') return 'LUXURY NECKLACES COLLECTION';
-    if (slug === 'earrings') return 'LUXURY EARRINGS COLLECTION';
-    if (slug === 'bracelets') return 'LUXURY BRACELETS COLLECTION';
-    return `LUXURY ${title.toUpperCase()} COLLECTION`;
+    const uppercaseTitle = title.toUpperCase();
+    if (uppercaseTitle.includes('COLLECTION')) return uppercaseTitle;
+    if (uppercaseTitle.startsWith('LUXURY')) return `${uppercaseTitle} COLLECTION`;
+    return `LUXURY ${uppercaseTitle} COLLECTION`;
   };
+
+  const heroImgSrc = bannerImage && bannerImage.trim() !== ''
+    ? bannerImage
+    : slug.includes('necklace') || slug.includes('choker') || slug.includes('pendant')
+      ? '/images/featured_necklaces_bg.png'
+      : slug.includes('earring') || slug.includes('jhumka') || slug.includes('drop') || slug.includes('hoop')
+        ? '/images/featured_earrings_bg.png'
+        : slug.includes('bracelet') || slug.includes('bangle')
+          ? '/images/featured_bracelets_bg.png'
+          : '/images/featured_rings_bg.png';
 
   return (
     <main className={styles.main}>
@@ -95,13 +106,11 @@ export default function CategoryPageClient({ slug, title, products }: CategoryPa
           </div>
 
           <div className={styles.heroRight}>
-            <Image
-              src="/images/featured_rings_bg.png"
-              alt="Luxury jewellery"
-              fill
-              sizes="380px"
+            <img
+              src={heroImgSrc}
+              alt={title}
               className={styles.heroRightImg}
-              priority
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
             <div className={styles.newArrivalsEmblem}>
               <span className={styles.emblemTextTop}>NEW</span>
@@ -288,7 +297,9 @@ export default function CategoryPageClient({ slug, title, products }: CategoryPa
                   {/* Bottom Cream Details Container */}
                   <div className={styles.productBottom}>
                     <span className={styles.categoryTag}>
-                      {prod.collection ? prod.collection.toUpperCase() : 'jewellery'}
+                      {prod.collection && prod.collection.toLowerCase() !== 'unassigned'
+                        ? prod.collection.toUpperCase()
+                        : 'JEWELLERY'}
                     </span>
 
                     <Link href={`/products/${prod.slug}`} className={styles.productTitle}>

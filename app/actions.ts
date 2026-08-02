@@ -25,7 +25,7 @@ export async function subscribeNewsletter(prevState: SubscriptionResult, formDat
     // Check if email already exists
     const existing = await sql`
       SELECT id FROM newsletter_subscribers WHERE email = ${email}
-    `;
+    ` as unknown as { id: number }[];
 
     if (existing.length > 0) {
       return { success: true, message: "You are already subscribed to our journal! Thank you." };

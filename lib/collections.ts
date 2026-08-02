@@ -1,5 +1,8 @@
 import { sql } from './db';
 import { getProducts, Product } from './products';
+import { normalizeImageUrl } from './imageUtils';
+
+export { normalizeImageUrl };
 
 export interface CollectionItem {
   id: number;
@@ -162,7 +165,7 @@ export async function getAllCollections(): Promise<CollectionItem[]> {
         }
         return {
           ...coll,
-          image_url: imageUrl
+          image_url: normalizeImageUrl(imageUrl)
         };
       });
     }

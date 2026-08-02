@@ -77,7 +77,11 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
 
                 {/* Content details */}
                 <div className={styles.info}>
-                  <span className={styles.features}>{product.collection.toUpperCase()}</span>
+                  <span className={styles.features}>
+                    {product.collection && product.collection.toLowerCase() !== 'unassigned'
+                      ? product.collection.toUpperCase()
+                      : 'JEWELLERY'}
+                  </span>
 
                   <Link href={`/products/${product.slug}`}>
                     <h3 className={styles.productName}>{product.name}</h3>

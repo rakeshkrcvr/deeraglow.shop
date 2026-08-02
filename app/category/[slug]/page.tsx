@@ -3,6 +3,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CategoryPageClient from './CategoryPageClient';
 import { getProducts, Product } from '@/lib/products';
+import { getAllCollections, normalizeImageUrl } from '@/lib/collections';
 import styles from './page.module.css';
 
 // Category listings must reflect admin product edits immediately.
@@ -30,6 +31,12 @@ export async function generateMetadata({ params }: PageProps) {
 export default async function CategoryPage({ params }: PageProps) {
   const { slug } = await params;
   const products = await getProducts();
+  const collections = await getAllCollections();
+
+  const matchedColl = collections.find(c =>
+    c.slug.toLowerCase() === slug.toLowerCase() ||
+    c.name.toLowerCase().replace(/\s+/g, '-') === slug.toLowerCase()
+  );
 
   const formatTitle = (s: string) => {
     return s
@@ -38,51 +45,77 @@ export default async function CategoryPage({ params }: PageProps) {
       .join(' ');
   };
 
-  const title = formatTitle(slug);
+  const title = matchedColl ? matchedColl.name : formatTitle(slug);
+  const bannerImage = matchedColl ? normalizeImageUrl(matchedColl.image_url) : '';
+  const description = matchedColl ? matchedColl.description : '';
 
-  // Core product categories must match the product's assigned collection exactly.
-  // Matching product names/features here can put a necklace in Earrings merely
-  // because its copy mentions earrings.
   let filteredProducts: Product[] = [];
-  const normalizedCollection = (collection: string) => collection.trim().toLowerCase();
-  const collectionAliases: Record<string, string[]> = {
-    earrings: ['earring', 'earrings'],
-    necklaces: ['necklace', 'necklaces'],
-    rings: ['ring', 'rings'],
-    bracelets: ['bracelet', 'bracelets'],
-    charms: ['charm', 'charms'],
-    bangles: ['bangle', 'bangles']
-  };
+  const norm = (str?: string | null) => (str || '').trim().toLowerCase();
 
   if (slug === 'all-jewellery' || slug === 'all-candles' || slug === 'all') {
     filteredProducts = products;
-  } else if (collectionAliases[slug]) {
-    filteredProducts = products.filter((product) =>
-      collectionAliases[slug].includes(normalizedCollection(product.collection || ''))
-    );
   } else {
-    filteredProducts = products.filter(p => {
-      const matchTerm = slug.toLowerCase().replace('-', ' ');
-      const normCollection = p.collection ? p.collection.toLowerCase() : '';
-      const normName = p.name ? p.name.toLowerCase() : '';
-      const normFeatures = p.features ? p.features.toLowerCase() : '';
+    // 1. Filter out unassigned products from specific category pages
+    const validProducts = products.filter(p => norm(p.collection) !== 'unassigned');
 
-      return (
-        normCollection.includes(matchTerm) ||
-        normName.includes(matchTerm) ||
-        normFeatures.includes(matchTerm) ||
-        (matchTerm === 'under 499' && p.price <= 499) ||
-        (matchTerm === '500 999' && p.price >= 500 && p.price <= 999)
-      );
-    });
+    if (slug === 'rings') {
+      filteredProducts = validProducts.filter(p => {
+        const pColl = norm(p.collection);
+        if (pColl.includes('earring')) return false; // Exclude earrings from rings
+        return pColl.includes('ring') || /\brings?\b/i.test(p.name);
+      });
+    } else if (slug === 'earrings') {
+      filteredProducts = validProducts.filter(p => {
+        const pColl = norm(p.collection);
+        if (pColl === 'rings' || pColl === 'ring') return false; // Exclude rings from earrings
+        return pColl.includes('earring') || pColl.includes('jhumka') || pColl.includes('stud') || pColl.includes('hoop') || /\bearrings?\b/i.test(p.name);
+      });
+    } else if (slug === 'necklaces') {
+      filteredProducts = validProducts.filter(p => {
+        const pColl = norm(p.collection);
+        return pColl.includes('necklace') || pColl.includes('choker') || pColl.includes('pendant') || /\bnecklaces?\b/i.test(p.name);
+      });
+    } else if (slug === 'bracelets') {
+      filteredProducts = validProducts.filter(p => {
+        const pColl = norm(p.collection);
+        return pColl.includes('bracelet') || pColl.includes('bangle') || pColl.includes('cuff') || /\bbracelets?\b/i.test(p.name);
+      });
+    } else if (matchedColl) {
+      const collNameLower = matchedColl.name.toLowerCase();
+      filteredProducts = validProducts.filter(p => {
+        const pColl = norm(p.collection);
+        if (pColl.includes('earring') && collNameLower.includes('ring') && !collNameLower.includes('earring')) return false;
+        return pColl === collNameLower || pColl.includes(collNameLower);
+      });
+    } else {
+      const matchTerm = slug.toLowerCase().replace(/-/g, ' ');
+      filteredProducts = validProducts.filter(p => {
+        const pColl = norm(p.collection);
+        const pName = norm(p.name);
+        const pFeat = norm(p.features);
+        if (pColl.includes('earring') && matchTerm.includes('ring') && !matchTerm.includes('earring')) return false;
+
+        return (
+          pColl.includes(matchTerm) ||
+          pName.includes(matchTerm) ||
+          pFeat.includes(matchTerm) ||
+          (matchTerm === 'under 499' && p.price <= 499) ||
+          (matchTerm === '500 999' && p.price >= 500 && p.price <= 999)
+        );
+      });
+    }
   }
-
-  const displayProducts = filteredProducts;
 
   return (
     <div className={styles.page}>
       <Header />
-      <CategoryPageClient slug={slug} title={title} products={displayProducts} />
+      <CategoryPageClient
+        slug={slug}
+        title={title}
+        products={filteredProducts}
+        bannerImage={bannerImage}
+        description={description}
+      />
       <Footer />
     </div>
   );

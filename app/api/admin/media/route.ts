@@ -100,7 +100,7 @@ export async function POST(request: Request) {
       INSERT INTO media_files (url, filename, storage_key, mime_type, data_base64, file_size)
       VALUES (${url}, ${filename}, ${storageKey}, ${file.type}, ${dataBase64}, ${file.size})
       RETURNING id, url, filename, storage_key, mime_type, file_size, created_at
-    `;
+    ` as unknown as Record<string, any>[];
 
     return NextResponse.json({ success: true, file: files[0], url, filename });
   } catch (err: unknown) {
