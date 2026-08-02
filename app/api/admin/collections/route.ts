@@ -26,18 +26,10 @@ export async function GET() {
       console.error('Migration error for collections columns:', e);
     }
 
-    // Check if we need to migrate/seed
+    // Check if table is empty, seed initial collections only if 0 exist
     const existingCollections = await sql`SELECT name FROM collections` as unknown as CollectionNameRow[];
-    const hasCandleCollections = existingCollections.some(c =>
-      c.name.toLowerCase().includes('candle') ||
-      c.name.toLowerCase().includes('scent') ||
-      c.name.toLowerCase().includes('wax')
-    );
 
-    if (existingCollections.length < 35 || hasCandleCollections) {
-      // Clear existing to prevent duplicates
-      await sql`TRUNCATE TABLE collections RESTART IDENTITY CASCADE`;
-
+    if (existingCollections.length === 0) {
       const seedCollections = [
         // 1. Rings
         { name: 'Rings', desc: 'Aesthetic and premium daily rings, statement rings, and adjustable bands.', slug: 'rings' },
@@ -98,9 +90,9 @@ export async function GET() {
         await sql`
           INSERT INTO collections (name, description, slug)
           VALUES (${coll.name}, ${coll.desc}, ${coll.slug})
+          ON CONFLICT (name) DO NOTHING
         `;
       }
-      console.log('Successfully seeded all 40 requested collections!');
     }
 
     const collections = await sql`SELECT * FROM collections ORDER BY id ASC`;
