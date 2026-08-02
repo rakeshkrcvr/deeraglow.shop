@@ -84,6 +84,7 @@ function ProductFormContent() {
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [loadingMedia, setLoadingMedia] = useState(false);
   const [mediaSearchQuery, setMediaSearchQuery] = useState('');
+  const [selectedMediaUrls, setSelectedMediaUrls] = useState<string[]>([]);
 
   // 1. Auth check
   useEffect(() => {
@@ -741,6 +742,7 @@ function ProductFormContent() {
                 <button
                   type="button"
                   onClick={() => {
+                    setSelectedMediaUrls([]);
                     fetchMediaFiles();
                     setShowMediaModal(true);
                   }}
@@ -773,15 +775,21 @@ function ProductFormContent() {
                     gap: '6px'
                   }}
                 >
-                  <span>📤</span> Upload File
+                  <span>📤</span> Upload Files
                   <input
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={async (e) => {
-                      if (e.target.files && e.target.files[0]) {
+                      if (e.target.files && e.target.files.length > 0) {
+                        const fileList = Array.from(e.target.files);
                         try {
-                          const res = await uploadMediaFile(e.target.files[0]);
-                          setGalleryImages(prev => [...prev, res.url]);
+                          const uploadedUrls: string[] = [];
+                          for (const file of fileList) {
+                            const res = await uploadMediaFile(file);
+                            uploadedUrls.push(res.url);
+                          }
+                          setGalleryImages(prev => [...prev, ...uploadedUrls]);
                         } catch (err) {
                           alert(err instanceof Error ? err.message : 'Upload failed');
                         } finally {
@@ -991,13 +999,39 @@ function ProductFormContent() {
               </button>
             </div>
 
-            <input
-              type="text"
-              placeholder="Search images..."
-              value={mediaSearchQuery}
-              onChange={(e) => setMediaSearchQuery(e.target.value)}
-              style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }}
-            />
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                type="text"
+                placeholder="Search images..."
+                value={mediaSearchQuery}
+                onChange={(e) => setMediaSearchQuery(e.target.value)}
+                style={{ flexGrow: 1, padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (selectedMediaUrls.length === filteredMediaFiles.length && filteredMediaFiles.length > 0) {
+                    setSelectedMediaUrls([]);
+                  } else {
+                    setSelectedMediaUrls(filteredMediaFiles.map(f => f.url));
+                  }
+                }}
+                style={{
+                  padding: '8px 14px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  border: '1px solid #ccc',
+                  borderRadius: '6px',
+                  backgroundColor: '#f9f9f9',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {selectedMediaUrls.length === filteredMediaFiles.length && filteredMediaFiles.length > 0
+                  ? 'Deselect All'
+                  : 'Select All'}
+              </button>
+            </div>
 
             <div style={{ flexGrow: 1, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '12px', padding: '4px' }}>
               {loadingMedia ? (
@@ -1005,39 +1039,109 @@ function ProductFormContent() {
               ) : filteredMediaFiles.length === 0 ? (
                 <p style={{ color: '#888', gridColumn: '1 / -1' }}>No media files found.</p>
               ) : (
-                filteredMediaFiles.map((file) => (
-                  <div
-                    key={file.id}
-                    onClick={() => {
-                      setGalleryImages(prev => [...prev, file.url]);
-                      setShowMediaModal(false);
-                    }}
-                    style={{
-                      position: 'relative',
-                      height: '110px',
-                      borderRadius: '8px',
-                      overflow: 'hidden',
-                      border: '2px solid #e0e0e0',
-                      cursor: 'pointer',
-                      transition: 'transform 0.15s, border-color 0.15s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.borderColor = '#1a1a1a'}
-                    onMouseLeave={(e) => e.currentTarget.style.borderColor = '#e0e0e0'}
-                  >
-                    <img src={file.url} alt={file.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </div>
-                ))
+                filteredMediaFiles.map((file) => {
+                  const isSelected = selectedMediaUrls.includes(file.url);
+                  return (
+                    <div
+                      key={file.id}
+                      onClick={() => {
+                        setSelectedMediaUrls(prev =>
+                          prev.includes(file.url)
+                            ? prev.filter(u => u !== file.url)
+                            : [...prev, file.url]
+                        );
+                      }}
+                      style={{
+                        position: 'relative',
+                        height: '110px',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        border: isSelected ? '3px solid #202020' : '2px solid #e0e0e0',
+                        cursor: 'pointer',
+                        transition: 'transform 0.15s, border-color 0.15s'
+                      }}
+                    >
+                      <img src={file.url} alt={file.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+
+                      {/* Checkbox Badge */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '6px',
+                          left: '6px',
+                          width: '22px',
+                          height: '22px',
+                          borderRadius: '4px',
+                          backgroundColor: isSelected ? '#202020' : 'rgba(255,255,255,0.9)',
+                          color: isSelected ? '#ffffff' : '#888888',
+                          border: isSelected ? '1px solid #202020' : '1px solid #cccccc',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '12px',
+                          fontWeight: 'bold',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                        }}
+                      >
+                        {isSelected ? '✓' : ''}
+                      </div>
+
+                      {isSelected && (
+                        <div style={{
+                          position: 'absolute',
+                          inset: 0,
+                          backgroundColor: 'rgba(32, 32, 32, 0.15)',
+                          pointerEvents: 'none'
+                        }} />
+                      )}
+                    </div>
+                  );
+                })
               )}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button
-                type="button"
-                onClick={() => setShowMediaModal(false)}
-                style={{ backgroundColor: '#e6e6e6', color: '#1a1a1a', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
-              >
-                Close
-              </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid #eeeeee' }}>
+              <span style={{ fontSize: '13px', color: '#666666', fontWeight: '500' }}>
+                {selectedMediaUrls.length > 0
+                  ? `${selectedMediaUrls.length} image${selectedMediaUrls.length > 1 ? 's' : ''} selected`
+                  : 'Click images to select multiple'}
+              </span>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedMediaUrls([]);
+                    setShowMediaModal(false);
+                  }}
+                  style={{ backgroundColor: '#f0f0f0', color: '#1a1a1a', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  disabled={selectedMediaUrls.length === 0}
+                  onClick={() => {
+                    setGalleryImages(prev => [...prev, ...selectedMediaUrls]);
+                    setSelectedMediaUrls([]);
+                    setShowMediaModal(false);
+                  }}
+                  style={{
+                    backgroundColor: selectedMediaUrls.length > 0 ? '#202020' : '#cccccc',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '8px 20px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: selectedMediaUrls.length > 0 ? 'pointer' : 'not-allowed',
+                    boxShadow: selectedMediaUrls.length > 0 ? '0 2px 6px rgba(0,0,0,0.15)' : 'none'
+                  }}
+                >
+                  Add Selected Images {selectedMediaUrls.length > 0 ? `(${selectedMediaUrls.length})` : ''}
+                </button>
+              </div>
             </div>
           </div>
         </div>
