@@ -1,6 +1,7 @@
 "use server";
 
 import { sql } from "@/lib/db";
+import { sendWelcomeNewsletterEmail } from "@/lib/email";
 
 export interface SubscriptionResult {
   success: boolean;
@@ -22,7 +23,16 @@ export async function subscribeNewsletter(prevState: SubscriptionResult, formDat
   }
 
   try {
-    // Check if email already exists
+    // 1. Ensure newsletter_subscribers table exists
+    await sql`
+      CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        subscribed_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `;
+
+    // 2. Check if email already exists
     const existing = await sql`
       SELECT id FROM newsletter_subscribers WHERE email = ${email}
     ` as unknown as { id: number }[];
@@ -31,12 +41,15 @@ export async function subscribeNewsletter(prevState: SubscriptionResult, formDat
       return { success: true, message: "You are already subscribed to our journal! Thank you." };
     }
 
-    // Insert into database
+    // 3. Insert into database
     await sql`
       INSERT INTO newsletter_subscribers (email) VALUES (${email})
     `;
 
-    return { success: true, message: "Thank you for subscribing to the Deera Glow Journal!" };
+    // 4. Send Welcome Email via Gmail SMTP
+    await sendWelcomeNewsletterEmail(email);
+
+    return { success: true, message: "Thank you for subscribing! A welcome email has been sent to your inbox." };
   } catch (error) {
     console.error("Newsletter subscription error:", error);
     return { 

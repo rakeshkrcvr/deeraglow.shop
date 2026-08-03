@@ -72,6 +72,12 @@ interface Order {
   billing_address?: string;
   notes?: string;
   order_items?: string;
+  subtotal?: string;
+  delivery_charge?: string;
+  cod_fee?: string;
+  advance_paid?: string;
+  remaining_cod?: string;
+  payment_method?: string;
 }
 
 interface OrderItem {
@@ -202,10 +208,10 @@ function normalizeInventoryProducts(products: Product[]): Product[] {
   }));
 }
 
-type AdminTab = 'orders' | 'drafts' | 'abandoned' | 'products' | 'collections' | 'files' | 'meta_catalog' | 'discounts' | 'customers' | 'growth' | 'content' | 'analytics' | 'settings';
+type AdminTab = 'orders' | 'drafts' | 'abandoned' | 'products' | 'collections' | 'files' | 'meta_catalog' | 'discounts' | 'customers' | 'growth' | 'content' | 'analytics' | 'checkout_info' | 'settings';
 
 export default function AdminDashboard() {
-  const validTabs: AdminTab[] = ['orders', 'drafts', 'abandoned', 'products', 'collections', 'files', 'meta_catalog', 'discounts', 'customers', 'growth', 'content', 'analytics', 'settings'];
+  const validTabs: AdminTab[] = ['orders', 'drafts', 'abandoned', 'products', 'collections', 'files', 'meta_catalog', 'discounts', 'customers', 'growth', 'content', 'analytics', 'checkout_info', 'settings'];
   const requestedTab = typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get('tab');
   const initialActiveTab: AdminTab = requestedTab && validTabs.includes(requestedTab as AdminTab) ? requestedTab as AdminTab : 'orders';
   const isInitialProductTab = ['products', 'collections', 'files', 'meta_catalog'].includes(initialActiveTab);
@@ -438,6 +444,13 @@ export default function AdminDashboard() {
   const [settingsSuccess, setSettingsSuccess] = useState('');
   const [settingsError, setSettingsError] = useState('');
 
+  // Editable Checkout Settings States
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState('500');
+  const [standardDeliveryCharge, setStandardDeliveryCharge] = useState('190');
+  const [codHandlingFee, setCodHandlingFee] = useState('150');
+  const [codAdvanceAmount, setCodAdvanceAmount] = useState('200');
+  const [codNoticeText, setCodNoticeText] = useState('To confirm your Cash on Delivery order, you must pay a non-refundable advance online. The remaining amount will be collected at the time of delivery.');
+
   // Marketing Tracking Pixels & Tags
   const [googleTagId, setGoogleTagId] = useState('');
   const [googleTagCode, setGoogleTagCode] = useState('');
@@ -465,6 +478,7 @@ export default function AdminDashboard() {
   // Logos & Socials configurations
   const [logoHeaderUrl, setLogoHeaderUrl] = useState('');
   const [logoFooterUrl, setLogoFooterUrl] = useState('');
+  const [faviconUrl, setFaviconUrl] = useState('');
   const [instagramUrl, setInstagramUrl] = useState('');
   const [facebookUrl, setFacebookUrl] = useState('');
   const [pinterestUrl, setPinterestUrl] = useState('');
@@ -1300,6 +1314,7 @@ export default function AdminDashboard() {
         }
         setLogoHeaderUrl(data.logoHeaderUrl || '');
         setLogoFooterUrl(data.logoFooterUrl || '');
+        setFaviconUrl(data.faviconUrl || '');
         setInstagramUrl(data.instagramUrl || '');
         setFacebookUrl(data.facebookUrl || '');
         setPinterestUrl(data.pinterestUrl || '');
@@ -1340,6 +1355,11 @@ export default function AdminDashboard() {
             console.error('Error parsing hero announcement items:', e);
           }
         }
+        if (data.freeShippingThreshold) setFreeShippingThreshold(data.freeShippingThreshold);
+        if (data.standardDeliveryCharge) setStandardDeliveryCharge(data.standardDeliveryCharge);
+        if (data.codHandlingFee) setCodHandlingFee(data.codHandlingFee);
+        if (data.codAdvanceAmount) setCodAdvanceAmount(data.codAdvanceAmount);
+        if (data.codNoticeText) setCodNoticeText(data.codNoticeText);
         try {
           const parsedPosts = JSON.parse(data.contentBlogPosts || '[]');
           if (Array.isArray(parsedPosts)) {
@@ -2948,6 +2968,30 @@ export default function AdminDashboard() {
             <span>Analytics</span>
           </button>
 
+          {/* Checkout Info Tab */}
+          <button
+            onClick={() => selectAdminTab('checkout_info')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '10px 12px',
+              borderRadius: '8px',
+              border: 'none',
+              background: activeTab === 'checkout_info' ? '#ffffff' : 'transparent',
+              color: '#1a1a1a',
+              fontSize: '13px',
+              fontWeight: activeTab === 'checkout_info' ? '600' : '500',
+              cursor: 'pointer',
+              textAlign: 'left',
+              width: '100%',
+              boxShadow: activeTab === 'checkout_info' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+            }}
+          >
+            <span style={{ fontSize: '16px' }}>🛒</span>
+            <span>Checkout Info</span>
+          </button>
+
           {/* Settings Tab */}
           <button
             onClick={() => selectAdminTab('settings')}
@@ -3229,6 +3273,7 @@ export default function AdminDashboard() {
                         <div style={{ color: '#6d6d6d', fontSize: '11px', marginBottom: '4px' }}>Payment</div>
                         <select value={editableOrder.payment_status} onChange={e => handleOrderFieldChange('payment_status', e.target.value)} style={{ width: '100%', border: 'none', background: 'transparent', fontWeight: '700', outline: 'none' }}>
                           <option>Paid</option>
+                          <option>Advance Paid</option>
                           <option>Payment pending</option>
                           <option>Refunded</option>
                           <option>Failed</option>
@@ -3275,6 +3320,40 @@ export default function AdminDashboard() {
                         <label style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
                           Notes
                           <textarea value={editableOrder.notes || ''} onChange={e => handleOrderFieldChange('notes', e.target.value)} rows={3} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'vertical', fontFamily: 'inherit' }} />
+                        </label>
+                      </div>
+                    </div>
+
+                    <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '18px', backgroundColor: '#fafafa' }}>
+                      <h3 style={{ margin: '0 0 14px 0', fontSize: '15px' }}>Payment & Charges Breakdown</h3>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', fontSize: '13px' }}>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                          Subtotal
+                          <input value={editableOrder.subtotal || ''} onChange={e => handleOrderFieldChange('subtotal', e.target.value)} placeholder="₹0.00" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                          Delivery Charge
+                          <input value={editableOrder.delivery_charge || ''} onChange={e => handleOrderFieldChange('delivery_charge', e.target.value)} placeholder="FREE" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                          COD Handling Fee
+                          <input value={editableOrder.cod_fee || ''} onChange={e => handleOrderFieldChange('cod_fee', e.target.value)} placeholder="₹0.00" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                          Total Order Value
+                          <input value={editableOrder.total_price} onChange={e => handleOrderFieldChange('total_price', e.target.value)} placeholder="₹0.00" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontWeight: '700' }} />
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                          Advance Paid (Online)
+                          <input value={editableOrder.advance_paid || ''} onChange={e => handleOrderFieldChange('advance_paid', e.target.value)} placeholder="₹200.00" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', color: '#2d5c4d', fontWeight: '700' }} />
+                        </label>
+                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                          Remaining COD Amount
+                          <input value={editableOrder.remaining_cod || ''} onChange={e => handleOrderFieldChange('remaining_cod', e.target.value)} placeholder="₹0.00" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', color: '#856404', fontWeight: '700' }} />
+                        </label>
+                        <label style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                          Payment Method
+                          <input value={editableOrder.payment_method || ''} onChange={e => handleOrderFieldChange('payment_method', e.target.value)} placeholder="Cash on Delivery / Online Payment" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
                         </label>
                       </div>
                     </div>
@@ -6252,6 +6331,370 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* TAB: CHECKOUT INFO PANEL (FULL CRUD MANAGEMENT) */}
+        {activeTab === 'checkout_info' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '24px' }}>🛒</span>
+                  <h1 style={{ fontSize: '20px', fontWeight: '700', margin: 0, color: '#1a1a1a' }}>Checkout Info & Business Rules Manager</h1>
+                </div>
+                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#6d6d6d' }}>
+                  Manage, update, and configure all store checkout fees, free shipping thresholds, and COD advance rules.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFreeShippingThreshold('500');
+                    setStandardDeliveryCharge('190');
+                    setCodHandlingFee('150');
+                    setCodAdvanceAmount('200');
+                    setCodNoticeText('To confirm your Cash on Delivery order, you must pay a non-refundable advance online. The remaining amount will be collected at the time of delivery.');
+                  }}
+                  style={{
+                    backgroundColor: '#ffffff',
+                    color: '#6d6d6d',
+                    border: '1px solid #cccccc',
+                    borderRadius: '8px',
+                    padding: '8px 14px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🔄 Reset Defaults
+                </button>
+                <button
+                  type="button"
+                  onClick={() => selectAdminTab('abandoned')}
+                  style={{
+                    backgroundColor: '#ffffff',
+                    color: '#1a1a1a',
+                    border: '1px solid #cccccc',
+                    borderRadius: '8px',
+                    padding: '8px 14px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  View Abandoned Checkouts →
+                </button>
+              </div>
+            </div>
+
+            {settingsSuccess && (
+              <div style={{ padding: '12px 16px', backgroundColor: '#e2ece9', color: '#2d5c4d', borderRadius: '8px', fontSize: '13px', fontWeight: '600', marginBottom: '20px', border: '1px solid #b8d8ce' }}>
+                {settingsSuccess}
+              </div>
+            )}
+            {settingsError && (
+              <div style={{ padding: '12px 16px', backgroundColor: '#fde8e8', color: '#9b1c1c', borderRadius: '8px', fontSize: '13px', fontWeight: '600', marginBottom: '20px', border: '1px solid #f8b4b4' }}>
+                {settingsError}
+              </div>
+            )}
+
+            {/* Quick Interactive Metric Cards Row with Direct Inputs */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
+              
+              {/* Card 1: Free Delivery Threshold */}
+              <div style={{ backgroundColor: '#ffffff', border: '2px solid #2d5c4d', borderRadius: '12px', padding: '18px', boxShadow: '0 2px 6px rgba(0,0,0,0.04)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '11px', color: '#2d5c4d', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>FREE Shipping Threshold</span>
+                  <span style={{ fontSize: '14px' }}>🚚</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', margin: '6px 0' }}>
+                  <span style={{ fontSize: '20px', fontWeight: '800', color: '#2d5c4d' }}>₹</span>
+                  <input
+                    type="number"
+                    value={freeShippingThreshold}
+                    onChange={(e) => setFreeShippingThreshold(e.target.value)}
+                    style={{
+                      width: '100%',
+                      fontSize: '22px',
+                      fontWeight: '800',
+                      color: '#2d5c4d',
+                      border: '1px solid #cce7dd',
+                      borderRadius: '6px',
+                      padding: '4px 8px',
+                      backgroundColor: '#f4f9f7',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+                <span style={{ fontSize: '11px', color: '#6d6d6d' }}>Orders ≥ ₹{freeShippingThreshold || '0'} get FREE Shipping</span>
+              </div>
+
+              {/* Card 2: Standard Delivery Charge */}
+              <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '12px', padding: '18px', boxShadow: '0 2px 6px rgba(0,0,0,0.04)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '11px', color: '#6d6d6d', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Standard Delivery Fee</span>
+                  <span style={{ fontSize: '14px' }}>📦</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', margin: '6px 0' }}>
+                  <span style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a1a' }}>₹</span>
+                  <input
+                    type="number"
+                    value={standardDeliveryCharge}
+                    onChange={(e) => setStandardDeliveryCharge(e.target.value)}
+                    style={{
+                      width: '100%',
+                      fontSize: '22px',
+                      fontWeight: '800',
+                      color: '#1a1a1a',
+                      border: '1px solid #e3e3e3',
+                      borderRadius: '6px',
+                      padding: '4px 8px',
+                      backgroundColor: '#fafafa',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+                <span style={{ fontSize: '11px', color: '#6d6d6d' }}>Applied on orders &lt; ₹{freeShippingThreshold || '0'}</span>
+              </div>
+
+              {/* Card 3: COD Handling Fee */}
+              <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '12px', padding: '18px', boxShadow: '0 2px 6px rgba(0,0,0,0.04)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '11px', color: '#856404', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>COD Handling Fee</span>
+                  <span style={{ fontSize: '14px' }}>🏷️</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', margin: '6px 0' }}>
+                  <span style={{ fontSize: '20px', fontWeight: '800', color: '#856404' }}>₹</span>
+                  <input
+                    type="number"
+                    value={codHandlingFee}
+                    onChange={(e) => setCodHandlingFee(e.target.value)}
+                    style={{
+                      width: '100%',
+                      fontSize: '22px',
+                      fontWeight: '800',
+                      color: '#856404',
+                      border: '1px solid #ffe599',
+                      borderRadius: '6px',
+                      padding: '4px 8px',
+                      backgroundColor: '#fff8e6',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+                <span style={{ fontSize: '11px', color: '#6d6d6d' }}>Added when COD is selected</span>
+              </div>
+
+              {/* Card 4: Mandatory COD Advance */}
+              <div style={{ backgroundColor: '#ffffff', border: '2px solid #1a1a1a', borderRadius: '12px', padding: '18px', boxShadow: '0 2px 6px rgba(0,0,0,0.04)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '11px', color: '#1a1a1a', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>COD Advance Pay Now</span>
+                  <span style={{ fontSize: '14px' }}>💳</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', margin: '6px 0' }}>
+                  <span style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a1a' }}>₹</span>
+                  <input
+                    type="number"
+                    value={codAdvanceAmount}
+                    onChange={(e) => setCodAdvanceAmount(e.target.value)}
+                    style={{
+                      width: '100%',
+                      fontSize: '22px',
+                      fontWeight: '800',
+                      color: '#1a1a1a',
+                      border: '1px solid #cccccc',
+                      borderRadius: '6px',
+                      padding: '4px 8px',
+                      backgroundColor: '#f5f5f5',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+                <span style={{ fontSize: '11px', color: '#6d6d6d' }}>Paid online via Razorpay to confirm</span>
+              </div>
+
+            </div>
+
+            {/* Main Interactive Form & Live Preview Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+              
+              {/* Left Column: Interactive Form */}
+              <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '12px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px', color: '#1a1a1a' }}>
+                  ✏️ Edit Rule Configurations & Save
+                </h3>
+                
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSaveSettings({
+                      freeShippingThreshold,
+                      standardDeliveryCharge,
+                      codHandlingFee,
+                      codAdvanceAmount,
+                      codNoticeText
+                    });
+                  }}
+                  style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '13px' }}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontWeight: '600', color: '#1a1a1a' }}>Free Shipping Threshold (₹)</label>
+                    <span style={{ fontSize: '11px', color: '#6d6d6d' }}>Orders with subtotal equal or above this get FREE Shipping</span>
+                    <input
+                      type="number"
+                      required
+                      value={freeShippingThreshold}
+                      onChange={(e) => setFreeShippingThreshold(e.target.value)}
+                      placeholder="500"
+                      style={{ padding: '10px 12px', border: '1px solid #ccc', borderRadius: '8px', fontSize: '14px', fontWeight: '600' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontWeight: '600', color: '#1a1a1a' }}>Standard Delivery Charge (₹)</label>
+                    <span style={{ fontSize: '11px', color: '#6d6d6d' }}>Delivery fee applied when subtotal is below free shipping threshold</span>
+                    <input
+                      type="number"
+                      required
+                      value={standardDeliveryCharge}
+                      onChange={(e) => setStandardDeliveryCharge(e.target.value)}
+                      placeholder="190"
+                      style={{ padding: '10px 12px', border: '1px solid #ccc', borderRadius: '8px', fontSize: '14px', fontWeight: '600' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontWeight: '600', color: '#1a1a1a' }}>COD Handling Fee (₹)</label>
+                    <span style={{ fontSize: '11px', color: '#6d6d6d' }}>Additional fee added to order total when Cash on Delivery is selected</span>
+                    <input
+                      type="number"
+                      required
+                      value={codHandlingFee}
+                      onChange={(e) => setCodHandlingFee(e.target.value)}
+                      placeholder="150"
+                      style={{ padding: '10px 12px', border: '1px solid #ccc', borderRadius: '8px', fontSize: '14px', fontWeight: '600' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontWeight: '600', color: '#1a1a1a' }}>Mandatory COD Online Advance Amount (₹)</label>
+                    <span style={{ fontSize: '11px', color: '#6d6d6d' }}>Online advance payment amount required via Razorpay for COD confirmation</span>
+                    <input
+                      type="number"
+                      required
+                      value={codAdvanceAmount}
+                      onChange={(e) => setCodAdvanceAmount(e.target.value)}
+                      placeholder="200"
+                      style={{ padding: '10px 12px', border: '1px solid #ccc', borderRadius: '8px', fontSize: '14px', fontWeight: '600' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <label style={{ fontWeight: '600', color: '#1a1a1a' }}>Mandatory COD Customer Notice Text</label>
+                    <span style={{ fontSize: '11px', color: '#6d6d6d' }}>Message text rendered inside yellow notice box when customer chooses COD</span>
+                    <textarea
+                      rows={3}
+                      required
+                      value={codNoticeText}
+                      onChange={(e) => setCodNoticeText(e.target.value)}
+                      placeholder="To confirm your Cash on Delivery order..."
+                      style={{ padding: '10px 12px', border: '1px solid #ccc', borderRadius: '8px', fontSize: '13px', fontFamily: 'inherit', resize: 'vertical' }}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    style={{
+                      backgroundColor: '#1a1a1a',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '12px 20px',
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      marginTop: '6px',
+                      boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+                    }}
+                  >
+                    💾 Save Checkout Settings
+                  </button>
+                </form>
+              </div>
+
+              {/* Right Column: Real-time Dynamic Calculations Preview */}
+              <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '12px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: '700', margin: '0 0 16px 0', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px', color: '#1a1a1a' }}>
+                  🔍 Real-time Dynamic Charge Preview
+                </h3>
+
+                {(() => {
+                  const thresh = Number(freeShippingThreshold) || 500;
+                  const delCharge = Number(standardDeliveryCharge) || 190;
+                  const cFee = Number(codHandlingFee) || 150;
+                  const adv = Number(codAdvanceAmount) || 200;
+
+                  // Example 1: Above threshold (e.g. thresh + 200)
+                  const subtotal1 = thresh + 200;
+                  const total1 = subtotal1 + 0 + cFee;
+                  const remaining1 = Math.max(0, total1 - adv);
+
+                  // Example 2: Below threshold (e.g. max(0, thresh - 100))
+                  const subtotal2 = Math.max(100, thresh - 100);
+                  const total2 = subtotal2 + delCharge + cFee;
+                  const remaining2 = Math.max(0, total2 - adv);
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '13px' }}>
+                      
+                      {/* Dynamic Example 1 */}
+                      <div style={{ border: '1px solid #cce7dd', borderRadius: '10px', padding: '14px', backgroundColor: '#f4f9f7' }}>
+                        <div style={{ fontWeight: '700', color: '#2d5c4d', marginBottom: '8px', fontSize: '13px' }}>
+                          Example 1: Order Above Threshold (Subtotal ₹{subtotal1})
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', color: '#4a4a4a' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Subtotal:</span><span>₹{subtotal1.toFixed(2)}</span></div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2d5c4d', fontWeight: '600' }}><span>Delivery Charge (≥ ₹{thresh}):</span><span>FREE (₹0.00)</span></div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>COD Handling Fee:</span><span>₹{cFee.toFixed(2)}</span></div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700', color: '#1a1a1a', borderTop: '1px solid #d4e2da', paddingTop: '6px', marginTop: '4px' }}><span>Total Order Value:</span><span>₹{total1.toFixed(2)}</span></div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2d5c4d', fontWeight: '600' }}><span>Advance Paid Online:</span><span>₹{adv.toFixed(2)}</span></div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#856404', fontWeight: '700' }}><span>Amount Payable on Delivery:</span><span>₹{remaining1.toFixed(2)}</span></div>
+                        </div>
+                      </div>
+
+                      {/* Dynamic Example 2 */}
+                      <div style={{ border: '1px solid #ffe599', borderRadius: '10px', padding: '14px', backgroundColor: '#fff8e6' }}>
+                        <div style={{ fontWeight: '700', color: '#856404', marginBottom: '8px', fontSize: '13px' }}>
+                          Example 2: Order Below Threshold (Subtotal ₹{subtotal2})
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', color: '#4a4a4a' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Subtotal:</span><span>₹{subtotal2.toFixed(2)}</span></div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#b45309', fontWeight: '600' }}><span>Delivery Charge (&lt; ₹{thresh}):</span><span>₹{delCharge.toFixed(2)}</span></div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>COD Handling Fee:</span><span>₹{cFee.toFixed(2)}</span></div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700', color: '#1a1a1a', borderTop: '1px solid #ffe3c2', paddingTop: '6px', marginTop: '4px' }}><span>Total Order Value:</span><span>₹{total2.toFixed(2)}</span></div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2d5c4d', fontWeight: '600' }}><span>Advance Paid Online:</span><span>₹{adv.toFixed(2)}</span></div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#856404', fontWeight: '700' }}><span>Amount Payable on Delivery:</span><span>₹{remaining2.toFixed(2)}</span></div>
+                        </div>
+                      </div>
+
+                      {/* Notice Message Live Box */}
+                      <div style={{ border: '1px dashed #cccccc', borderRadius: '10px', padding: '14px', backgroundColor: '#fafafa' }}>
+                        <div style={{ fontSize: '11px', fontWeight: '700', color: '#6d6d6d', textTransform: 'uppercase', marginBottom: '4px' }}>Customer Notice Box Preview</div>
+                        <p style={{ margin: 0, fontSize: '12px', color: '#333', lineHeight: '1.4' }}>
+                          {codNoticeText || 'To confirm your Cash on Delivery order, you must pay a non-refundable advance online.'}
+                        </p>
+                      </div>
+
+                    </div>
+                  );
+                })()}
+
+              </div>
+
+            </div>
+          </div>
+        )}
+
         {/* TAB 2.4: STORE SETTINGS PANEL */}
         {activeTab === 'settings' && (
           <div>
@@ -6459,7 +6902,7 @@ export default function AdminDashboard() {
                     <h3 style={{ fontSize: '15px', fontWeight: '700', margin: 0 }}>Website Branding & Logo</h3>
                     <span style={{ backgroundColor: '#ff9800', color: '#ffffff', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '12px', textTransform: 'uppercase' }}>Logos</span>
                   </div>
-                  <form onSubmit={e => { e.preventDefault(); handleSaveSettings({ logoHeaderUrl, logoFooterUrl }); }} style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '13px' }}>
+                  <form onSubmit={e => { e.preventDefault(); handleSaveSettings({ logoHeaderUrl, logoFooterUrl, faviconUrl }); }} style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '13px' }}>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <label style={{ fontWeight: '600', color: '#333' }}>Header Logo</label>
@@ -6483,7 +6926,7 @@ export default function AdminDashboard() {
                               try {
                                 const data = await uploadMediaFile(file);
                                 setLogoHeaderUrl(data.url);
-                                handleSaveSettings({ logoHeaderUrl: data.url, logoFooterUrl });
+                                handleSaveSettings({ logoHeaderUrl: data.url, logoFooterUrl, faviconUrl });
                               } catch (err) {
                                 alert(err instanceof Error ? err.message : 'Error uploading header logo.');
                               }
@@ -6521,7 +6964,7 @@ export default function AdminDashboard() {
                               try {
                                 const data = await uploadMediaFile(file);
                                 setLogoFooterUrl(data.url);
-                                handleSaveSettings({ logoHeaderUrl, logoFooterUrl: data.url });
+                                handleSaveSettings({ logoHeaderUrl, logoFooterUrl: data.url, faviconUrl });
                               } catch (err) {
                                 alert(err instanceof Error ? err.message : 'Error uploading footer logo.');
                               }
@@ -6533,6 +6976,47 @@ export default function AdminDashboard() {
                         <div style={{ marginTop: '6px', border: '1px dashed #ccc', padding: '10px', borderRadius: '6px', textAlign: 'center', backgroundColor: '#3e0030' }}>
                           <span style={{ display: 'block', fontSize: '11px', color: '#ccc', marginBottom: '4px' }}>Footer Logo Preview:</span>
                           <img src={logoFooterUrl} alt="Footer Preview" style={{ maxHeight: '42px', objectFit: 'contain' }} />
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label style={{ fontWeight: '600', color: '#333' }}>Website Favicon (PNG / Icon)</label>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <input
+                          type="text"
+                          value={faviconUrl}
+                          onChange={e => setFaviconUrl(e.target.value)}
+                          placeholder="https://example.com/favicon.png"
+                          style={{ flex: 1, padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
+                        />
+                        <label style={{ backgroundColor: '#1a1a1a', color: '#ffffff', borderRadius: '6px', padding: '8px 14px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
+                          📁 Upload Favicon
+                          <input
+                            type="file"
+                            accept="image/*,.ico"
+                            style={{ display: 'none' }}
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              try {
+                                const data = await uploadMediaFile(file);
+                                setFaviconUrl(data.url);
+                                handleSaveSettings({ logoHeaderUrl, logoFooterUrl, faviconUrl: data.url });
+                              } catch (err) {
+                                alert(err instanceof Error ? err.message : 'Error uploading favicon.');
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+                      {faviconUrl && (
+                        <div style={{ marginTop: '6px', border: '1px dashed #ccc', padding: '10px', borderRadius: '6px', textAlign: 'center', backgroundColor: '#f9f9f9' }}>
+                          <span style={{ display: 'block', fontSize: '11px', color: '#6d6d6d', marginBottom: '6px' }}>Favicon Tab Preview:</span>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#e8ecef', padding: '6px 14px', borderRadius: '8px 8px 0 0', border: '1px solid #d1d5db', borderBottom: 'none' }}>
+                            <img src={faviconUrl} alt="Favicon Preview" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
+                            <span style={{ fontSize: '12px', color: '#374151', fontWeight: '500' }}>Deera Glow | Premium Artificial...</span>
+                          </div>
                         </div>
                       )}
                     </div>

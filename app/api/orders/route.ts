@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { getErrorMessage } from '@/lib/errors';
 import { getProducts } from '@/lib/products';
+import { sendOrderConfirmationEmail } from '@/lib/email';
 
 type CountRow = { count: string };
 type MaxOrderRow = { max: number | null };
@@ -22,6 +23,12 @@ type OrderRow = {
   billing_address?: string | null;
   notes?: string | null;
   order_items?: string | null;
+  subtotal?: string | null;
+  delivery_charge?: string | null;
+  cod_fee?: string | null;
+  advance_paid?: string | null;
+  remaining_cod?: string | null;
+  payment_method?: string | null;
 };
 
 type PurchasedItem = {
@@ -67,11 +74,20 @@ const ensureOrdersTable = async () => {
       shipping_address TEXT,
       billing_address TEXT,
       notes TEXT,
-      order_items TEXT
+      order_items TEXT,
+      subtotal VARCHAR(50),
+      delivery_charge VARCHAR(50),
+      cod_fee VARCHAR(50),
+      advance_paid VARCHAR(50),
+      remaining_cod VARCHAR(50),
+      payment_method VARCHAR(50)
     )
   `;
 
-  const migrations = ['customer_email', 'customer_phone', 'shipping_address', 'billing_address', 'notes', 'order_items'];
+  const migrations = [
+    'customer_email', 'customer_phone', 'shipping_address', 'billing_address', 'notes', 'order_items',
+    'subtotal', 'delivery_charge', 'cod_fee', 'advance_paid', 'remaining_cod', 'payment_method'
+  ];
   for (const migration of migrations) {
     try {
       if (migration === 'customer_email') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_email VARCHAR(255)`;
@@ -80,6 +96,12 @@ const ensureOrdersTable = async () => {
       if (migration === 'billing_address') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS billing_address TEXT`;
       if (migration === 'notes') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS notes TEXT`;
       if (migration === 'order_items') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_items TEXT`;
+      if (migration === 'subtotal') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS subtotal VARCHAR(50)`;
+      if (migration === 'delivery_charge') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_charge VARCHAR(50)`;
+      if (migration === 'cod_fee') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS cod_fee VARCHAR(50)`;
+      if (migration === 'advance_paid') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS advance_paid VARCHAR(50)`;
+      if (migration === 'remaining_cod') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS remaining_cod VARCHAR(50)`;
+      if (migration === 'payment_method') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50)`;
     } catch (error) {
       console.error('Order migration error for ' + migration + ':', error);
     }
@@ -194,7 +216,8 @@ export async function POST(request: Request) {
     await ensureOrdersTable();
     const {
       customer, total_price, payment_status, items_count, channel,
-      customer_email, customer_phone, shipping_address, billing_address, notes, order_items
+      customer_email, customer_phone, shipping_address, billing_address, notes, order_items,
+      subtotal, delivery_charge, cod_fee, advance_paid, remaining_cod, payment_method
     } = body;
     
     // Generate order number
@@ -216,7 +239,8 @@ export async function POST(request: Request) {
     await sql`
       INSERT INTO orders (
         order_number, date_str, customer, channel, total_price, payment_status, fulfillment_status, items_count, delivery_status,
-        customer_email, customer_phone, shipping_address, billing_address, notes, order_items
+        customer_email, customer_phone, shipping_address, billing_address, notes, order_items,
+        subtotal, delivery_charge, cod_fee, advance_paid, remaining_cod, payment_method
       )
       VALUES (
         ${order_number}, 
@@ -233,11 +257,38 @@ export async function POST(request: Request) {
         ${shipping_address || ''},
         ${billing_address || shipping_address || ''},
         ${notes || ''},
-        ${JSON.stringify(Array.isArray(order_items) ? order_items : [])}
+        ${JSON.stringify(Array.isArray(order_items) ? order_items : [])},
+        ${subtotal || ''},
+        ${delivery_charge || ''},
+        ${cod_fee || ''},
+        ${advance_paid || ''},
+        ${remaining_cod || ''},
+        ${payment_method || ''}
       )
     `;
 
     await decrementPurchasedInventory(order_items);
+
+    // Trigger Order Confirmation Email to Customer & Admin Notification Email via Gmail SMTP
+    try {
+      await sendOrderConfirmationEmail({
+        orderNumber: order_number,
+        customerName: customer,
+        customerEmail: customer_email || '',
+        customerPhone: customer_phone || '',
+        shippingAddress: shipping_address || '',
+        paymentMethod: payment_method || '',
+        subtotal: subtotal || '',
+        deliveryCharge: delivery_charge || '',
+        codFee: cod_fee || '',
+        totalPrice: total_price || '',
+        advancePaid: advance_paid || '',
+        remainingCod: remaining_cod || '',
+        items: Array.isArray(order_items) ? order_items : [],
+      });
+    } catch (e) {
+      console.error('Error sending order email:', e);
+    }
 
     return NextResponse.json({ success: true, order_number });
   } catch (error: unknown) {
@@ -254,7 +305,8 @@ export async function PUT(request: Request) {
     const {
       id, order_number, date_str, customer, channel, total_price,
       payment_status, fulfillment_status, items_count, delivery_status,
-      customer_email, customer_phone, shipping_address, billing_address, notes, order_items
+      customer_email, customer_phone, shipping_address, billing_address, notes, order_items,
+      subtotal, delivery_charge, cod_fee, advance_paid, remaining_cod, payment_method
     } = body;
 
     if (!id) {
@@ -277,7 +329,13 @@ export async function PUT(request: Request) {
           shipping_address = ${shipping_address || ''},
           billing_address = ${billing_address || ''},
           notes = ${notes || ''},
-          order_items = ${JSON.stringify(Array.isArray(order_items) ? order_items : [])}
+          order_items = ${JSON.stringify(Array.isArray(order_items) ? order_items : [])},
+          subtotal = ${subtotal || ''},
+          delivery_charge = ${delivery_charge || ''},
+          cod_fee = ${cod_fee || ''},
+          advance_paid = ${advance_paid || ''},
+          remaining_cod = ${remaining_cod || ''},
+          payment_method = ${payment_method || ''}
       WHERE id = ${parseInt(id, 10)}
     `;
 

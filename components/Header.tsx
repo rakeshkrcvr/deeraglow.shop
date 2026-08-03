@@ -97,6 +97,31 @@ export default function Header() {
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
   const [abandonedCheckoutReference, setAbandonedCheckoutReference] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'prepaid' | 'cod'>('prepaid');
+
+  // Search Modal states
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+
+  // Account Modal states
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [accountTab, setAccountTab] = useState<'signin' | 'register'>('signin');
+  const [accountEmail, setAccountEmail] = useState('');
+  const [accountPassword, setAccountPassword] = useState('');
+  const [accountFirstName, setAccountFirstName] = useState('');
+  const [accountLastName, setAccountLastName] = useState('');
+  const [accountPhone, setAccountPhone] = useState('');
+  const [accountMessage, setAccountMessage] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loggedInUser, setLoggedInUser] = useState<{ name: string; email: string } | null>(null);
+
+  // Dynamic Checkout Settings States
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(500);
+  const [standardDeliveryCharge, setStandardDeliveryCharge] = useState(190);
+  const [codHandlingFee, setCodHandlingFee] = useState(150);
+  const [codAdvanceAmount, setCodAdvanceAmount] = useState(200);
+  const [codNoticeText, setCodNoticeText] = useState('To confirm your Cash on Delivery order, you must pay a non-refundable advance online. The remaining amount will be collected at the time of delivery.');
 
   // Delivery address fields
   const [deliveryEmail, setDeliveryEmail] = useState('');
@@ -111,6 +136,21 @@ export default function Header() {
   const [saveInfo, setSaveInfo] = useState(false);
 
   const automaticCoupon = 'BUY 2 GET 2 FREE';
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedUser = localStorage.getItem('deera_glow_user');
+      if (savedUser) {
+        try {
+          const parsed = JSON.parse(savedUser);
+          if (parsed && parsed.email) {
+            setLoggedInUser(parsed);
+            setIsLoggedIn(true);
+          }
+        } catch {}
+      }
+    }
+  }, []);
 
   React.useEffect(() => {
     if (!isCartOpen) return;
@@ -156,6 +196,11 @@ export default function Header() {
             console.error('Error parsing hero announcement items:', e);
           }
         }
+        if (settings.freeShippingThreshold) setFreeShippingThreshold(Number(settings.freeShippingThreshold) || 500);
+        if (settings.standardDeliveryCharge) setStandardDeliveryCharge(Number(settings.standardDeliveryCharge) || 190);
+        if (settings.codHandlingFee) setCodHandlingFee(Number(settings.codHandlingFee) || 150);
+        if (settings.codAdvanceAmount) setCodAdvanceAmount(Number(settings.codAdvanceAmount) || 200);
+        if (settings.codNoticeText) setCodNoticeText(settings.codNoticeText);
       } catch (err) {
         console.error('Error loading header logo:', err);
       }
@@ -171,10 +216,12 @@ export default function Header() {
         if (!res.ok) return;
 
         const products = await res.json() as Product[];
-        setCrossSellProducts(products.map(product => ({
+        const mapped = products.map(product => ({
           ...product,
           price: Number(product.price)
-        })));
+        }));
+        setCrossSellProducts(mapped);
+        setAllProducts(mapped);
       } catch (err) {
         console.error('Error loading cart product suggestions:', err);
       }
@@ -239,6 +286,9 @@ export default function Header() {
     const customerName = buildCustomerName();
     const deliveryAddressText = buildDeliveryAddress();
     const activeCoupon = appliedDiscount?.title || automaticCoupon;
+    const isCod = paymentMethod === 'cod';
+    const paymentStatusText = isCod ? 'Advance Paid' : 'Paid';
+    const paymentMethodText = isCod ? 'Cash on Delivery' : 'Online Payment';
 
     try {
       const res = await fetch('/api/orders', {
@@ -246,16 +296,29 @@ export default function Header() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           customer: customerName,
-          total_price: `₹${estimatedTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-          payment_status: 'Paid',
+          total_price: `₹${totalOrderValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+          payment_status: paymentStatusText,
+          payment_method: paymentMethodText,
+          subtotal: `₹${cartSubtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+          delivery_charge: deliveryCharge > 0 ? `₹${deliveryCharge.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'FREE',
+          cod_fee: codFee > 0 ? `₹${codFee.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '₹0.00',
+          advance_paid: `₹${advancePaid.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+          remaining_cod: `₹${remainingCodAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
           items_count: `${cartCount} item${cartCount > 1 ? 's' : ''}`,
-          channel: 'Deeksha<>Razorpay',
+          channel: isCod ? 'DeeraGlow<>COD' : 'DeeraGlow<>Razorpay',
           customer_email: deliveryEmail.trim(),
           customer_phone: customerPhone,
           shipping_address: deliveryAddressText,
           billing_address: deliveryAddressText,
           notes: [
             `Razorpay payment ID: ${paymentId}`,
+            `Payment Method: ${paymentMethodText}`,
+            `Subtotal: ₹${cartSubtotal}`,
+            `Delivery Charge: ${deliveryCharge > 0 ? `₹${deliveryCharge}` : 'FREE'}`,
+            `COD Handling Fee: ₹${codFee}`,
+            `Total Order Value: ₹${totalOrderValue}`,
+            `Advance Paid Online: ₹${advancePaid}`,
+            `Remaining Amount to Pay on Delivery: ₹${remainingCodAmount}`,
             `First name: ${deliveryFirstName.trim()}`,
             `Last name: ${deliveryLastName.trim()}`,
             `Email: ${deliveryEmail.trim()}`,
@@ -329,10 +392,10 @@ export default function Header() {
 
       const options = {
         key: keyId,
-        amount: Math.round(estimatedTotal * 100), // amount in paisa
+        amount: Math.round(razorpayPayAmount * 100), // amount in paisa (₹200 for COD, total for prepaid)
         currency: "INR",
         name: "Deera Glow",
-        description: `Order Payment for ${cartCount} items`,
+        description: paymentMethod === 'cod' ? `COD Advance Payment (₹200)` : `Order Payment for ${cartCount} items`,
         image: "/images/category_banner_jewellery.png",
         handler: async function (response: RazorpayResponse) {
           setIsProcessingCheckout(false);
@@ -441,7 +504,16 @@ export default function Header() {
     ? Math.min(Math.max(appliedDiscountRawAmount, 0), couponBaseTotal)
     : 0;
   const totalSaved = automaticSaved + manualDiscountAmount;
-  const estimatedTotal = Math.max(couponBaseTotal - manualDiscountAmount, 0);
+  const subtotalAfterDiscounts = Math.max(couponBaseTotal - manualDiscountAmount, 0);
+
+  // Dynamic Business Rules for Delivery & COD Fees:
+  const deliveryCharge = cartSubtotal < freeShippingThreshold ? standardDeliveryCharge : 0;
+  const codFee = paymentMethod === 'cod' ? codHandlingFee : 0;
+  const totalOrderValue = subtotalAfterDiscounts + deliveryCharge + codFee;
+  const advancePaid = paymentMethod === 'cod' ? codAdvanceAmount : totalOrderValue;
+  const remainingCodAmount = paymentMethod === 'cod' ? Math.max(0, totalOrderValue - codAdvanceAmount) : 0;
+  const razorpayPayAmount = paymentMethod === 'cod' ? codAdvanceAmount : totalOrderValue;
+  const estimatedTotal = totalOrderValue;
   const offerCompareTotal = cartSubtotal;
   const savePercent = offerCompareTotal > 0 ? Math.round((totalSaved / offerCompareTotal) * 100) : 0;
 
@@ -699,16 +771,16 @@ export default function Header() {
 
           {/* Header Icons */}
           <div className={styles.iconContainer}>
-            {/* Search (Decorative for visual fidelity) */}
-            <button className={styles.iconButton} aria-label="Search">
+            {/* Search Icon Button */}
+            <button className={styles.iconButton} aria-label="Search" onClick={() => setIsSearchOpen(true)}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
             </button>
 
-            {/* Profile (Decorative) */}
-            <button className={styles.iconButton} aria-label="Account">
+            {/* Profile / Account Icon Button */}
+            <button className={styles.iconButton} aria-label="Account" onClick={() => setIsAccountOpen(true)}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
@@ -999,7 +1071,9 @@ export default function Header() {
                       <div className={styles.rupeeBadgeIcon}>₹</div>
                       <div className={styles.estimatedTotalLabelTextCol}>
                         <div className={styles.estimatedTotalLabelTitle}>Estimated Total</div>
-                        <div className={styles.freeShippingLabel}>✔️ FREE SHIPPING!</div>
+                        <div className={styles.freeShippingLabel}>
+                          {cartSubtotal >= 500 ? '✔️ FREE SHIPPING!' : `🚚 Add ₹${(500 - cartSubtotal).toLocaleString('en-IN', { maximumFractionDigits: 0 })} for FREE Delivery`}
+                        </div>
                       </div>
                     </div>
                     <div className={styles.estimatedTotalAmountCol}>
@@ -1107,16 +1181,30 @@ export default function Header() {
                   Thank you for your order, <strong>{deliveryFirstName} {deliveryLastName}</strong>. Your order has been registered, and payment is completed.
                 </p>
 
-                <div style={{ width: '100%', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '16px', marginBottom: '24px', textAlign: 'left', fontSize: '13px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span style={{ color: '#6d6d6d' }}>Total Paid:</span>
-                    <strong style={{ color: '#1a1a1a' }}>₹{estimatedTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>
+                <div style={{ width: '100%', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '16px', marginBottom: '24px', textAlign: 'left', fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#6d6d6d' }}>Total Order Value:</span>
+                    <strong style={{ color: '#1a1a1a' }}>₹{totalOrderValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#6d6d6d' }}>Advance Paid Online:</span>
+                    <strong style={{ color: '#2d5c4d' }}>₹{advancePaid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>
+                  </div>
+                  {paymentMethod === 'cod' && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: '#fff3cd', padding: '6px 8px', borderRadius: '6px' }}>
+                      <span style={{ color: '#856404', fontWeight: '600' }}>Amount to Pay on Delivery:</span>
+                      <strong style={{ color: '#856404' }}>₹{remainingCodAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#6d6d6d' }}>Payment Method:</span>
+                    <span style={{ fontWeight: '600', color: '#1a1a1a' }}>{paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment (Prepaid)'}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ color: '#6d6d6d' }}>Payment Gateway:</span>
                     <span style={{ fontWeight: '600', color: '#3399FF' }}>Razorpay Secure</span>
                   </div>
-                  <div style={{ borderTop: '1px solid #e3e3e3', paddingTop: '8px', marginTop: '8px' }}>
+                  <div style={{ borderTop: '1px solid #e3e3e3', paddingTop: '8px', marginTop: '4px' }}>
                     <div style={{ fontWeight: '600', marginBottom: '4px' }}>Shipping Address:</div>
                     <div style={{ color: '#6d6d6d' }}>{deliveryAddress}, {deliveryApartment ? deliveryApartment + ', ' : ''}{deliveryCity}, {deliveryState} - {deliveryPincode}</div>
                   </div>
@@ -1457,6 +1545,139 @@ export default function Header() {
                     </div>
                   </div>
 
+                  {/* Payment Method Selection */}
+                  <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e3e3e3', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <h4 style={{ margin: '0', fontSize: '14px', fontWeight: '600', color: '#1a1a1a' }}>Payment Method</h4>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {/* Option 1: Prepaid Online Payment */}
+                      <label style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '12px',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: paymentMethod === 'prepaid' ? '2px solid #1a1a1a' : '1px solid #e3e3e3',
+                        backgroundColor: paymentMethod === 'prepaid' ? '#fafafa' : '#ffffff',
+                        cursor: 'pointer'
+                      }}>
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          checked={paymentMethod === 'prepaid'}
+                          onChange={() => setPaymentMethod('prepaid')}
+                          style={{ marginTop: '2px', cursor: 'pointer' }}
+                        />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <strong style={{ fontSize: '13px', color: '#1a1a1a' }}>💳 Online Payment (Prepaid)</strong>
+                            <span style={{ fontSize: '10px', backgroundColor: '#e2ece9', color: '#2d5c4d', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>Recommended</span>
+                          </div>
+                          <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: '#6d6d6d' }}>
+                            Pay 100% online securely via Razorpay (UPI, Cards, Netbanking).
+                          </p>
+                        </div>
+                      </label>
+
+                      {/* Option 2: Cash on Delivery (COD) */}
+                      <label style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '12px',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: paymentMethod === 'cod' ? '2px solid #1a1a1a' : '1px solid #e3e3e3',
+                        backgroundColor: paymentMethod === 'cod' ? '#fafafa' : '#ffffff',
+                        cursor: 'pointer'
+                      }}>
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          checked={paymentMethod === 'cod'}
+                          onChange={() => setPaymentMethod('cod')}
+                          style={{ marginTop: '2px', cursor: 'pointer' }}
+                        />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <strong style={{ fontSize: '13px', color: '#1a1a1a' }}>🚚 Cash on Delivery (COD)</strong>
+                            <span style={{ fontSize: '10px', backgroundColor: '#fff3cd', color: '#856404', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>₹{codAdvanceAmount} Advance Req.</span>
+                          </div>
+                          <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: '#6d6d6d' }}>
+                            Pay ₹{codAdvanceAmount} advance online now & remaining in cash at delivery. (+₹{codHandlingFee} COD fee)
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+
+                    {paymentMethod === 'cod' && (
+                      <div style={{ backgroundColor: '#fff8e6', border: '1px solid #ffe599', borderRadius: '8px', padding: '12px', fontSize: '12px', color: '#7a5200', lineHeight: '1.4' }}>
+                        {codNoticeText}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Price Summary Breakdown */}
+                  <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e3e3e3', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '14px', fontWeight: '600', color: '#1a1a1a' }}>Price Breakdown</h4>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#6d6d6d' }}>
+                      <span>Subtotal</span>
+                      <span>₹{cartSubtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                    </div>
+
+                    {totalSaved > 0 && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2d5c4d', fontWeight: '600' }}>
+                        <span>Discount Saved</span>
+                        <span>-₹{totalSaved.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                      </div>
+                    )}
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#6d6d6d' }}>
+                      <span>Delivery Charge {cartSubtotal >= freeShippingThreshold ? `(Free over ₹${freeShippingThreshold})` : ''}</span>
+                      <span style={{ fontWeight: deliveryCharge === 0 ? '700' : 'normal', color: deliveryCharge === 0 ? '#2d5c4d' : '#1a1a1a' }}>
+                        {deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
+                      </span>
+                    </div>
+
+                    {/* Free Delivery Banner Message Box */}
+                    {cartSubtotal < freeShippingThreshold ? (
+                      <div style={{ backgroundColor: '#fff8f0', border: '1px solid #ffe3c2', borderRadius: '8px', padding: '10px 12px', fontSize: '12px', color: '#b45309', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: '4px 0' }}>
+                        <span style={{ fontSize: '16px' }}>🚚</span>
+                        <span>Add items worth <strong>₹{(freeShippingThreshold - cartSubtotal).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</strong> more to get <strong>FREE Delivery!</strong></span>
+                      </div>
+                    ) : (
+                      <div style={{ backgroundColor: '#e2ece9', border: '1px solid #b8d8ce', borderRadius: '8px', padding: '10px 12px', fontSize: '12px', color: '#2d5c4d', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: '4px 0' }}>
+                        <span style={{ fontSize: '16px' }}>🎉</span>
+                        <span>Congratulations! Your subtotal is ₹{freeShippingThreshold}+, you unlocked <strong>FREE Delivery!</strong></span>
+                      </div>
+                    )}
+
+                    {paymentMethod === 'cod' && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#6d6d6d' }}>
+                        <span>COD Handling Fee</span>
+                        <span>₹{codFee.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                      </div>
+                    )}
+
+                    <div style={{ borderTop: '1px solid #e3e3e3', paddingTop: '10px', marginTop: '2px', display: 'flex', justifyContent: 'space-between', fontWeight: '700', fontSize: '14px', color: '#1a1a1a' }}>
+                      <span>Total Order Value</span>
+                      <span>₹{totalOrderValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                    </div>
+
+                    {paymentMethod === 'cod' && (
+                      <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2d5c4d', fontWeight: '700', fontSize: '13px', backgroundColor: '#e2ece9', padding: '8px 10px', borderRadius: '6px' }}>
+                          <span>Advance Payment (Pay Now):</span>
+                          <span>₹{codAdvanceAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#856404', fontWeight: '700', fontSize: '13px', backgroundColor: '#fff3cd', padding: '8px 10px', borderRadius: '6px' }}>
+                          <span>Remaining COD Amount:</span>
+                          <span>₹{remainingCodAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
                   {/* Offers & Rewards Coupon Status */}
                   <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e3e3e3', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', fontWeight: '600', color: '#2d5c4d' }}>
@@ -1557,7 +1778,7 @@ export default function Header() {
                       marginBottom: '10px'
                     }}
                   >
-                    Pay ₹{estimatedTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                    {paymentMethod === 'cod' ? `Pay ₹${codAdvanceAmount} Advance via Razorpay` : `Pay ₹${totalOrderValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })} via Razorpay`}
                   </button>
 
                   {/* Gokwik Brand trust info */}
@@ -1587,6 +1808,572 @@ export default function Header() {
           </div>
         );
       })()}
+      {/* 🔍 SEARCH MODAL OVERLAY */}
+      {isSearchOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'flex-start',
+            paddingTop: '60px',
+            zIndex: 6000,
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+          }}
+          onClick={() => setIsSearchOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '640px',
+              maxWidth: '92vw',
+              maxHeight: '82vh',
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              animation: 'fadeIn 0.2s ease-out'
+            }}
+          >
+            {/* Search Input Bar Header */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '16px 20px',
+              borderBottom: '1px solid #e3e3e3',
+              backgroundColor: '#fafafa'
+            }}>
+              <span style={{ fontSize: '20px', color: '#6d6d6d' }}>🔍</span>
+              <input
+                type="text"
+                autoFocus
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search rings, necklaces, earrings, sterling silver..."
+                style={{
+                  flex: 1,
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: '16px',
+                  backgroundColor: 'transparent',
+                  color: '#1a1a1a',
+                  fontWeight: '500'
+                }}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  style={{ background: 'transparent', border: 'none', color: '#999', fontSize: '16px', cursor: 'pointer', padding: '4px' }}
+                >
+                  ✕
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen(false)}
+                style={{ background: 'transparent', border: '1px solid #ccc', borderRadius: '6px', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', cursor: 'pointer', color: '#333' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Search Modal Content */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+              {searchQuery.trim() === '' ? (
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: '700', color: '#6d6d6d', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>
+                    Popular Quick Searches
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '24px' }}>
+                    {['Rings', 'Necklaces', 'Earrings', 'Bracelets', 'Sterling Silver', 'Gold Plated', 'Best Sellers', 'New Arrivals'].map((term) => (
+                      <button
+                        key={term}
+                        type="button"
+                        onClick={() => setSearchQuery(term)}
+                        style={{
+                          backgroundColor: '#f0f4f2',
+                          color: '#2d5c4d',
+                          border: '1px solid #d4e2da',
+                          borderRadius: '20px',
+                          padding: '6px 14px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {term}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div style={{ fontSize: '12px', fontWeight: '700', color: '#6d6d6d', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
+                    Featured Products
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '12px' }}>
+                    {allProducts.slice(0, 4).map((product) => (
+                      <div
+                        key={product.id}
+                        style={{
+                          border: '1px solid #e3e3e3',
+                          borderRadius: '10px',
+                          overflow: 'hidden',
+                          backgroundColor: '#ffffff',
+                          display: 'flex',
+                          flexDirection: 'column'
+                        }}
+                      >
+                        <div style={{ position: 'relative', width: '100%', height: '110px', backgroundColor: '#f6f6f6' }}>
+                          <img src={product.image_url} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+                          <div style={{ fontSize: '11px', fontWeight: '600', color: '#1a1a1a', lineHeight: '1.3', marginBottom: '4px', height: '28px', overflow: 'hidden' }}>
+                            {product.name}
+                          </div>
+                          <div style={{ fontSize: '12px', fontWeight: '700', color: '#3e0030', marginBottom: '6px' }}>
+                            ₹{Number(product.price).toLocaleString('en-IN')}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              addToCart(product);
+                              setIsSearchOpen(false);
+                              setIsCartOpen(true);
+                            }}
+                            style={{
+                              backgroundColor: '#1a1a1a',
+                              color: '#ffffff',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '6px',
+                              fontSize: '11px',
+                              fontWeight: '600',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            + Add to Cart
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                (() => {
+                  const query = searchQuery.toLowerCase().trim();
+                  const filtered = allProducts.filter(p =>
+                    p.name.toLowerCase().includes(query) ||
+                    (p.collection && p.collection.toLowerCase().includes(query)) ||
+                    (p.fragrances && p.fragrances.toLowerCase().includes(query)) ||
+                    (p.features && p.features.toLowerCase().includes(query))
+                  );
+
+                  if (filtered.length === 0) {
+                    return (
+                      <div style={{ textAlign: 'center', padding: '40px 20px', color: '#6d6d6d' }}>
+                        <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔎</div>
+                        <h4 style={{ fontSize: '15px', color: '#1a1a1a', margin: '0 0 6px 0' }}>No products found for "{searchQuery}"</h4>
+                        <p style={{ fontSize: '13px', margin: 0 }}>Try searching for "rings", "necklaces", "earrings", or "sterling silver".</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div>
+                      <div style={{ fontSize: '12px', color: '#6d6d6d', fontWeight: '600', marginBottom: '14px' }}>
+                        Found {filtered.length} product{filtered.length > 1 ? 's' : ''} for "{searchQuery}"
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {filtered.map((product) => (
+                          <div
+                            key={product.id}
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: '60px 1fr auto',
+                              gap: '12px',
+                              alignItems: 'center',
+                              padding: '10px',
+                              border: '1px solid #f0f0f0',
+                              borderRadius: '10px',
+                              backgroundColor: '#ffffff'
+                            }}
+                          >
+                            <div style={{ width: '60px', height: '60px', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#f6f6f6' }}>
+                              <img src={product.image_url} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                            <div>
+                              <strong style={{ fontSize: '13px', color: '#1a1a1a', display: 'block', marginBottom: '2px' }}>{product.name}</strong>
+                              <span style={{ fontSize: '11px', color: '#6d6d6d' }}>{product.collection || 'Premium Jewellery'}</span>
+                              <div style={{ fontSize: '13px', fontWeight: '700', color: '#3e0030', marginTop: '2px' }}>
+                                ₹{Number(product.price).toLocaleString('en-IN')}
+                                {product.compare_price && (
+                                  <span style={{ fontSize: '11px', textDecoration: 'line-through', color: '#999', marginLeft: '6px', fontWeight: 'normal' }}>
+                                    ₹{Number(product.compare_price).toLocaleString('en-IN')}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                addToCart(product);
+                                setIsSearchOpen(false);
+                                setIsCartOpen(true);
+                              }}
+                              style={{
+                                backgroundColor: '#1a1a1a',
+                                color: '#ffffff',
+                                border: 'none',
+                                borderRadius: '6px',
+                                padding: '8px 14px',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Add to Cart
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 👤 ACCOUNT / PROFILE MODAL OVERLAY */}
+      {isAccountOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 6000,
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+          }}
+          onClick={() => setIsAccountOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '440px',
+              maxWidth: '92vw',
+              maxHeight: '90vh',
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+              padding: '28px 24px',
+              display: 'flex',
+              flexDirection: 'column',
+              overflowY: 'auto',
+              position: 'relative',
+              animation: 'fadeIn 0.2s ease-out'
+            }}
+          >
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setIsAccountOpen(false)}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: 'transparent',
+                border: '1px solid #ccc',
+                borderRadius: '6px',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '16px',
+                cursor: 'pointer',
+                color: '#333'
+              }}
+            >
+              ✕
+            </button>
+
+            {isLoggedIn && loggedInUser ? (
+              /* Logged In User State */
+              <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', fontSize: '28px', color: 'var(--accent)' }}>
+                  👤
+                </div>
+                <h3 style={{ margin: '0', fontSize: '20px', fontWeight: '700', color: '#1a1a1a' }}>Welcome, {loggedInUser.name}!</h3>
+                <p style={{ margin: '0', fontSize: '13px', color: '#6d6d6d' }}>{loggedInUser.email}</p>
+
+                <div style={{ border: '1px solid #e3e3e3', borderRadius: '10px', padding: '16px', backgroundColor: '#fafafa', textAlign: 'left', fontSize: '13px' }}>
+                  <div style={{ fontWeight: '600', marginBottom: '6px', color: '#1a1a1a' }}>Account Activity</div>
+                  <div style={{ color: '#6d6d6d' }}>Total Cart Items: <strong>{cartCount}</strong></div>
+                  <div style={{ color: '#6d6d6d', marginTop: '4px' }}>Store Currency: <strong>INR (₹)</strong></div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
+                  <a
+                    href="/admin/dashboard"
+                    style={{
+                      display: 'block',
+                      backgroundColor: '#1a1a1a',
+                      color: '#ffffff',
+                      textDecoration: 'none',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      fontSize: '13px',
+                      fontWeight: '600'
+                    }}
+                  >
+                    Go to Admin Dashboard →
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      localStorage.removeItem('deera_glow_user');
+                      setIsLoggedIn(false);
+                      setLoggedInUser(null);
+                    }}
+                    style={{
+                      backgroundColor: '#ffffff',
+                      color: '#ff4d4d',
+                      border: '1px solid #ff4d4d',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Auth Form Tabs */
+              <div>
+                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.15em', color: '#6d6d6d', textTransform: 'uppercase', marginBottom: '4px' }}>DEERA GLOW</div>
+                  <h3 style={{ margin: '0', fontSize: '20px', fontWeight: '700', color: '#1a1a1a' }}>Customer Account</h3>
+                </div>
+
+                {accountMessage && (
+                  <div style={{ padding: '10px 12px', backgroundColor: '#e2ece9', color: '#2d5c4d', borderRadius: '6px', fontSize: '12px', fontWeight: '600', marginBottom: '14px', textAlign: 'center' }}>
+                    {accountMessage}
+                  </div>
+                )}
+
+                {/* Tab Switcher */}
+                <div style={{ display: 'flex', borderBottom: '1px solid #e3e3e3', marginBottom: '20px' }}>
+                  <button
+                    type="button"
+                    onClick={() => { setAccountTab('signin'); setAccountMessage(''); }}
+                    style={{
+                      flex: 1,
+                      padding: '10px',
+                      background: 'transparent',
+                      border: 'none',
+                      borderBottom: accountTab === 'signin' ? '2px solid #1a1a1a' : 'none',
+                      fontWeight: accountTab === 'signin' ? '700' : '500',
+                      color: accountTab === 'signin' ? '#1a1a1a' : '#6d6d6d',
+                      cursor: 'pointer',
+                      fontSize: '14px'
+                    }}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setAccountTab('register'); setAccountMessage(''); }}
+                    style={{
+                      flex: 1,
+                      padding: '10px',
+                      background: 'transparent',
+                      border: 'none',
+                      borderBottom: accountTab === 'register' ? '2px solid #1a1a1a' : 'none',
+                      fontWeight: accountTab === 'register' ? '700' : '500',
+                      color: accountTab === 'register' ? '#1a1a1a' : '#6d6d6d',
+                      cursor: 'pointer',
+                      fontSize: '14px'
+                    }}
+                  >
+                    Create Account
+                  </button>
+                </div>
+
+                {accountTab === 'signin' ? (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!accountEmail.trim() || !accountPassword.trim()) {
+                        alert('Please enter your email and password.');
+                        return;
+                      }
+                      const user = { name: accountEmail.split('@')[0], email: accountEmail.trim() };
+                      localStorage.setItem('deera_glow_user', JSON.stringify(user));
+                      setLoggedInUser(user);
+                      setIsLoggedIn(true);
+                      setAccountMessage('Signed in successfully!');
+                    }}
+                    style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
+                  >
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: '600', color: '#333' }}>Email Address</label>
+                      <input
+                        type="email"
+                        required
+                        value={accountEmail}
+                        onChange={(e) => setAccountEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        style={{ padding: '10px 12px', border: '1px solid #ccc', borderRadius: '8px', fontSize: '13px', outline: 'none' }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: '600', color: '#333' }}>Password</label>
+                      <input
+                        type="password"
+                        required
+                        value={accountPassword}
+                        onChange={(e) => setAccountPassword(e.target.value)}
+                        placeholder="••••••••"
+                        style={{ padding: '10px 12px', border: '1px solid #ccc', borderRadius: '8px', fontSize: '13px', outline: 'none' }}
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      style={{
+                        backgroundColor: '#1a1a1a',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        marginTop: '6px'
+                      }}
+                    >
+                      Sign In
+                    </button>
+
+                    <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: '14px', marginTop: '10px', textAlign: 'center' }}>
+                      <a href="/admin/dashboard" style={{ fontSize: '12px', color: '#2d5c4d', fontWeight: '600', textDecoration: 'none' }}>
+                        Are you an Admin? Sign in to Admin Dashboard →
+                      </a>
+                    </div>
+                  </form>
+                ) : (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!accountEmail.trim() || !accountFirstName.trim()) {
+                        alert('Please fill all required fields.');
+                        return;
+                      }
+                      const name = `${accountFirstName} ${accountLastName}`.trim();
+                      const user = { name: name || accountEmail.split('@')[0], email: accountEmail.trim() };
+                      localStorage.setItem('deera_glow_user', JSON.stringify(user));
+                      setLoggedInUser(user);
+                      setIsLoggedIn(true);
+                      setAccountMessage('Account created successfully!');
+                    }}
+                    style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+                  >
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ fontSize: '12px', fontWeight: '600', color: '#333' }}>First Name</label>
+                        <input
+                          type="text"
+                          required
+                          value={accountFirstName}
+                          onChange={(e) => setAccountFirstName(e.target.value)}
+                          placeholder="First Name"
+                          style={{ padding: '10px 12px', border: '1px solid #ccc', borderRadius: '8px', fontSize: '13px', outline: 'none' }}
+                        />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ fontSize: '12px', fontWeight: '600', color: '#333' }}>Last Name</label>
+                        <input
+                          type="text"
+                          value={accountLastName}
+                          onChange={(e) => setAccountLastName(e.target.value)}
+                          placeholder="Last Name"
+                          style={{ padding: '10px 12px', border: '1px solid #ccc', borderRadius: '8px', fontSize: '13px', outline: 'none' }}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: '600', color: '#333' }}>Email Address</label>
+                      <input
+                        type="email"
+                        required
+                        value={accountEmail}
+                        onChange={(e) => setAccountEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        style={{ padding: '10px 12px', border: '1px solid #ccc', borderRadius: '8px', fontSize: '13px', outline: 'none' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: '600', color: '#333' }}>Phone Number</label>
+                      <input
+                        type="tel"
+                        value={accountPhone}
+                        onChange={(e) => setAccountPhone(e.target.value)}
+                        placeholder="+91 9876543210"
+                        style={{ padding: '10px 12px', border: '1px solid #ccc', borderRadius: '8px', fontSize: '13px', outline: 'none' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: '600', color: '#333' }}>Password</label>
+                      <input
+                        type="password"
+                        required
+                        value={accountPassword}
+                        onChange={(e) => setAccountPassword(e.target.value)}
+                        placeholder="••••••••"
+                        style={{ padding: '10px 12px', border: '1px solid #ccc', borderRadius: '8px', fontSize: '13px', outline: 'none' }}
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      style={{
+                        backgroundColor: '#1a1a1a',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        marginTop: '6px'
+                      }}
+                    >
+                      Create Account
+                    </button>
+                  </form>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }

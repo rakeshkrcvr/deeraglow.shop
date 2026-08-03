@@ -705,7 +705,7 @@ export default function CollectionsClient({ dbCollections, dbProducts }: Collect
             <span className={styles.trustIcon}>🚚</span>
             <div>
               <h4 className={styles.trustTitle}>FREE SHIPPING</h4>
-              <p className={styles.trustSubtitle}>On orders above ₹999</p>
+              <p className={styles.trustSubtitle}>On orders above ₹500</p>
             </div>
           </div>
 

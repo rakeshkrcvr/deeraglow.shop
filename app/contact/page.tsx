@@ -1,10 +1,15 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 export default function ContactPage() {
+  const [contactName, setContactName] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactMessage, setContactMessage] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const [contactStatus, setContactStatus] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#3e0030' }}>
       <Header />
@@ -60,10 +65,38 @@ export default function ContactPage() {
                 Send a Message
               </h3>
 
+              {contactStatus && (
+                <div style={{ padding: '12px 16px', borderRadius: '8px', backgroundColor: contactStatus.type === 'success' ? '#e2ece9' : '#fde8e8', color: contactStatus.type === 'success' ? '#2d5c4d' : '#9b1c1c', fontSize: '13px', fontWeight: '600', marginBottom: '16px' }}>
+                  {contactStatus.text}
+                </div>
+              )}
+
               <form
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
-                  alert("Message sent successfully! We will contact you soon.");
+                  setIsSending(true);
+                  setContactStatus(null);
+
+                  try {
+                    const res = await fetch('/api/contact', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ name: contactName, email: contactEmail, message: contactMessage })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                      setContactStatus({ type: 'success', text: 'Message sent successfully! We will contact you soon.' });
+                      setContactName('');
+                      setContactEmail('');
+                      setContactMessage('');
+                    } else {
+                      setContactStatus({ type: 'error', text: data.error || 'Failed to send message.' });
+                    }
+                  } catch {
+                    setContactStatus({ type: 'error', text: 'Network error sending message. Please try again.' });
+                  } finally {
+                    setIsSending(false);
+                  }
                 }}
                 style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
               >
@@ -72,6 +105,8 @@ export default function ContactPage() {
                     type="text"
                     placeholder="Your Name"
                     required
+                    value={contactName}
+                    onChange={(e) => setContactName(e.target.value)}
                     style={{
                       background: 'rgba(250, 248, 245, 0.04)',
                       border: '1px solid rgba(250, 248, 245, 0.1)',
@@ -85,6 +120,8 @@ export default function ContactPage() {
                     type="email"
                     placeholder="Your Email"
                     required
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
                     style={{
                       background: 'rgba(250, 248, 245, 0.04)',
                       border: '1px solid rgba(250, 248, 245, 0.1)',
@@ -99,6 +136,8 @@ export default function ContactPage() {
                   placeholder="Your Message"
                   rows={5}
                   required
+                  value={contactMessage}
+                  onChange={(e) => setContactMessage(e.target.value)}
                   style={{
                     background: 'rgba(250, 248, 245, 0.04)',
                     border: '1px solid rgba(250, 248, 245, 0.1)',
@@ -112,6 +151,7 @@ export default function ContactPage() {
 
                 <button
                   type="submit"
+                  disabled={isSending}
                   style={{
                     background: 'var(--accent)',
                     color: '#3e0030',
@@ -122,12 +162,13 @@ export default function ContactPage() {
                     fontWeight: '600',
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
-                    cursor: 'pointer',
+                    cursor: isSending ? 'not-allowed' : 'pointer',
                     transition: 'all 0.2s ease',
-                    alignSelf: 'flex-start'
+                    alignSelf: 'flex-start',
+                    opacity: isSending ? 0.7 : 1
                   }}
                 >
-                  Send Message
+                  {isSending ? 'Sending Message...' : 'Send Message'}
                 </button>
               </form>
             </div>

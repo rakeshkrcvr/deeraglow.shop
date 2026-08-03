@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { getErrorMessage } from '@/lib/errors';
 import { getProducts } from '@/lib/products';
+import { sendAbandonedCheckoutRecoveryEmail } from '@/lib/email';
 
 type CountRow = { count: string };
 type MaxCheckoutRow = { max: number | null };
@@ -212,7 +213,7 @@ export async function POST(request: Request) {
   }
 }
 
-// PUT: Mark email as sent
+// PUT: Send recovery email and mark as sent
 export async function PUT(request: Request) {
   try {
     await ensureAbandonedCheckoutsTable();
@@ -224,15 +225,42 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
     }
 
+    const checkoutId = parseInt(id, 10);
+    const rows = await sql`
+      SELECT * FROM abandoned_checkouts WHERE id = ${checkoutId}
+    ` as unknown as any[];
+
+    if (rows.length > 0) {
+      const checkout = rows[0];
+      let items = [];
+      try {
+        if (checkout.checkout_items) {
+          items = JSON.parse(checkout.checkout_items);
+        }
+      } catch (e) {
+        console.error('Error parsing checkout items:', e);
+      }
+
+      // Send SMTP recovery email via Gmail
+      await sendAbandonedCheckoutRecoveryEmail({
+        checkoutNumber: checkout.checkout_number,
+        customerName: checkout.customer,
+        customerEmail: checkout.email,
+        totalPrice: checkout.total_price,
+        itemsCount: checkout.items_count,
+        checkoutItems: items,
+      });
+    }
+
     await sql`
       UPDATE abandoned_checkouts
       SET recovery_status = 'Sent'
-      WHERE id = ${parseInt(id, 10)}
+      WHERE id = ${checkoutId}
     `;
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
-    console.error('Error updating checkout:', error);
+    console.error('Error sending abandoned recovery email:', error);
     return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }

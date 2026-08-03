@@ -24,6 +24,7 @@ export const defaultStoreSettings: Record<string, string> = {
   youtubeUrl: 'https://www.youtube.com/@DeeraGlow',
   logoHeaderUrl: '/api/media/1784834143580-991fe81e-0ee7-4dfd-a9f3-4ebf7f064265-logowhite.png',
   logoFooterUrl: '/api/media/1784834143580-991fe81e-0ee7-4dfd-a9f3-4ebf7f064265-logowhite.png',
+  faviconUrl: '/api/media/1784834143580-991fe81e-0ee7-4dfd-a9f3-4ebf7f064265-logowhite.png',
   heroEyebrow: 'TIMELESS BEAUTY',
   heroTitle: 'Shine Brighter',
   heroItalicTitle: 'Every Day',
@@ -42,7 +43,12 @@ export const defaultStoreSettings: Record<string, string> = {
   contentPromoBanner2Image: '/images/jewellery_category_banner.png',
   contentPromoBanner2Link: '/category/earrings',
   contentBeforeAfterImage: 'https://www.deeraglow.shop/api/media/1785230756833-5ea86cd4-49f2-4af1-bdbe-81ebcc3460cc-afterbefore.png',
-  heroAnnouncementItems: '[{"id":"1","text":"Buy 2 Get 2 Free","icon":"gift","link":"/collections"},{"id":"2","text":"100% Secure Checkout","icon":"shield","link":""},{"id":"3","text":"Premium Fine jewellery","icon":"star","link":""}]'
+  heroAnnouncementItems: '[{"id":"1","text":"Buy 2 Get 2 Free","icon":"gift","link":"/collections"},{"id":"2","text":"100% Secure Checkout","icon":"shield","link":""},{"id":"3","text":"Premium Fine jewellery","icon":"star","link":""}]',
+  freeShippingThreshold: '500',
+  standardDeliveryCharge: '190',
+  codHandlingFee: '150',
+  codAdvanceAmount: '200',
+  codNoticeText: 'To confirm your Cash on Delivery order, you must pay a non-refundable advance online. The remaining amount will be collected at the time of delivery.'
 };
 
 export async function ensureStoreSettingsTable() {
@@ -91,6 +97,9 @@ export async function getStoreSettings(): Promise<Record<string, string>> {
     }
     if (!mergedSettings.logoFooterUrl || mergedSettings.logoFooterUrl.trim() === '') {
       mergedSettings.logoFooterUrl = defaultStoreSettings.logoFooterUrl;
+    }
+    if (!mergedSettings.faviconUrl || mergedSettings.faviconUrl.trim() === '') {
+      mergedSettings.faviconUrl = mergedSettings.logoHeaderUrl || defaultStoreSettings.faviconUrl;
     }
     if (!mergedSettings.contentPromoBannerImage || mergedSettings.contentPromoBannerImage.trim() === '') {
       mergedSettings.contentPromoBannerImage = defaultStoreSettings.contentPromoBannerImage;

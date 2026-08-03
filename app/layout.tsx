@@ -17,6 +17,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const settings = await getStoreSettings();
+  const faviconUrl = settings.faviconUrl || settings.logoHeaderUrl || '';
   const googleTagId = settings.googleTagId || '';
   const googleTagCode = settings.googleTagCode || '';
   const facebookPixelId = settings.facebookPixelId || '';
@@ -25,6 +26,13 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <head>
+        {faviconUrl && (
+          <>
+            <link rel="icon" href={faviconUrl} />
+            <link rel="shortcut icon" href={faviconUrl} />
+            <link rel="apple-touch-icon" href={faviconUrl} />
+          </>
+        )}
         {/* Dynamic Google Tag / Analytics Integration */}
         {googleTagCode ? (
           <script dangerouslySetInnerHTML={{ __html: googleTagCode }} />
