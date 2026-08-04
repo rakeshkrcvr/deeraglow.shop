@@ -5,6 +5,21 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import styles from './about.module.css';
 
+export const metadata = {
+  title: 'About Us | Deera Glow Premium Artificial jewellery',
+  description: 'Learn about Deera Glow and our mission to craft high-quality 925 sterling silver, gold-plated, and artificial jewellery for everyday elegance.',
+  alternates: {
+    canonical: 'https://deeraglow.shop/about',
+  },
+  openGraph: {
+    title: 'About Deera Glow | Premium Artificial jewellery',
+    description: 'Discover the story behind Deera Glow and our premium jewellery craftsmanship.',
+    url: 'https://deeraglow.shop/about',
+    siteName: 'Deera Glow',
+    type: 'website',
+  },
+};
+
 export default function AboutPage() {
   const sideImageUrl = "https://www.deeraglow.shop/api/media/1785227789880-5cd79750-fcc1-48a2-9059-e0d62a9136ef-aboutus.png";
 

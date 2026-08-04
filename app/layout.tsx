@@ -4,9 +4,39 @@ import { getStoreSettings } from "@/lib/settings";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Deera Glow | Premium Artificial jewellery Online in India",
+  title: {
+    default: "Deera Glow | Premium Artificial jewellery Online in India",
+    template: "%s | Deera Glow",
+  },
   description: "Discover the latest collection of premium artificial jewellery at Deera Glow. Shop stylish earrings, necklaces, rings, bracelets, bangles, and fashion accessories for every occasion. Affordable prices, secure payments, and fast delivery across India.",
   metadataBase: new URL("https://deeraglow.shop"),
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  openGraph: {
+    title: "Deera Glow | Premium Artificial jewellery Online in India",
+    description: "Discover the latest collection of premium artificial jewellery at Deera Glow. Shop stylish earrings, necklaces, rings, bracelets, bangles, and fashion accessories for every occasion.",
+    url: "https://deeraglow.shop",
+    siteName: "Deera Glow",
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Deera Glow | Premium Artificial jewellery Online in India",
+    description: "Discover the latest collection of premium artificial jewellery at Deera Glow.",
+  },
 };
 
 import RecentSalesPopup from "@/components/RecentSalesPopup";
@@ -23,9 +53,50 @@ export default async function RootLayout({
   const facebookPixelId = settings.facebookPixelId || '';
   const facebookPixelCode = settings.facebookPixelCode || '';
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://deeraglow.shop/#organization",
+        "name": "Deera Glow",
+        "url": "https://deeraglow.shop",
+        "logo": "https://deeraglow.shop/images/category_banner_jewelry.png",
+        "sameAs": [
+          "https://www.instagram.com/deeraglow.shop"
+        ],
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": "+91-9971459984",
+          "contactType": "customer service",
+          "email": "deeraglowshop@gmail.com",
+          "areaServed": "IN"
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://deeraglow.shop/#website",
+        "url": "https://deeraglow.shop",
+        "name": "Deera Glow",
+        "publisher": {
+          "@id": "https://deeraglow.shop/#organization"
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://deeraglow.shop/category/all-jewellery?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    ]
+  };
+
   return (
     <html lang="en">
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         {faviconUrl && (
           <>
             <link rel="icon" href={faviconUrl} />

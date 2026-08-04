@@ -22,9 +22,26 @@ export async function generateMetadata({ params }: PageProps) {
     .map(w => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
 
+  const canonicalUrl = `https://deeraglow.shop/category/${slug}`;
+
   return {
     title: `${title} Collection | Deera Glow Premium jewellery`,
     description: `Shop exquisite ${title} artificial jewellery by Deera Glow. Discover luxury rings, necklaces, earrings, bracelets, sterling silver, gold-plated jewellery and more.`,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title: `${title} Collection | Deera Glow`,
+      description: `Explore the ${title} collection at Deera Glow. Premium artificial jewellery delivered across India.`,
+      url: canonicalUrl,
+      siteName: "Deera Glow",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} Collection | Deera Glow`,
+      description: `Explore the ${title} collection at Deera Glow.`,
+    },
   };
 }
 
@@ -48,6 +65,31 @@ export default async function CategoryPage({ params }: PageProps) {
   const title = matchedColl ? matchedColl.name : formatTitle(slug);
   const bannerImage = matchedColl ? normalizeImageUrl(matchedColl.image_url) : '';
   const description = matchedColl ? matchedColl.description : '';
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://deeraglow.shop"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Collections",
+        "item": "https://deeraglow.shop/collections"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": title,
+        "item": `https://deeraglow.shop/category/${slug}`
+      }
+    ]
+  };
 
   let filteredProducts: Product[] = [];
   const norm = (str?: string | null) => (str || '').trim().toLowerCase();
@@ -108,6 +150,10 @@ export default async function CategoryPage({ params }: PageProps) {
 
   return (
     <div className={styles.page}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <Header />
       <CategoryPageClient
         slug={slug}
