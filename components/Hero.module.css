@@ -255,7 +255,7 @@
 /* Mobile Layout */
 @media (max-width: 768px) {
   .hero {
-    height: clamp(500px, 150vw, 820px);
+    height: clamp(441px, 30vh, 778px);
   }
 
   .overlay {
