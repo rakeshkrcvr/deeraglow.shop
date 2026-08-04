@@ -22,6 +22,9 @@ export interface SliderCollectionItem {
   image_url: string;
   show_in_slider: boolean;
   slider_subtitle: string;
+  thumb_image_1?: string;
+  thumb_image_2?: string;
+  thumb_image_3?: string;
   products: Product[];
 }
 
@@ -36,7 +39,10 @@ export async function getSliderCollections(): Promise<SliderCollectionItem[]> {
         slug VARCHAR(100) NOT NULL UNIQUE,
         image_url VARCHAR(255) DEFAULT '',
         show_in_slider BOOLEAN DEFAULT FALSE,
-        slider_subtitle VARCHAR(255) DEFAULT ''
+        slider_subtitle VARCHAR(255) DEFAULT '',
+        thumb_image_1 VARCHAR(255) DEFAULT '',
+        thumb_image_2 VARCHAR(255) DEFAULT '',
+        thumb_image_3 VARCHAR(255) DEFAULT ''
       )
     `;
 
@@ -44,6 +50,9 @@ export async function getSliderCollections(): Promise<SliderCollectionItem[]> {
       await sql`ALTER TABLE collections ADD COLUMN IF NOT EXISTS image_url VARCHAR(255) DEFAULT ''`;
       await sql`ALTER TABLE collections ADD COLUMN IF NOT EXISTS show_in_slider BOOLEAN DEFAULT FALSE`;
       await sql`ALTER TABLE collections ADD COLUMN IF NOT EXISTS slider_subtitle VARCHAR(255) DEFAULT ''`;
+      await sql`ALTER TABLE collections ADD COLUMN IF NOT EXISTS thumb_image_1 VARCHAR(255) DEFAULT ''`;
+      await sql`ALTER TABLE collections ADD COLUMN IF NOT EXISTS thumb_image_2 VARCHAR(255) DEFAULT ''`;
+      await sql`ALTER TABLE collections ADD COLUMN IF NOT EXISTS thumb_image_3 VARCHAR(255) DEFAULT ''`;
     } catch (e) {
       console.error('Migration check in getSliderCollections:', e);
     }
@@ -58,12 +67,46 @@ export async function getSliderCollections(): Promise<SliderCollectionItem[]> {
       `;
     } catch (e) { }
 
-    // Query active slider collections
-    const rows = await sql`
+    try {
+      await sql`
+        UPDATE collections 
+        SET show_in_slider = true 
+        WHERE (image_url != '' AND image_url IS NOT NULL) 
+           OR (thumb_image_1 != '' AND thumb_image_1 IS NOT NULL)
+           OR (thumb_image_2 != '' AND thumb_image_2 IS NOT NULL)
+           OR (thumb_image_3 != '' AND thumb_image_3 IS NOT NULL)
+      `;
+    } catch (e) { }
+
+    // Check if any collection has show_in_slider = true. If not, seed the default 4 slider collections into DB.
+    let rows = await sql`
       SELECT * FROM collections 
       WHERE show_in_slider = true 
       ORDER BY id ASC
     ` as unknown as SliderCollectionItem[];
+
+    if (!rows || rows.length === 0) {
+      const defaultSliderColls = [
+        { name: 'Flow Tide', desc: 'Fluid gold contours and organic sterling silver forms.', slug: 'flow-tide', image_url: '/images/hero_slide_1.png', slider_subtitle: 'Jewels That Flow With You', show_in_slider: true },
+        { name: 'Kings & Queens of Rajasthan', desc: 'The legacy of royals, captured in exquisite jewels.', slug: 'kings-queens-of-rajasthan', image_url: '/images/hero_slide_2.png', slider_subtitle: 'The Legacy of Royals, Crafted in Jewels', show_in_slider: true },
+        { name: 'Navratan', desc: 'Nine vibrant shades of royalty woven into silver and gold.', slug: 'navratan', image_url: '/images/hero_slide_3.png', slider_subtitle: 'Celebrate Every Shade of Royalty', show_in_slider: true },
+        { name: 'Aura Sterling', desc: 'Radiant 925 sterling silver statement pieces.', slug: 'aura-sterling', image_url: '/images/category_banner_jewelry.png', slider_subtitle: 'Luminous Elegance for Everyday', show_in_slider: true }
+      ];
+
+      for (const coll of defaultSliderColls) {
+        await sql`
+          INSERT INTO collections (name, description, slug, image_url, show_in_slider, slider_subtitle)
+          VALUES (${coll.name}, ${coll.desc}, ${coll.slug}, ${coll.image_url}, ${coll.show_in_slider}, ${coll.slider_subtitle})
+          ON CONFLICT (name) DO UPDATE SET show_in_slider = EXCLUDED.show_in_slider, slider_subtitle = EXCLUDED.slider_subtitle
+        `;
+      }
+
+      rows = await sql`
+        SELECT * FROM collections 
+        WHERE show_in_slider = true 
+        ORDER BY id ASC
+      ` as unknown as SliderCollectionItem[];
+    }
 
     if (rows && rows.length > 0) {
       return rows.map(coll => {

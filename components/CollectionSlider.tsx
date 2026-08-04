@@ -125,39 +125,38 @@ export default function CollectionSlider({ collections }: CollectionSliderProps)
                   </div>
                 </Link>
 
-                {/* 3 Product Thumbnails below the banner */}
+                {/* 3 Product / Sub-image Thumbnails below the banner */}
                 <div className={styles.thumbnailsRow}>
-                  {item.products && item.products.length > 0 ? (
-                    item.products.slice(0, 3).map((prod) => (
-                      <Link
-                        key={prod.id}
-                        href={`/products/${prod.slug}`}
-                        className={styles.thumbnailCard}
-                        title={prod.name}
-                      >
-                        <Image
-                          src={prod.image_url}
-                          alt={prod.name}
-                          fill
-                          sizes="120px"
-                          className={styles.thumbnailImage}
-                        />
-                      </Link>
-                    ))
-                  ) : (
-                    // Fallback empty thumbnail slots if no products are linked yet
-                    [1, 2, 3].map((idx) => (
-                      <div key={idx} className={styles.thumbnailCard}>
-                        <Image
-                          src="/images/earrings_category.png"
-                          alt="Product Sample"
-                          fill
-                          sizes="120px"
-                          className={styles.thumbnailImage}
-                        />
-                      </div>
-                    ))
-                  )}
+                  {(() => {
+                    const customThumbs = [item.thumb_image_1, item.thumb_image_2, item.thumb_image_3];
+                    const defaultFallbacks = ['/images/earrings_category.png', '/images/necklaces_category.png', '/images/rings_category.png'];
+                    
+                    return [0, 1, 2].map((idx) => {
+                      const customImg = customThumbs[idx];
+                      const prod = item.products?.[idx];
+                      const fallbackImg = prod?.image_url || defaultFallbacks[idx];
+                      const finalImgUrl = (customImg && customImg.trim() !== '') ? customImg : fallbackImg;
+                      const linkHref = prod ? `/products/${prod.slug}` : `/category/${item.slug}`;
+                      const titleText = prod?.name || `${item.name} item ${idx + 1}`;
+
+                      return (
+                        <Link
+                          key={idx}
+                          href={linkHref}
+                          className={styles.thumbnailCard}
+                          title={titleText}
+                        >
+                          <Image
+                            src={finalImgUrl}
+                            alt={titleText}
+                            fill
+                            sizes="120px"
+                            className={styles.thumbnailImage}
+                          />
+                        </Link>
+                      );
+                    });
+                  })()}
                 </div>
               </div>
             ))}

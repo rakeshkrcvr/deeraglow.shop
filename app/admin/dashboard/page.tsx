@@ -173,6 +173,9 @@ interface Collection {
   image_url?: string;
   show_in_slider?: boolean;
   slider_subtitle?: string;
+  thumb_image_1?: string;
+  thumb_image_2?: string;
+  thumb_image_3?: string;
 }
 
 interface MediaFile {
@@ -422,7 +425,7 @@ export default function AdminDashboard() {
   const [loadingMedia, setLoadingMedia] = useState(true);
   const [mediaError, setMediaError] = useState('');
   const [showMediaModal, setShowMediaModal] = useState(false);
-  const [mediaSelectorMode, setMediaSelectorMode] = useState<'product' | 'hero' | 'hero-mobile' | 'general' | 'collection' | 'category' | 'slider-collection' | 'promo-banner' | 'promo-banner-2' | 'before-after'>('product');
+  const [mediaSelectorMode, setMediaSelectorMode] = useState<'product' | 'hero' | 'hero-mobile' | 'general' | 'collection' | 'category' | 'slider-collection' | 'slider-collection-thumb1' | 'slider-collection-thumb2' | 'slider-collection-thumb3' | 'promo-banner' | 'promo-banner-2' | 'before-after'>('product');
   const [heroMediaTargetIndex, setHeroMediaTargetIndex] = useState<number | null>(null);
   const [heroMediaTargetType, setHeroMediaTargetType] = useState<'desktop' | 'mobile'>('desktop');
   const [editingHeroSlideIndex, setEditingHeroSlideIndex] = useState<number | null>(0);
@@ -1660,6 +1663,13 @@ export default function AdminDashboard() {
           .filter(p => p.collection.toLowerCase() === coll.name.toLowerCase())
           .map(p => p.id);
 
+        const hasImagesConfigured = !!(
+          (coll.image_url && coll.image_url.trim()) ||
+          (coll.thumb_image_1 && coll.thumb_image_1.trim()) ||
+          (coll.thumb_image_2 && coll.thumb_image_2.trim()) ||
+          (coll.thumb_image_3 && coll.thumb_image_3.trim())
+        );
+
         const res = await fetch('/api/admin/collections', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -1669,8 +1679,11 @@ export default function AdminDashboard() {
             description: coll.description,
             productIds: associatedIds,
             image_url: coll.image_url || '',
-            show_in_slider: !!coll.show_in_slider,
-            slider_subtitle: coll.slider_subtitle || ''
+            show_in_slider: coll.show_in_slider !== undefined ? coll.show_in_slider || hasImagesConfigured : hasImagesConfigured,
+            slider_subtitle: coll.slider_subtitle || '',
+            thumb_image_1: coll.thumb_image_1 || '',
+            thumb_image_2: coll.thumb_image_2 || '',
+            thumb_image_3: coll.thumb_image_3 || ''
           })
         });
 
@@ -6136,11 +6149,12 @@ export default function AdminDashboard() {
                             <input
                               value={coll.image_url || ''}
                               onChange={(e) => {
+                                const val = e.target.value;
                                 setCollections(prev => prev.map(c =>
-                                  c.id === coll.id ? { ...c, image_url: e.target.value } : c
+                                  c.id === coll.id ? { ...c, image_url: val, show_in_slider: true } : c
                                 ));
                               }}
-                              placeholder="Image URL"
+                              placeholder="Main Banner Image URL"
                               style={{ flexGrow: 1, padding: '6px 10px', border: '1px solid #ccc', borderRadius: '6px' }}
                             />
                             <button
@@ -6153,8 +6167,106 @@ export default function AdminDashboard() {
                               }}
                               style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
                             >
-                              Browse
+                              Browse Banner
                             </button>
+                          </div>
+
+                          {/* 3 Sub-Images (Card thumbnails) edit controls */}
+                          <div style={{ marginTop: '4px', paddingTop: '8px', borderTop: '1px dashed #e3e3e3', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <span style={{ fontWeight: '600', color: '#444', fontSize: '11px' }}>🖼️ 3 Sub-Images (Thumbnails below main banner):</span>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
+                              
+                              {/* Sub Image 1 */}
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                                <label style={{ fontSize: '10px', color: '#6d6d6d', fontWeight: '600' }}>Sub Image 1</label>
+                                <div style={{ display: 'flex', gap: '4px' }}>
+                                  <input
+                                    value={coll.thumb_image_1 || ''}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setCollections(prev => prev.map(c =>
+                                        c.id === coll.id ? { ...c, thumb_image_1: val, show_in_slider: true } : c
+                                      ));
+                                    }}
+                                    placeholder="Image 1 URL"
+                                    style={{ width: '100%', padding: '4px 8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '11px' }}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setModalSearchQuery('');
+                                      setMediaSelectorMode('slider-collection-thumb1');
+                                      setEditingSliderCollectionId(coll.id);
+                                      setShowMediaModal(true);
+                                    }}
+                                    style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '4px', padding: '4px 8px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                  >
+                                    Browse
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Sub Image 2 */}
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                                <label style={{ fontSize: '10px', color: '#6d6d6d', fontWeight: '600' }}>Sub Image 2</label>
+                                <div style={{ display: 'flex', gap: '4px' }}>
+                                  <input
+                                    value={coll.thumb_image_2 || ''}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setCollections(prev => prev.map(c =>
+                                        c.id === coll.id ? { ...c, thumb_image_2: val, show_in_slider: true } : c
+                                      ));
+                                    }}
+                                    placeholder="Image 2 URL"
+                                    style={{ width: '100%', padding: '4px 8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '11px' }}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setModalSearchQuery('');
+                                      setMediaSelectorMode('slider-collection-thumb2');
+                                      setEditingSliderCollectionId(coll.id);
+                                      setShowMediaModal(true);
+                                    }}
+                                    style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '4px', padding: '4px 8px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                  >
+                                    Browse
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Sub Image 3 */}
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                                <label style={{ fontSize: '10px', color: '#6d6d6d', fontWeight: '600' }}>Sub Image 3</label>
+                                <div style={{ display: 'flex', gap: '4px' }}>
+                                  <input
+                                    value={coll.thumb_image_3 || ''}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setCollections(prev => prev.map(c =>
+                                        c.id === coll.id ? { ...c, thumb_image_3: val, show_in_slider: true } : c
+                                      ));
+                                    }}
+                                    placeholder="Image 3 URL"
+                                    style={{ width: '100%', padding: '4px 8px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '11px' }}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setModalSearchQuery('');
+                                      setMediaSelectorMode('slider-collection-thumb3');
+                                      setEditingSliderCollectionId(coll.id);
+                                      setShowMediaModal(true);
+                                    }}
+                                    style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '4px', padding: '4px 8px', fontSize: '11px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                  >
+                                    Browse
+                                  </button>
+                                </div>
+                              </div>
+
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -8755,7 +8867,34 @@ export default function AdminDashboard() {
                             if (editingSliderCollectionId !== null) {
                               setCollections(prev => prev.map(c =>
                                 c.id === editingSliderCollectionId
-                                  ? { ...c, image_url: data.url }
+                                  ? { ...c, image_url: data.url, show_in_slider: true }
+                                  : c
+                              ));
+                              setEditingSliderCollectionId(null);
+                            }
+                          } else if (mediaSelectorMode === 'slider-collection-thumb1') {
+                            if (editingSliderCollectionId !== null) {
+                              setCollections(prev => prev.map(c =>
+                                c.id === editingSliderCollectionId
+                                  ? { ...c, thumb_image_1: data.url, show_in_slider: true }
+                                  : c
+                              ));
+                              setEditingSliderCollectionId(null);
+                            }
+                          } else if (mediaSelectorMode === 'slider-collection-thumb2') {
+                            if (editingSliderCollectionId !== null) {
+                              setCollections(prev => prev.map(c =>
+                                c.id === editingSliderCollectionId
+                                  ? { ...c, thumb_image_2: data.url, show_in_slider: true }
+                                  : c
+                              ));
+                              setEditingSliderCollectionId(null);
+                            }
+                          } else if (mediaSelectorMode === 'slider-collection-thumb3') {
+                            if (editingSliderCollectionId !== null) {
+                              setCollections(prev => prev.map(c =>
+                                c.id === editingSliderCollectionId
+                                  ? { ...c, thumb_image_3: data.url, show_in_slider: true }
                                   : c
                               ));
                               setEditingSliderCollectionId(null);
@@ -8828,7 +8967,34 @@ export default function AdminDashboard() {
                           if (editingSliderCollectionId !== null) {
                             setCollections(prev => prev.map(c =>
                               c.id === editingSliderCollectionId
-                                ? { ...c, image_url: file.url }
+                                ? { ...c, image_url: file.url, show_in_slider: true }
+                                : c
+                            ));
+                            setEditingSliderCollectionId(null);
+                          }
+                        } else if (mediaSelectorMode === 'slider-collection-thumb1') {
+                          if (editingSliderCollectionId !== null) {
+                            setCollections(prev => prev.map(c =>
+                              c.id === editingSliderCollectionId
+                                ? { ...c, thumb_image_1: file.url, show_in_slider: true }
+                                : c
+                            ));
+                            setEditingSliderCollectionId(null);
+                          }
+                        } else if (mediaSelectorMode === 'slider-collection-thumb2') {
+                          if (editingSliderCollectionId !== null) {
+                            setCollections(prev => prev.map(c =>
+                              c.id === editingSliderCollectionId
+                                ? { ...c, thumb_image_2: file.url, show_in_slider: true }
+                                : c
+                            ));
+                            setEditingSliderCollectionId(null);
+                          }
+                        } else if (mediaSelectorMode === 'slider-collection-thumb3') {
+                          if (editingSliderCollectionId !== null) {
+                            setCollections(prev => prev.map(c =>
+                              c.id === editingSliderCollectionId
+                                ? { ...c, thumb_image_3: file.url, show_in_slider: true }
                                 : c
                             ));
                             setEditingSliderCollectionId(null);

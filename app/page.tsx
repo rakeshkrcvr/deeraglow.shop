@@ -5,6 +5,7 @@ import Hero from '@/components/Hero';
 import CollectionSlider from '@/components/CollectionSlider';
 import ShopByCollection from '@/components/ShopByCollection';
 import ImageBanner from '@/components/ImageBanner';
+import BeforeAfterComparison from '@/components/BeforeAfterComparison';
 import AuraCollection from '@/components/AuraCollection';
 import CustomerExperience from '@/components/CustomerExperience';
 import Newsletter from '@/components/Newsletter';
@@ -52,6 +53,9 @@ export default async function Home() {
           imageUrl={settings.contentPromoBannerImage}
           linkHref={settings.contentPromoBannerLink}
         />
+
+        {/* Before vs After Comparison Image Section (Above NEW LAUNCH) */}
+        <BeforeAfterComparison beforeAfterImage={settings.contentBeforeAfterImage} />
 
         {/* Curated Collection Slider (NEW LAUNCH) */}
         <CollectionSlider collections={sliderCollections} />
