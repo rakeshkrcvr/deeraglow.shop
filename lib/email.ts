@@ -119,6 +119,7 @@ interface OrderItem {
   quantity: number;
   price: string | number;
   selected_fragrance?: string;
+  image_url?: string;
 }
 
 interface OrderEmailData {
@@ -137,20 +138,47 @@ interface OrderEmailData {
   items?: OrderItem[];
 }
 
+const STORE_URL = 'https://www.deeraglow.shop';
+
+/**
+ * Email clients cannot resolve site-relative image URLs, so make each product
+ * image URL absolute before adding it to an order email.
+ */
+function getOrderItemImageUrl(imageUrl?: string) {
+  const trimmedUrl = imageUrl?.trim();
+  if (!trimmedUrl) return '';
+
+  try {
+    const url = new URL(trimmedUrl, STORE_URL);
+    return ['http:', 'https:'].includes(url.protocol) ? url.toString() : '';
+  } catch {
+    return '';
+  }
+}
+
 /**
  * Send Order Confirmation Email to Customer & Notification to Admin
  */
 export async function sendOrderConfirmationEmail(order: OrderEmailData) {
   try {
-    const itemsHtml = (order.items || []).map(item => `
-      <tr>
+    const itemsHtml = (order.items || []).map(item => {
+      const imageUrl = getOrderItemImageUrl(item.image_url);
+
+      return `
+        <tr>
+        <td style="padding: 10px 6px 10px 10px; border-bottom: 1px solid #eee; width: 72px;">
+          ${imageUrl
+            ? `<img src="${imageUrl}" alt="${item.name}" width="60" height="60" style="display: block; width: 60px; height: 60px; border-radius: 6px; object-fit: cover; border: 1px solid #e7e7e7;" />`
+            : ''}
+        </td>
         <td style="padding: 10px; border-bottom: 1px solid #eee;">
           <strong>${item.name}</strong> ${item.selected_fragrance ? `<br/><small style="color: #666;">Variant: ${item.selected_fragrance}</small>` : ''}
         </td>
         <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
         <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">${typeof item.price === 'number' ? `₹${item.price.toFixed(2)}` : item.price}</td>
-      </tr>
-    `).join('');
+        </tr>
+      `;
+    }).join('');
 
     const isCod = order.paymentMethod?.toLowerCase() === 'cod';
 
@@ -173,13 +201,14 @@ export async function sendOrderConfirmationEmail(order: OrderEmailData) {
           <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;">
             <thead>
               <tr style="background-color: #f9f9f9; text-align: left;">
+                <th style="padding: 8px; width: 72px;">Photo</th>
                 <th style="padding: 8px;">Item</th>
                 <th style="padding: 8px; text-align: center;">Qty</th>
                 <th style="padding: 8px; text-align: right;">Price</th>
               </tr>
             </thead>
             <tbody>
-              ${itemsHtml || '<tr><td colspan="3" style="padding: 10px;">Order items</td></tr>'}
+              ${itemsHtml || '<tr><td colspan="4" style="padding: 10px;">Order items</td></tr>'}
             </tbody>
           </table>
 
