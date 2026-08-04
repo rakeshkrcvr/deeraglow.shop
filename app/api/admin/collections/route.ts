@@ -32,7 +32,9 @@ export async function GET() {
     // Check if table is empty, seed initial collections only if 0 exist
     const existingCollections = await sql`SELECT name FROM collections` as unknown as CollectionNameRow[];
 
-    if (existingCollections.length === 0) {
+    // Default collections are an optional one-time development seed. They must
+    // never be recreated automatically after an admin deletes them.
+    if (existingCollections.length === 0 && process.env.SEED_DEFAULT_COLLECTIONS === 'true') {
       const seedCollections = [
         // 1. Rings
         { name: 'Rings', desc: 'Aesthetic and premium daily rings, statement rings, and adjustable bands.', slug: 'rings' },
@@ -98,7 +100,8 @@ export async function GET() {
       }
     }
 
-    // Ensure default 4 slider collections exist in DB with show_in_slider = true
+    // Optional one-time development seed for the original slider collections.
+    // Keeping this opt-in prevents deleted collections from returning on refresh.
     const defaultSliderColls = [
       { name: 'Flow Tide', desc: 'Fluid gold contours and organic sterling silver forms.', slug: 'flow-tide', image_url: '/images/hero_slide_1.png', slider_subtitle: 'Jewels That Flow With You', show_in_slider: true },
       { name: 'Kings & Queens of Rajasthan', desc: 'The legacy of royals, captured in exquisite jewels.', slug: 'kings-queens-of-rajasthan', image_url: '/images/hero_slide_2.png', slider_subtitle: 'The Legacy of Royals, Crafted in Jewels', show_in_slider: true },
@@ -106,12 +109,14 @@ export async function GET() {
       { name: 'Aura Sterling', desc: 'Radiant 925 sterling silver statement pieces.', slug: 'aura-sterling', image_url: '/images/category_banner_jewelry.png', slider_subtitle: 'Luminous Elegance for Everyday', show_in_slider: true }
     ];
 
-    for (const coll of defaultSliderColls) {
-      await sql`
-        INSERT INTO collections (name, description, slug, image_url, show_in_slider, slider_subtitle)
-        VALUES (${coll.name}, ${coll.desc}, ${coll.slug}, ${coll.image_url}, ${coll.show_in_slider}, ${coll.slider_subtitle})
-        ON CONFLICT (name) DO NOTHING
-      `;
+    if (process.env.SEED_DEFAULT_COLLECTIONS === 'true') {
+      for (const coll of defaultSliderColls) {
+        await sql`
+          INSERT INTO collections (name, description, slug, image_url, show_in_slider, slider_subtitle)
+          VALUES (${coll.name}, ${coll.desc}, ${coll.slug}, ${coll.image_url}, ${coll.show_in_slider}, ${coll.slider_subtitle})
+          ON CONFLICT (name) DO NOTHING
+        `;
+      }
     }
 
     const collections = await sql`SELECT * FROM collections ORDER BY id ASC`;
@@ -204,13 +209,21 @@ export async function PUT(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    const id = Number(searchParams.get('id'));
 
-    if (!id) {
-      return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
+    if (!Number.isInteger(id) || id <= 0) {
+      return NextResponse.json({ error: 'A valid collection ID is required.' }, { status: 400 });
     }
 
-    await sql`DELETE FROM collections WHERE id = ${parseInt(id, 10)}`;
+    const collectionRows = await sql`SELECT name FROM collections WHERE id = ${id}` as unknown as CollectionNameRow[];
+    if (collectionRows.length === 0) {
+      return NextResponse.json({ error: 'Collection not found.' }, { status: 404 });
+    }
+
+    // Products are kept, but no longer remain linked to a collection that was deleted.
+    await sql`UPDATE products SET collection = 'Unassigned' WHERE collection = ${collectionRows[0].name}`;
+    await sql`DELETE FROM collections WHERE id = ${id}`;
+
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     console.error('Error in collections DELETE:', error);

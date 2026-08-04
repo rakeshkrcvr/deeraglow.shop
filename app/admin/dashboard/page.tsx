@@ -2522,10 +2522,12 @@ export default function AdminDashboard() {
       });
 
       if (res.ok) {
+        setCollections(prev => prev.filter(collection => collection.id !== id));
         alert('Collection deleted successfully!');
-        fetchCollections();
+        await fetchCollections();
       } else {
-        alert('Failed to delete collection.');
+        const data = await res.json().catch(() => null);
+        alert(data?.error || 'Failed to delete collection.');
       }
     } catch (err) {
       console.error(err);
