@@ -36,7 +36,7 @@ export default function RecentSalesPopup() {
       let list: PurchaseNotification[] = defaultPurchaseNotifications;
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length >= 50) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           list = normalizePurchaseNotifications(parsed);
         } else {
           localStorage.setItem(CUSTOMER_NOTIFICATIONS_STORAGE_KEY, JSON.stringify(defaultPurchaseNotifications));
@@ -61,7 +61,7 @@ export default function RecentSalesPopup() {
       if (!response.ok) return;
 
       const data = await response.json() as { notifications?: PurchaseNotification[] | null };
-      if (!Array.isArray(data.notifications) || data.notifications.length < 50) return;
+      if (!Array.isArray(data.notifications) || data.notifications.length === 0) return;
 
       const list = normalizePurchaseNotifications(data.notifications);
       localStorage.setItem(CUSTOMER_NOTIFICATIONS_STORAGE_KEY, JSON.stringify(list));

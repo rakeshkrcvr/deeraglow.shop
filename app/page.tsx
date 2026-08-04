@@ -68,6 +68,7 @@ export default async function Home() {
           promoBanner2Image={settings.contentPromoBanner2Image}
           promoBanner2Link={settings.contentPromoBanner2Link}
           beforeAfterImage={settings.contentBeforeAfterImage}
+          customerMomentsJson={settings.contentCustomerMoments}
         />
 
         {/* Brand Philosophy / Story Section */}

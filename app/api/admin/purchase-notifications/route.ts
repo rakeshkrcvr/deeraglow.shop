@@ -7,7 +7,7 @@ import { defaultPurchaseNotifications, PurchaseNotification, normalizePurchaseNo
 const SETTINGS_KEY = 'purchaseNotifications';
 
 function isNotificationList(value: unknown): value is PurchaseNotification[] {
-  return Array.isArray(value) && value.length >= 50;
+  return Array.isArray(value) && value.length > 0;
 }
 
 export async function GET() {
@@ -30,10 +30,23 @@ export async function GET() {
 
     const parsed: unknown = JSON.parse(rows[0].value);
     if (!isNotificationList(parsed)) {
-      return NextResponse.json({ notifications: null });
+      return NextResponse.json({ notifications: defaultPurchaseNotifications }, {
+        headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0' }
+      });
     }
 
-    return NextResponse.json({ notifications: normalizePurchaseNotifications(parsed) }, {
+    const normalized = normalizePurchaseNotifications(parsed);
+
+    // Save cleaned normalized list back to database
+    try {
+      await sql`
+        INSERT INTO store_settings (key, value)
+        VALUES (${SETTINGS_KEY}, ${JSON.stringify(normalized)})
+        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+      `;
+    } catch (e) { }
+
+    return NextResponse.json({ notifications: normalized }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0' }
     });
   } catch (error: unknown) {
@@ -50,7 +63,7 @@ export async function PUT(request: Request) {
       : undefined;
 
     if (!isNotificationList(notifications)) {
-      return NextResponse.json({ error: 'At least 50 purchase notifications are required.' }, { status: 400 });
+      return NextResponse.json({ error: 'At least 1 purchase notification is required.' }, { status: 400 });
     }
 
     await ensureStoreSettingsTable();

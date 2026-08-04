@@ -31,5 +31,5 @@ export function normalizeCustomerMoments(value: unknown): CustomerMoment[] {
     alt: typeof item.alt === 'string' && item.alt ? item.alt : `Customer jewellery moment ${index + 1}`
   }));
 
-  return moments.length > 0 ? moments : defaultCustomerMoments;
+  return moments;
 }

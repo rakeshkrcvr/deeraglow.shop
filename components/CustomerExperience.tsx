@@ -36,9 +36,10 @@ interface CustomerExperienceProps {
   promoBanner2Image?: string;
   promoBanner2Link?: string;
   beforeAfterImage?: string;
+  customerMomentsJson?: string;
 }
 
-export default function CustomerExperience({ promoBanner2Image, promoBanner2Link, beforeAfterImage }: CustomerExperienceProps) {
+export default function CustomerExperience({ promoBanner2Image, promoBanner2Link, beforeAfterImage, customerMomentsJson }: CustomerExperienceProps) {
   const beforeAfterImg = beforeAfterImage || "https://www.deeraglow.shop/api/media/1785230756833-5ea86cd4-49f2-4af1-bdbe-81ebcc3460cc-afterbefore.png";
   // Modal & Slide States
   const [isReviewModalOpen, setIsReviewModalOpen] = useState<boolean>(false);
@@ -49,7 +50,17 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
 
   // Data States
   const [reviewCards, setReviewCards] = useState<CustomerReview[]>(defaultCustomerReviews);
-  const [customerMoments, setCustomerMoments] = useState<CustomerMoment[]>(defaultCustomerMoments);
+  const [customerMoments, setCustomerMoments] = useState<CustomerMoment[]>(() => {
+    if (customerMomentsJson) {
+      try {
+        const parsed = JSON.parse(customerMomentsJson);
+        if (Array.isArray(parsed)) {
+          return normalizeCustomerMoments(parsed);
+        }
+      } catch (e) { }
+    }
+    return defaultCustomerMoments;
+  });
   const [customerVideos, setCustomerVideos] = useState<CustomerVideo[]>(defaultCustomerVideos);
   const [unmutedVideoIds, setUnmutedVideoIds] = useState<Record<string, boolean>>({});
 
@@ -94,12 +105,23 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
         const savedMoments = localStorage.getItem(CUSTOMER_MOMENTS_STORAGE_KEY);
         if (savedMoments) {
           setCustomerMoments(normalizeCustomerMoments(JSON.parse(savedMoments)));
-        } else {
-          localStorage.setItem(CUSTOMER_MOMENTS_STORAGE_KEY, JSON.stringify(defaultCustomerMoments));
-          setCustomerMoments(defaultCustomerMoments);
+        } else if (customerMomentsJson) {
+          try {
+            const parsed = JSON.parse(customerMomentsJson);
+            if (Array.isArray(parsed)) {
+              setCustomerMoments(normalizeCustomerMoments(parsed));
+            }
+          } catch (e) { }
         }
       } catch {
-        setCustomerMoments(defaultCustomerMoments);
+        if (customerMomentsJson) {
+          try {
+            const parsed = JSON.parse(customerMomentsJson);
+            if (Array.isArray(parsed)) {
+              setCustomerMoments(normalizeCustomerMoments(parsed));
+            }
+          } catch (e) { }
+        }
       }
     };
 
@@ -110,7 +132,7 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
       window.removeEventListener('storage', loadMoments);
       window.removeEventListener('deeksha-moments-updated', loadMoments);
     };
-  }, []);
+  }, [customerMomentsJson]);
 
   // Load videos from localStorage
   useEffect(() => {

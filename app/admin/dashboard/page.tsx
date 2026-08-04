@@ -586,10 +586,22 @@ export default function AdminDashboard() {
     window.dispatchEvent(new Event('deeksha-reviews-updated'));
   };
 
-  const saveCustomerMoments = (nextMoments: CustomerMoment[]) => {
+  const saveCustomerMoments = async (nextMoments: CustomerMoment[]) => {
     setCustomerMoments(nextMoments);
     localStorage.setItem(CUSTOMER_MOMENTS_STORAGE_KEY, JSON.stringify(nextMoments));
     window.dispatchEvent(new Event('deeksha-moments-updated'));
+
+    try {
+      await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contentCustomerMoments: JSON.stringify(nextMoments)
+        })
+      });
+    } catch (e) {
+      console.error('Error saving customer moments to DB:', e);
+    }
   };
 
   const saveCustomerVideos = (nextVideos: CustomerVideo[]) => {
@@ -680,7 +692,7 @@ export default function AdminDashboard() {
       const saved = localStorage.getItem(CUSTOMER_NOTIFICATIONS_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length >= 50) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           setPurchaseNotifications(normalizePurchaseNotifications(parsed));
         } else {
           localStorage.setItem(CUSTOMER_NOTIFICATIONS_STORAGE_KEY, JSON.stringify(defaultPurchaseNotifications));
@@ -1347,6 +1359,18 @@ export default function AdminDashboard() {
         setPromoBanner2Image(data.contentPromoBanner2Image || '/images/jewellery_category_banner.png');
         setPromoBanner2Link(data.contentPromoBanner2Link || '/category/earrings');
         setBeforeAfterImage(data.contentBeforeAfterImage || 'https://www.deeraglow.shop/api/media/1785230756833-5ea86cd4-49f2-4af1-bdbe-81ebcc3460cc-afterbefore.png');
+        if (data.contentCustomerMoments) {
+          try {
+            const parsedMoments = JSON.parse(data.contentCustomerMoments);
+            if (Array.isArray(parsedMoments)) {
+              const normalized = normalizeCustomerMoments(parsedMoments);
+              setCustomerMoments(normalized);
+              localStorage.setItem(CUSTOMER_MOMENTS_STORAGE_KEY, JSON.stringify(normalized));
+            }
+          } catch (e) {
+            console.error('Error parsing customer moments settings:', e);
+          }
+        }
         setHeroSliderSlides(normalizeHeroSlides(data.heroSliderImages));
         if (data.heroAnnouncementItems) {
           try {
