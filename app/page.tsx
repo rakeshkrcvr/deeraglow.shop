@@ -54,14 +54,14 @@ export default async function Home() {
           linkHref={settings.contentPromoBannerLink}
         />
 
-        {/* Before vs After Comparison Image Section (Above NEW LAUNCH) */}
-        <BeforeAfterComparison beforeAfterImage={settings.contentBeforeAfterImage} />
-
         {/* Curated Collection Slider (NEW LAUNCH) */}
         <CollectionSlider collections={sliderCollections} />
 
         {/* Aura Collection (Pedestal Glassmorphic cards) */}
         <AuraCollection products={products} />
+
+        {/* Before vs After Comparison Image Section */}
+        <BeforeAfterComparison beforeAfterImage={settings.contentBeforeAfterImage} />
 
         {/* Customer Reviews, Galleries, Slider and Badges */}
         <CustomerExperience
