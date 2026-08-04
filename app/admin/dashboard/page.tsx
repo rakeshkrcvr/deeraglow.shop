@@ -1178,6 +1178,29 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDeleteOrder = async (e: React.MouseEvent, orderId: number, orderNumber: string) => {
+    e.stopPropagation();
+    if (!confirm(`Are you sure you want to delete order ${orderNumber}?`)) return;
+
+    try {
+      const res = await fetch(`/api/orders?id=${orderId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setOrders((prev) => prev.filter((o) => o.id !== orderId));
+        if (selectedOrder?.id === orderId) {
+          setSelectedOrder(null);
+          setEditableOrder(null);
+        }
+      } else {
+        alert('Failed to delete order.');
+      }
+    } catch (err) {
+      console.error('Error deleting order:', err);
+      alert('Error deleting order.');
+    }
+  };
+
   const fetchDrafts = async () => {
     try {
       setLoadingDrafts(true);
@@ -3160,16 +3183,17 @@ export default function AdminDashboard() {
                       <th style={{ padding: '12px 16px' }}>Fulfillment status</th>
                       <th style={{ padding: '12px 16px' }}>Items</th>
                       <th style={{ padding: '12px 16px' }}>Delivery status</th>
+                      <th style={{ padding: '12px 16px', textAlign: 'center' }}>Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {loadingOrders ? (
                       <tr>
-                        <td colSpan={10} style={{ padding: '24px', textAlign: 'center', color: '#9e9e9e' }}>Loading orders from Neon database...</td>
+                        <td colSpan={11} style={{ padding: '24px', textAlign: 'center', color: '#9e9e9e' }}>Loading orders from Neon database...</td>
                       </tr>
                     ) : orders.length === 0 ? (
                       <tr>
-                        <td colSpan={10} style={{ padding: '24px', textAlign: 'center', color: '#9e9e9e' }}>No matching orders found.</td>
+                        <td colSpan={11} style={{ padding: '24px', textAlign: 'center', color: '#9e9e9e' }}>No matching orders found.</td>
                       </tr>
                     ) : (
                       orders.filter(order =>
@@ -3237,6 +3261,36 @@ export default function AdminDashboard() {
                             ) : (
                               <span style={{ color: '#ccc' }}>—</span>
                             )}
+                          </td>
+
+                          {/* Delete Action Icon */}
+                          <td style={{ padding: '12px 16px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              onClick={(e) => handleDeleteOrder(e, order.id, order.order_number)}
+                              title="Delete Order"
+                              style={{
+                                background: 'transparent',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: '6px',
+                                borderRadius: '4px',
+                                color: '#d32f2f',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'background-color 0.15s'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ffebee'}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                <line x1="10" y1="11" x2="10" y2="17"></line>
+                                <line x1="14" y1="11" x2="14" y2="17"></line>
+                              </svg>
+                            </button>
                           </td>
                         </tr>
                       ))
@@ -3328,7 +3382,7 @@ export default function AdminDashboard() {
                     </div>
 
                     <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '18px' }}>
-                      <h3 style={{ margin: '0 0 14px 0', fontSize: '15px' }}>Customer Details</h3>
+                      <h3 style={{ margin: '0 0 14px 0', fontSize: '15px' }}>Customer & Shipping Details</h3>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
                         <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
                           Customer Name
@@ -3346,101 +3400,86 @@ export default function AdminDashboard() {
                           Channel
                           <input value={editableOrder.channel} onChange={e => handleOrderFieldChange('channel', e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
                         </label>
-                        <label style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                        <label style={{ gridColumn: '1 / 3', display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
                           Shipping Address
-                          <textarea value={editableOrder.shipping_address || ''} onChange={e => handleOrderFieldChange('shipping_address', e.target.value)} rows={3} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'vertical', fontFamily: 'inherit' }} />
+                          <textarea rows={2} value={editableOrder.shipping_address || ''} onChange={e => handleOrderFieldChange('shipping_address', e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'vertical' }} />
                         </label>
-                        <label style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                        <label style={{ gridColumn: '1 / 3', display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
                           Billing Address
-                          <textarea value={editableOrder.billing_address || ''} onChange={e => handleOrderFieldChange('billing_address', e.target.value)} rows={3} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'vertical', fontFamily: 'inherit' }} />
+                          <textarea rows={2} value={editableOrder.billing_address || ''} onChange={e => handleOrderFieldChange('billing_address', e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'vertical' }} />
                         </label>
-                        <label style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
-                          Notes
-                          <textarea value={editableOrder.notes || ''} onChange={e => handleOrderFieldChange('notes', e.target.value)} rows={3} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'vertical', fontFamily: 'inherit' }} />
-                        </label>
-                      </div>
-                    </div>
-
-                    <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '18px', backgroundColor: '#fafafa' }}>
-                      <h3 style={{ margin: '0 0 14px 0', fontSize: '15px' }}>Payment & Charges Breakdown</h3>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', fontSize: '13px' }}>
-                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
-                          Subtotal
-                          <input value={editableOrder.subtotal || ''} onChange={e => handleOrderFieldChange('subtotal', e.target.value)} placeholder="₹0.00" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
-                        </label>
-                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
-                          Delivery Charge
-                          <input value={editableOrder.delivery_charge || ''} onChange={e => handleOrderFieldChange('delivery_charge', e.target.value)} placeholder="FREE" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
-                        </label>
-                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
-                          COD Handling Fee
-                          <input value={editableOrder.cod_fee || ''} onChange={e => handleOrderFieldChange('cod_fee', e.target.value)} placeholder="₹0.00" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
-                        </label>
-                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
-                          Total Order Value
-                          <input value={editableOrder.total_price} onChange={e => handleOrderFieldChange('total_price', e.target.value)} placeholder="₹0.00" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontWeight: '700' }} />
-                        </label>
-                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
-                          Advance Paid (Online)
-                          <input value={editableOrder.advance_paid || ''} onChange={e => handleOrderFieldChange('advance_paid', e.target.value)} placeholder="₹200.00" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', color: '#2d5c4d', fontWeight: '700' }} />
-                        </label>
-                        <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
-                          Remaining COD Amount
-                          <input value={editableOrder.remaining_cod || ''} onChange={e => handleOrderFieldChange('remaining_cod', e.target.value)} placeholder="₹0.00" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', color: '#856404', fontWeight: '700' }} />
-                        </label>
-                        <label style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
-                          Payment Method
-                          <input value={editableOrder.payment_method || ''} onChange={e => handleOrderFieldChange('payment_method', e.target.value)} placeholder="Cash on Delivery / Online Payment" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                        <label style={{ gridColumn: '1 / 3', display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>
+                          Internal Order Notes
+                          <textarea rows={2} value={editableOrder.notes || ''} onChange={e => handleOrderFieldChange('notes', e.target.value)} style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', resize: 'vertical' }} />
                         </label>
                       </div>
                     </div>
 
                     <div style={{ border: '1px solid #e3e3e3', borderRadius: '8px', padding: '18px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                        <h3 style={{ margin: 0, fontSize: '15px' }}>Ordered Products</h3>
-                        <button type="button" onClick={() => setEditableOrderItems(prev => [...prev, { name: 'New Product', image_url: '/images/hero_candle.png', quantity: 1, selected_fragrance: '', price: '₹0', total: '₹0' }])} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
-                          Add Item
+                        <h3 style={{ margin: 0, fontSize: '15px' }}>Ordered Items ({editableOrderItems.length})</h3>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const sampleProduct = products[0];
+                            setEditableOrderItems(prev => [
+                              ...prev,
+                              {
+                                product_id: sampleProduct?.id || 1,
+                                name: sampleProduct?.name || 'New Item',
+                                image_url: sampleProduct?.image_url || '/images/earrings_category.png',
+                                quantity: 1,
+                                selected_fragrance: sampleProduct?.fragrances || 'Standard',
+                                price: `₹${sampleProduct?.price || 499}`,
+                                total: `₹${sampleProduct?.price || 499}`
+                              }
+                            ]);
+                          }}
+                          style={{ backgroundColor: '#f0f0f0', border: '1px solid #ccc', borderRadius: '6px', padding: '6px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                        >
+                          + Add Item
                         </button>
                       </div>
+
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {editableOrderItems.length === 0 ? (
-                          <p style={{ margin: 0, color: '#8c8c8c', fontSize: '13px' }}>No products captured for this order.</p>
-                        ) : editableOrderItems.map((item, index) => (
-                          <div key={`${item.name}-${index}`} style={{ display: 'grid', gridTemplateColumns: '72px 1fr', gap: '12px', border: '1px solid #f0f0f0', borderRadius: '8px', padding: '12px' }}>
-                            <div style={{ position: 'relative', width: '72px', height: '72px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #e3e3e3', backgroundColor: '#f6f6f6' }}>
-                              <Image src={item.image_url || '/images/hero_candle.png'} alt={item.name} fill style={{ objectFit: 'cover' }} />
+                          <div style={{ color: '#9e9e9e', fontSize: '13px', fontStyle: 'italic' }}>No items in this order.</div>
+                        ) : (
+                          editableOrderItems.map((item, index) => (
+                            <div key={index} style={{ border: '1px solid #efefef', borderRadius: '6px', padding: '12px', backgroundColor: '#fafafa', display: 'grid', gridTemplateColumns: '50px 1fr', gap: '12px', alignItems: 'start' }}>
+                              <img src={item.image_url || '/images/earrings_category.png'} alt={item.name} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #e0e0e0' }} />
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', alignItems: 'center' }}>
+                                <label style={{ gridColumn: '1 / 4', display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>
+                                  Item Name
+                                  <input value={item.name} onChange={e => handleOrderItemChange(index, 'name', e.target.value)} style={{ padding: '7px 9px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                                </label>
+                                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>
+                                  Quantity
+                                  <input type="number" min="1" value={item.quantity} onChange={e => handleOrderItemChange(index, 'quantity', e.target.value)} style={{ padding: '7px 9px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                                </label>
+                                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>
+                                  Price Each
+                                  <input value={item.price} onChange={e => handleOrderItemChange(index, 'price', e.target.value)} style={{ padding: '7px 9px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                                </label>
+                                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>
+                                  Row Total
+                                  <input value={item.total} onChange={e => handleOrderItemChange(index, 'total', e.target.value)} style={{ padding: '7px 9px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                                </label>
+                                <label style={{ gridColumn: '1 / 4', display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>
+                                  Fragrance
+                                  <input value={item.selected_fragrance || ''} onChange={e => handleOrderItemChange(index, 'selected_fragrance', e.target.value)} style={{ padding: '7px 9px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                                </label>
+                                <label style={{ gridColumn: '1 / 4', display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>
+                                  Product Image URL
+                                  <input value={item.image_url} onChange={e => handleOrderItemChange(index, 'image_url', e.target.value)} style={{ padding: '7px 9px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                                </label>
+                                <button type="button" onClick={() => setEditableOrderItems(prev => prev.filter((_, itemIndex) => itemIndex !== index))} style={{ backgroundColor: '#ffebe9', color: '#ff4d4d', border: 'none', borderRadius: '6px', padding: '8px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                                  Remove
+                                </button>
+                              </div>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 90px 110px 110px', gap: '8px', alignItems: 'end' }}>
-                              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>
-                                Product
-                                <input value={item.name} onChange={e => handleOrderItemChange(index, 'name', e.target.value)} style={{ padding: '7px 9px', border: '1px solid #ccc', borderRadius: '6px' }} />
-                              </label>
-                              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>
-                                Qty
-                                <input type="number" min="1" value={item.quantity} onChange={e => handleOrderItemChange(index, 'quantity', e.target.value)} style={{ padding: '7px 9px', border: '1px solid #ccc', borderRadius: '6px' }} />
-                              </label>
-                              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>
-                                Price
-                                <input value={item.price} onChange={e => handleOrderItemChange(index, 'price', e.target.value)} style={{ padding: '7px 9px', border: '1px solid #ccc', borderRadius: '6px' }} />
-                              </label>
-                              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>
-                                Total
-                                <input value={item.total} onChange={e => handleOrderItemChange(index, 'total', e.target.value)} style={{ padding: '7px 9px', border: '1px solid #ccc', borderRadius: '6px' }} />
-                              </label>
-                              <label style={{ gridColumn: '1 / 4', display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>
-                                Fragrance
-                                <input value={item.selected_fragrance || ''} onChange={e => handleOrderItemChange(index, 'selected_fragrance', e.target.value)} style={{ padding: '7px 9px', border: '1px solid #ccc', borderRadius: '6px' }} />
-                              </label>
-                              <label style={{ gridColumn: '1 / 4', display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', fontWeight: '600', color: '#6d6d6d' }}>
-                                Product Image URL
-                                <input value={item.image_url} onChange={e => handleOrderItemChange(index, 'image_url', e.target.value)} style={{ padding: '7px 9px', border: '1px solid #ccc', borderRadius: '6px' }} />
-                              </label>
-                              <button type="button" onClick={() => setEditableOrderItems(prev => prev.filter((_, itemIndex) => itemIndex !== index))} style={{ backgroundColor: '#ffebe9', color: '#ff4d4d', border: 'none', borderRadius: '6px', padding: '8px 10px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
-                                Remove
-                              </button>
-                            </div>
-                          </div>
-                        ))}
+                          ))
+                        )}
                       </div>
                     </div>
 
@@ -3469,13 +3508,24 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  <div style={{ position: 'sticky', bottom: 0, backgroundColor: '#ffffff', borderTop: '1px solid #e3e3e3', padding: '16px 24px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                    <button type="button" onClick={() => { setEditableOrder({ ...selectedOrder }); setEditableOrderItems(parseOrderItems(selectedOrder)); }} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '9px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-                      Reset
+                  <div style={{ position: 'sticky', bottom: 0, backgroundColor: '#ffffff', borderTop: '1px solid #e3e3e3', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <button type="button" onClick={(e) => handleDeleteOrder(e, selectedOrder.id, selectedOrder.order_number)} style={{ backgroundColor: '#ffebe9', color: '#d32f2f', border: '1px solid #ffcdd2', borderRadius: '6px', padding: '9px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                      </svg>
+                      Delete Order
                     </button>
-                    <button type="submit" disabled={savingOrder} style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '9px 16px', fontSize: '13px', fontWeight: '600', cursor: savingOrder ? 'not-allowed' : 'pointer', opacity: savingOrder ? 0.7 : 1 }}>
-                      {savingOrder ? 'Saving...' : 'Save Order Details'}
-                    </button>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button type="button" onClick={() => { setEditableOrder({ ...selectedOrder }); setEditableOrderItems(parseOrderItems(selectedOrder)); }} style={{ backgroundColor: '#ffffff', border: '1px solid #cccccc', borderRadius: '6px', padding: '9px 14px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                        Reset
+                      </button>
+                      <button type="submit" disabled={savingOrder} style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '9px 16px', fontSize: '13px', fontWeight: '600', cursor: savingOrder ? 'not-allowed' : 'pointer', opacity: savingOrder ? 0.7 : 1 }}>
+                        {savingOrder ? 'Saving...' : 'Save Order Details'}
+                      </button>
+                    </div>
                   </div>
                 </form>
               </div>
@@ -6765,19 +6815,25 @@ export default function AdminDashboard() {
                 </h3>
 
                 {(() => {
-                  const thresh = Number(freeShippingThreshold) || 500;
-                  const delCharge = Number(standardDeliveryCharge) || 190;
-                  const cFee = Number(codHandlingFee) || 150;
-                  const adv = Number(codAdvanceAmount) || 200;
+                  const parseVal = (val: any, defaultVal: number) => {
+                    if (val === '' || val === null || val === undefined) return defaultVal;
+                    const n = Number(val);
+                    return Number.isFinite(n) ? n : defaultVal;
+                  };
+
+                  const thresh = parseVal(freeShippingThreshold, 500);
+                  const delCharge = parseVal(standardDeliveryCharge, 190);
+                  const cFee = parseVal(codHandlingFee, 150);
+                  const adv = parseVal(codAdvanceAmount, 200);
 
                   // Example 1: Above threshold (e.g. thresh + 200)
                   const subtotal1 = thresh + 200;
-                  const total1 = subtotal1 + 0 + cFee;
+                  const total1 = subtotal1 + (delCharge > 0 && subtotal1 < thresh ? delCharge : 0) + cFee;
                   const remaining1 = Math.max(0, total1 - adv);
 
                   // Example 2: Below threshold (e.g. max(0, thresh - 100))
-                  const subtotal2 = Math.max(100, thresh - 100);
-                  const total2 = subtotal2 + delCharge + cFee;
+                  const subtotal2 = Math.max(100, thresh > 0 ? thresh - 100 : 100);
+                  const total2 = subtotal2 + (delCharge > 0 && (thresh === 0 || subtotal2 < thresh) ? delCharge : 0) + cFee;
                   const remaining2 = Math.max(0, total2 - adv);
 
                   return (
@@ -6791,9 +6847,9 @@ export default function AdminDashboard() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', color: '#4a4a4a' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Subtotal:</span><span>₹{subtotal1.toFixed(2)}</span></div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2d5c4d', fontWeight: '600' }}><span>Delivery Charge (≥ ₹{thresh}):</span><span>FREE (₹0.00)</span></div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>COD Handling Fee:</span><span>₹{cFee.toFixed(2)}</span></div>
+                          {cFee > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>COD Handling Fee:</span><span>₹{cFee.toFixed(2)}</span></div>}
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700', color: '#1a1a1a', borderTop: '1px solid #d4e2da', paddingTop: '6px', marginTop: '4px' }}><span>Total Order Value:</span><span>₹{total1.toFixed(2)}</span></div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2d5c4d', fontWeight: '600' }}><span>Advance Paid Online:</span><span>₹{adv.toFixed(2)}</span></div>
+                          {adv > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2d5c4d', fontWeight: '600' }}><span>Advance Paid Online:</span><span>₹{adv.toFixed(2)}</span></div>}
                           <div style={{ display: 'flex', justifyContent: 'space-between', color: '#856404', fontWeight: '700' }}><span>Amount Payable on Delivery:</span><span>₹{remaining1.toFixed(2)}</span></div>
                         </div>
                       </div>
@@ -6805,21 +6861,26 @@ export default function AdminDashboard() {
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', color: '#4a4a4a' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Subtotal:</span><span>₹{subtotal2.toFixed(2)}</span></div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#b45309', fontWeight: '600' }}><span>Delivery Charge (&lt; ₹{thresh}):</span><span>₹{delCharge.toFixed(2)}</span></div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>COD Handling Fee:</span><span>₹{cFee.toFixed(2)}</span></div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', color: delCharge === 0 ? '#2d5c4d' : '#b45309', fontWeight: '600' }}>
+                            <span>Delivery Charge ({thresh > 0 ? `< ₹${thresh}` : 'Standard'}):</span>
+                            <span>{delCharge === 0 ? 'FREE (₹0.00)' : `₹${delCharge.toFixed(2)}`}</span>
+                          </div>
+                          {cFee > 0 && <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>COD Handling Fee:</span><span>₹{cFee.toFixed(2)}</span></div>}
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700', color: '#1a1a1a', borderTop: '1px solid #ffe3c2', paddingTop: '6px', marginTop: '4px' }}><span>Total Order Value:</span><span>₹{total2.toFixed(2)}</span></div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2d5c4d', fontWeight: '600' }}><span>Advance Paid Online:</span><span>₹{adv.toFixed(2)}</span></div>
+                          {adv > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2d5c4d', fontWeight: '600' }}><span>Advance Paid Online:</span><span>₹{adv.toFixed(2)}</span></div>}
                           <div style={{ display: 'flex', justifyContent: 'space-between', color: '#856404', fontWeight: '700' }}><span>Amount Payable on Delivery:</span><span>₹{remaining2.toFixed(2)}</span></div>
                         </div>
                       </div>
 
                       {/* Notice Message Live Box */}
-                      <div style={{ border: '1px dashed #cccccc', borderRadius: '10px', padding: '14px', backgroundColor: '#fafafa' }}>
-                        <div style={{ fontSize: '11px', fontWeight: '700', color: '#6d6d6d', textTransform: 'uppercase', marginBottom: '4px' }}>Customer Notice Box Preview</div>
-                        <p style={{ margin: 0, fontSize: '12px', color: '#333', lineHeight: '1.4' }}>
-                          {codNoticeText || 'To confirm your Cash on Delivery order, you must pay a non-refundable advance online.'}
-                        </p>
-                      </div>
+                      {adv > 0 && (
+                        <div style={{ border: '1px dashed #cccccc', borderRadius: '10px', padding: '14px', backgroundColor: '#fafafa' }}>
+                          <div style={{ fontSize: '11px', fontWeight: '700', color: '#6d6d6d', textTransform: 'uppercase', marginBottom: '4px' }}>Customer Notice Box Preview</div>
+                          <p style={{ margin: 0, fontSize: '12px', color: '#333', lineHeight: '1.4' }}>
+                            {codNoticeText || 'To confirm your Cash on Delivery order, you must pay a non-refundable advance online.'}
+                          </p>
+                        </div>
+                      )}
 
                     </div>
                   );

@@ -196,11 +196,17 @@ export default function Header() {
             console.error('Error parsing hero announcement items:', e);
           }
         }
-        if (settings.freeShippingThreshold) setFreeShippingThreshold(Number(settings.freeShippingThreshold) || 500);
-        if (settings.standardDeliveryCharge) setStandardDeliveryCharge(Number(settings.standardDeliveryCharge) || 190);
-        if (settings.codHandlingFee) setCodHandlingFee(Number(settings.codHandlingFee) || 150);
-        if (settings.codAdvanceAmount) setCodAdvanceAmount(Number(settings.codAdvanceAmount) || 200);
-        if (settings.codNoticeText) setCodNoticeText(settings.codNoticeText);
+        const parseVal = (val: any, defaultVal: number) => {
+          if (val === '' || val === null || val === undefined) return defaultVal;
+          const n = Number(val);
+          return Number.isFinite(n) ? n : defaultVal;
+        };
+
+        if (settings.freeShippingThreshold !== undefined) setFreeShippingThreshold(parseVal(settings.freeShippingThreshold, 500));
+        if (settings.standardDeliveryCharge !== undefined) setStandardDeliveryCharge(parseVal(settings.standardDeliveryCharge, 190));
+        if (settings.codHandlingFee !== undefined) setCodHandlingFee(parseVal(settings.codHandlingFee, 150));
+        if (settings.codAdvanceAmount !== undefined) setCodAdvanceAmount(parseVal(settings.codAdvanceAmount, 200));
+        if (settings.codNoticeText !== undefined) setCodNoticeText(settings.codNoticeText);
       } catch (err) {
         console.error('Error loading header logo:', err);
       }
@@ -378,6 +384,15 @@ export default function Header() {
     const customerName = buildCustomerName();
     const deliveryAddressText = buildDeliveryAddress();
 
+    if (paymentMethod === 'cod' && codAdvanceAmount === 0) {
+      setIsProcessingCheckout(true);
+      await markDiscountUsed();
+      await saveOrderToDb('COD-DIRECT-NO-ADVANCE');
+      setIsProcessingCheckout(false);
+      setCheckoutSuccess(true);
+      return;
+    }
+
     setIsProcessingCheckout(true);
     try {
       const settingsRes = await fetch('/api/admin/settings');
@@ -507,12 +522,12 @@ export default function Header() {
   const subtotalAfterDiscounts = Math.max(couponBaseTotal - manualDiscountAmount, 0);
 
   // Dynamic Business Rules for Delivery & COD Fees:
-  const deliveryCharge = cartSubtotal < freeShippingThreshold ? standardDeliveryCharge : 0;
+  const deliveryCharge = standardDeliveryCharge > 0 ? (cartSubtotal < freeShippingThreshold ? standardDeliveryCharge : 0) : 0;
   const codFee = paymentMethod === 'cod' ? codHandlingFee : 0;
   const totalOrderValue = subtotalAfterDiscounts + deliveryCharge + codFee;
-  const advancePaid = paymentMethod === 'cod' ? codAdvanceAmount : totalOrderValue;
-  const remainingCodAmount = paymentMethod === 'cod' ? Math.max(0, totalOrderValue - codAdvanceAmount) : 0;
-  const razorpayPayAmount = paymentMethod === 'cod' ? codAdvanceAmount : totalOrderValue;
+  const advancePaid = paymentMethod === 'cod' ? Math.min(codAdvanceAmount, totalOrderValue) : totalOrderValue;
+  const remainingCodAmount = paymentMethod === 'cod' ? Math.max(0, totalOrderValue - advancePaid) : 0;
+  const razorpayPayAmount = paymentMethod === 'cod' ? advancePaid : totalOrderValue;
   const estimatedTotal = totalOrderValue;
   const offerCompareTotal = cartSubtotal;
   const savePercent = offerCompareTotal > 0 ? Math.round((totalSaved / offerCompareTotal) * 100) : 0;
@@ -1072,7 +1087,7 @@ export default function Header() {
                       <div className={styles.estimatedTotalLabelTextCol}>
                         <div className={styles.estimatedTotalLabelTitle}>Estimated Total</div>
                         <div className={styles.freeShippingLabel}>
-                          {cartSubtotal >= 500 ? '✔️ FREE SHIPPING!' : `🚚 Add ₹${(500 - cartSubtotal).toLocaleString('en-IN', { maximumFractionDigits: 0 })} for FREE Delivery`}
+                          {standardDeliveryCharge === 0 || (freeShippingThreshold > 0 && cartSubtotal >= freeShippingThreshold) ? '✔️ FREE SHIPPING!' : `🚚 Add ₹${(freeShippingThreshold - cartSubtotal).toLocaleString('en-IN', { maximumFractionDigits: 0 })} for FREE Delivery`}
                         </div>
                       </div>
                     </div>
@@ -1600,16 +1615,23 @@ export default function Header() {
                         <div style={{ flex: 1 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <strong style={{ fontSize: '13px', color: '#1a1a1a' }}>🚚 Cash on Delivery (COD)</strong>
-                            <span style={{ fontSize: '10px', backgroundColor: '#fff3cd', color: '#856404', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>₹{codAdvanceAmount} Advance Req.</span>
+                            {codAdvanceAmount > 0 ? (
+                              <span style={{ fontSize: '10px', backgroundColor: '#fff3cd', color: '#856404', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>₹{codAdvanceAmount} Advance Req.</span>
+                            ) : (
+                              <span style={{ fontSize: '10px', backgroundColor: '#e2ece9', color: '#2d5c4d', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>No Advance Req.</span>
+                            )}
                           </div>
                           <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: '#6d6d6d' }}>
-                            Pay ₹{codAdvanceAmount} advance online now & remaining in cash at delivery. (+₹{codHandlingFee} COD fee)
+                            {codAdvanceAmount > 0
+                              ? `Pay ₹${codAdvanceAmount} advance online now & remaining in cash at delivery.${codHandlingFee > 0 ? ` (+₹${codHandlingFee} COD fee)` : ''}`
+                              : `Pay full amount in cash at delivery.${codHandlingFee > 0 ? ` (+₹${codHandlingFee} COD fee)` : ''}`
+                            }
                           </p>
                         </div>
                       </label>
                     </div>
 
-                    {paymentMethod === 'cod' && (
+                    {paymentMethod === 'cod' && codAdvanceAmount > 0 && (
                       <div style={{ backgroundColor: '#fff8e6', border: '1px solid #ffe599', borderRadius: '8px', padding: '12px', fontSize: '12px', color: '#7a5200', lineHeight: '1.4' }}>
                         {codNoticeText}
                       </div>
@@ -1633,26 +1655,28 @@ export default function Header() {
                     )}
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', color: '#6d6d6d' }}>
-                      <span>Delivery Charge {cartSubtotal >= freeShippingThreshold ? `(Free over ₹${freeShippingThreshold})` : ''}</span>
+                      <span>Delivery Charge {freeShippingThreshold > 0 && cartSubtotal >= freeShippingThreshold ? `(Free over ₹${freeShippingThreshold})` : ''}</span>
                       <span style={{ fontWeight: deliveryCharge === 0 ? '700' : 'normal', color: deliveryCharge === 0 ? '#2d5c4d' : '#1a1a1a' }}>
                         {deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
                       </span>
                     </div>
 
                     {/* Free Delivery Banner Message Box */}
-                    {cartSubtotal < freeShippingThreshold ? (
-                      <div style={{ backgroundColor: '#fff8f0', border: '1px solid #ffe3c2', borderRadius: '8px', padding: '10px 12px', fontSize: '12px', color: '#b45309', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: '4px 0' }}>
-                        <span style={{ fontSize: '16px' }}>🚚</span>
-                        <span>Add items worth <strong>₹{(freeShippingThreshold - cartSubtotal).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</strong> more to get <strong>FREE Delivery!</strong></span>
-                      </div>
-                    ) : (
-                      <div style={{ backgroundColor: '#e2ece9', border: '1px solid #b8d8ce', borderRadius: '8px', padding: '10px 12px', fontSize: '12px', color: '#2d5c4d', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: '4px 0' }}>
-                        <span style={{ fontSize: '16px' }}>🎉</span>
-                        <span>Congratulations! Your subtotal is ₹{freeShippingThreshold}+, you unlocked <strong>FREE Delivery!</strong></span>
-                      </div>
+                    {standardDeliveryCharge > 0 && (
+                      cartSubtotal < freeShippingThreshold ? (
+                        <div style={{ backgroundColor: '#fff8f0', border: '1px solid #ffe3c2', borderRadius: '8px', padding: '10px 12px', fontSize: '12px', color: '#b45309', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: '4px 0' }}>
+                          <span style={{ fontSize: '16px' }}>🚚</span>
+                          <span>Add items worth <strong>₹{(freeShippingThreshold - cartSubtotal).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</strong> more to get <strong>FREE Delivery!</strong></span>
+                        </div>
+                      ) : (
+                        <div style={{ backgroundColor: '#e2ece9', border: '1px solid #b8d8ce', borderRadius: '8px', padding: '10px 12px', fontSize: '12px', color: '#2d5c4d', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', margin: '4px 0' }}>
+                          <span style={{ fontSize: '16px' }}>🎉</span>
+                          <span>Congratulations! You unlocked <strong>FREE Delivery!</strong></span>
+                        </div>
+                      )
                     )}
 
-                    {paymentMethod === 'cod' && (
+                    {paymentMethod === 'cod' && codFee > 0 && (
                       <div style={{ display: 'flex', justifyContent: 'space-between', color: '#6d6d6d' }}>
                         <span>COD Handling Fee</span>
                         <span>₹{codFee.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
@@ -1664,11 +1688,11 @@ export default function Header() {
                       <span>₹{totalOrderValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                     </div>
 
-                    {paymentMethod === 'cod' && (
+                    {paymentMethod === 'cod' && codAdvanceAmount > 0 && (
                       <>
                         <div style={{ display: 'flex', justifyContent: 'space-between', color: '#2d5c4d', fontWeight: '700', fontSize: '13px', backgroundColor: '#e2ece9', padding: '8px 10px', borderRadius: '6px' }}>
                           <span>Advance Payment (Pay Now):</span>
-                          <span>₹{codAdvanceAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                          <span>₹{advancePaid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', color: '#856404', fontWeight: '700', fontSize: '13px', backgroundColor: '#fff3cd', padding: '8px 10px', borderRadius: '6px' }}>
                           <span>Remaining COD Amount:</span>
@@ -1778,7 +1802,9 @@ export default function Header() {
                       marginBottom: '10px'
                     }}
                   >
-                    {paymentMethod === 'cod' ? `Pay ₹${codAdvanceAmount} Advance via Razorpay` : `Pay ₹${totalOrderValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })} via Razorpay`}
+                    {paymentMethod === 'cod' 
+                      ? (codAdvanceAmount > 0 ? `Pay ₹${advancePaid} Advance via Razorpay` : `Place COD Order (₹${totalOrderValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })})`)
+                      : `Pay ₹${totalOrderValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })} via Razorpay`}
                   </button>
 
                   {/* Gokwik Brand trust info */}

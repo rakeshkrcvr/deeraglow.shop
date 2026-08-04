@@ -346,4 +346,21 @@ export async function PUT(request: Request) {
   }
 }
 
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    if (!id) {
+      return NextResponse.json({ error: 'Missing order ID' }, { status: 400 });
+    }
+    await ensureOrdersTable();
+    await sql`DELETE FROM orders WHERE id = ${parseInt(id, 10)}`;
+    return NextResponse.json({ success: true });
+  } catch (error: unknown) {
+    console.error('Error deleting order:', error);
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
+  }
+}
+
 export const dynamic = 'force-dynamic';
+

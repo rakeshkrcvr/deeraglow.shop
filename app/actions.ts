@@ -38,7 +38,8 @@ export async function subscribeNewsletter(prevState: SubscriptionResult, formDat
     ` as unknown as { id: number }[];
 
     if (existing.length > 0) {
-      return { success: true, message: "You are already subscribed to our journal! Thank you." };
+      await sendWelcomeNewsletterEmail(email);
+      return { success: true, message: "Welcome email sent! You are subscribed to our journal." };
     }
 
     // 3. Insert into database
@@ -46,7 +47,7 @@ export async function subscribeNewsletter(prevState: SubscriptionResult, formDat
       INSERT INTO newsletter_subscribers (email) VALUES (${email})
     `;
 
-    // 4. Send Welcome Email via Gmail SMTP
+    // 4. Send Welcome Email via Gmail SMTP & notify admin
     await sendWelcomeNewsletterEmail(email);
 
     return { success: true, message: "Thank you for subscribing! A welcome email has been sent to your inbox." };

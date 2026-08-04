@@ -55,6 +55,25 @@ export async function sendWelcomeNewsletterEmail(toEmail: string) {
 
     await transporter.sendMail(mailOptions);
     console.log(`[SMTP] Welcome newsletter email successfully sent to ${toEmail}`);
+
+    // Send admin notification to store owner (deekshadeeraglow@gmail.com)
+    try {
+      await transporter.sendMail({
+        from: `"Deera Glow Journal" <${smtpUser}>`,
+        to: smtpUser,
+        subject: `📰 New Journal Subscriber: ${toEmail}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e3e3e3; border-radius: 8px;">
+            <h3 style="color: #2d5c4d; margin-top: 0;">📰 New Newsletter Subscriber</h3>
+            <p><strong>Subscriber Email:</strong> ${toEmail}</p>
+            <p><strong>Subscribed At:</strong> ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
+          </div>
+        `,
+      });
+    } catch (adminErr) {
+      console.error(`[SMTP Admin Alert Error]:`, adminErr);
+    }
+
     return true;
   } catch (err) {
     console.error(`[SMTP Error] Failed to send newsletter email to ${toEmail}:`, err);
@@ -171,17 +190,17 @@ export async function sendOrderConfirmationEmail(order: OrderEmailData) {
             <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
               <span>Delivery Charge:</span><strong>${order.deliveryCharge || 'FREE'}</strong>
             </div>
-            ${isCod ? `
+            ${isCod && order.codFee && order.codFee !== '₹0.00' && order.codFee !== '₹0' ? `
               <div style="display: flex; justify-content: space-between; margin-bottom: 6px; color: #856404;">
-                <span>COD Handling Fee:</span><strong>${order.codFee || '₹150.00'}</strong>
+                <span>COD Handling Fee:</span><strong>${order.codFee}</strong>
               </div>
             ` : ''}
             <div style="display: flex; justify-content: space-between; border-top: 1px solid #ddd; padding-top: 8px; font-size: 14px; font-weight: bold;">
               <span>Total Order Value:</span><strong>${order.totalPrice || '₹0.00'}</strong>
             </div>
-            ${isCod ? `
+            ${isCod && order.advancePaid && order.advancePaid !== '₹0.00' && order.advancePaid !== '₹0' ? `
               <div style="display: flex; justify-content: space-between; margin-top: 6px; color: #2d5c4d; font-weight: bold;">
-                <span>Online Advance Paid:</span><span>${order.advancePaid || '₹200.00'}</span>
+                <span>Online Advance Paid:</span><span>${order.advancePaid}</span>
               </div>
               <div style="display: flex; justify-content: space-between; margin-top: 4px; color: #856404; font-weight: bold;">
                 <span>Payable on Delivery (COD):</span><span>${order.remainingCod || '₹0.00'}</span>
