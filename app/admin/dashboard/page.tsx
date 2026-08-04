@@ -2506,7 +2506,7 @@ export default function AdminDashboard() {
 
     // Find products currently in this collection
     const associatedIds = products
-      .filter(p => p.collection.toLowerCase() === coll.name.toLowerCase())
+      .filter(p => !p.deleted_at && p.collection.toLowerCase() === coll.name.toLowerCase())
       .map(p => p.id);
     setSelectedProductIds(associatedIds);
 
@@ -2545,6 +2545,7 @@ export default function AdminDashboard() {
   const activeProductsCount = products.filter(product => !product.deleted_at).length;
   const trashedProductsCount = products.filter(product => product.deleted_at).length;
   const visibleCatalogProducts = products.filter(product => catalogView === 'trash' ? product.deleted_at : !product.deleted_at);
+  const availableCollectionProducts = products.filter(product => !product.deleted_at);
   const filteredProducts = visibleCatalogProducts.filter(prod => {
     const query = productSearchQuery.toLowerCase();
     return (
@@ -3918,7 +3919,7 @@ export default function AdminDashboard() {
                         flexDirection: 'column'
                       }}>
                         {selectedProductIds.map((prodId) => {
-                          const prod = products.find(p => p.id === prodId);
+                          const prod = availableCollectionProducts.find(p => p.id === prodId);
                           if (!prod) return null;
                           return (
                             <div
@@ -4028,7 +4029,7 @@ export default function AdminDashboard() {
 
                         {/* Modal Product List */}
                         <div style={{ overflowY: 'auto', flexGrow: 1, padding: '8px 0' }}>
-                          {products.filter(prod => {
+                          {availableCollectionProducts.filter(prod => {
                             if (!modalSearchQuery) return true;
                             return prod.name.toLowerCase().includes(modalSearchQuery.toLowerCase());
                           }).length === 0 ? (
@@ -4036,7 +4037,7 @@ export default function AdminDashboard() {
                               No products match your search.
                             </div>
                           ) : (
-                            products.filter(prod => {
+                            availableCollectionProducts.filter(prod => {
                               if (!modalSearchQuery) return true;
                               return prod.name.toLowerCase().includes(modalSearchQuery.toLowerCase());
                             }).map((prod) => {

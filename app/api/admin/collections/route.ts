@@ -146,7 +146,9 @@ export async function POST(request: Request) {
     // Associate product ids if provided
     if (Array.isArray(productIds) && productIds.length > 0) {
       for (const prodId of productIds) {
-        await sql`UPDATE products SET collection = ${name} WHERE id = ${parseInt(prodId, 10)}`;
+        const productId = Number(prodId);
+        if (!Number.isInteger(productId) || productId <= 0) continue;
+        await sql`UPDATE products SET collection = ${name} WHERE id = ${productId} AND deleted_at IS NULL`;
       }
     }
 
@@ -195,7 +197,9 @@ export async function PUT(request: Request) {
     // 4. Associate new products
     if (Array.isArray(productIds) && productIds.length > 0) {
       for (const prodId of productIds) {
-        await sql`UPDATE products SET collection = ${name} WHERE id = ${parseInt(prodId, 10)}`;
+        const productId = Number(prodId);
+        if (!Number.isInteger(productId) || productId <= 0) continue;
+        await sql`UPDATE products SET collection = ${name} WHERE id = ${productId} AND deleted_at IS NULL`;
       }
     }
 
