@@ -1318,7 +1318,7 @@ export default function AdminDashboard() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch('/api/admin/settings');
+      const res = await fetch('/api/admin/settings', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setIsGokwikActive(data.isGokwikActive === 'true');
@@ -7056,17 +7056,28 @@ export default function AdminDashboard() {
                 <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '8px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                   <div style={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e3e3e3', paddingBottom: '10px', marginBottom: '16px' }}>
                     <h3 style={{ fontSize: '15px', fontWeight: '700', margin: 0 }}>Shiprocket Integration</h3>
-                    <span style={{ backgroundColor: '#7A22A5', color: '#ffffff', fontSize: '10px', fontWeight: '700', padding: '3px 8px', borderRadius: '12px', textTransform: 'uppercase' }}>Shiprocket</span>
+                    <a
+                      href="https://app.shiprocket.in/login"
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ backgroundColor: '#7A22A5', color: '#ffffff', fontSize: '11px', fontWeight: '700', padding: '7px 11px', borderRadius: '6px', textDecoration: 'none' }}
+                    >
+                      Open Shiprocket Login ↗
+                    </a>
                   </div>
+                  <p style={{ margin: '0 0 2px', color: '#6d6d6d', fontSize: '12px', lineHeight: 1.45 }}>
+                    Log in in the new tab, then enter your Shiprocket account details and API token here.
+                  </p>
                   <form onSubmit={e => { e.preventDefault(); handleSaveSettings({ shiprocketEmail, shiprocketPassword, shiprocketToken }); }} style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Account Email / Username</label>
                       <input
-                        type="email"
+                        type="text"
                         value={shiprocketEmail}
                         onChange={e => setShiprocketEmail(e.target.value)}
-                        placeholder="shipping@deeraglow.shop"
+                        placeholder="Email or Shiprocket username"
+                        autoComplete="username"
                         style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                       />
                     </div>
@@ -7078,6 +7089,7 @@ export default function AdminDashboard() {
                         value={shiprocketPassword}
                         onChange={e => setShiprocketPassword(e.target.value)}
                         placeholder="••••••••"
+                        autoComplete="current-password"
                         style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
                       />
                     </div>
