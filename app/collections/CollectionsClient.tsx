@@ -209,7 +209,7 @@ export default function CollectionsClient({ dbCollections, dbProducts }: Collect
       }
 
       const count = dbProducts
-        ? dbProducts.filter(p => (p.collection || '').toLowerCase().includes(collNameLower) || collNameLower.includes((p.collection || '').toLowerCase())).length
+        ? dbProducts.filter(p => (p.collections || [p.collection]).some(name => name.toLowerCase() === collNameLower)).length
         : 0;
 
       let badge: 'BESTSELLER' | 'NEW' | undefined = undefined;

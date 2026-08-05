@@ -93,52 +93,50 @@ export default async function CategoryPage({ params }: PageProps) {
 
   let filteredProducts: Product[] = [];
   const norm = (str?: string | null) => (str || '').trim().toLowerCase();
+  const productCollectionNames = (product: Product) => {
+    const names = product.collections?.length ? product.collections : [product.collection];
+    return names.map(norm).filter(name => name && name !== 'unassigned');
+  };
 
   if (slug === 'all-jewellery' || slug === 'all-candles' || slug === 'all') {
     filteredProducts = products;
   } else {
     // 1. Filter out unassigned products from specific category pages
-    const validProducts = products.filter(p => norm(p.collection) !== 'unassigned');
+    const validProducts = products.filter(p => productCollectionNames(p).length > 0);
 
     if (slug === 'rings') {
       filteredProducts = validProducts.filter(p => {
-        const pColl = norm(p.collection);
-        if (pColl.includes('earring')) return false; // Exclude earrings from rings
-        return pColl.includes('ring') || /\brings?\b/i.test(p.name);
+        const collectionNames = productCollectionNames(p);
+        return collectionNames.some(name => name.includes('ring')) || /\brings?\b/i.test(p.name);
       });
     } else if (slug === 'earrings') {
       filteredProducts = validProducts.filter(p => {
-        const pColl = norm(p.collection);
-        if (pColl === 'rings' || pColl === 'ring') return false; // Exclude rings from earrings
-        return pColl.includes('earring') || pColl.includes('jhumka') || pColl.includes('stud') || pColl.includes('hoop') || /\bearrings?\b/i.test(p.name);
+        const collectionNames = productCollectionNames(p);
+        return collectionNames.some(name => name.includes('earring') || name.includes('jhumka') || name.includes('stud') || name.includes('hoop')) || /\bearrings?\b/i.test(p.name);
       });
     } else if (slug === 'necklaces') {
       filteredProducts = validProducts.filter(p => {
-        const pColl = norm(p.collection);
-        return pColl.includes('necklace') || pColl.includes('choker') || pColl.includes('pendant') || /\bnecklaces?\b/i.test(p.name);
+        const collectionNames = productCollectionNames(p);
+        return collectionNames.some(name => name.includes('necklace') || name.includes('choker') || name.includes('pendant')) || /\bnecklaces?\b/i.test(p.name);
       });
     } else if (slug === 'bracelets') {
       filteredProducts = validProducts.filter(p => {
-        const pColl = norm(p.collection);
-        return pColl.includes('bracelet') || pColl.includes('bangle') || pColl.includes('cuff') || /\bbracelets?\b/i.test(p.name);
+        const collectionNames = productCollectionNames(p);
+        return collectionNames.some(name => name.includes('bracelet') || name.includes('bangle') || name.includes('cuff')) || /\bbracelets?\b/i.test(p.name);
       });
     } else if (matchedColl) {
       const collNameLower = matchedColl.name.toLowerCase();
       filteredProducts = validProducts.filter(p => {
-        const pColl = norm(p.collection);
-        if (pColl.includes('earring') && collNameLower.includes('ring') && !collNameLower.includes('earring')) return false;
-        return pColl === collNameLower || pColl.includes(collNameLower);
+        return productCollectionNames(p).some(name => name === collNameLower);
       });
     } else {
       const matchTerm = slug.toLowerCase().replace(/-/g, ' ');
       filteredProducts = validProducts.filter(p => {
-        const pColl = norm(p.collection);
+        const collectionNames = productCollectionNames(p);
         const pName = norm(p.name);
         const pFeat = norm(p.features);
-        if (pColl.includes('earring') && matchTerm.includes('ring') && !matchTerm.includes('earring')) return false;
-
         return (
-          pColl.includes(matchTerm) ||
+          collectionNames.some(name => name.includes(matchTerm)) ||
           pName.includes(matchTerm) ||
           pFeat.includes(matchTerm) ||
           (matchTerm === 'under 499' && p.price <= 499) ||

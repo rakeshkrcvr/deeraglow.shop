@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { sql } from '@/lib/db';
 import { getErrorMessage } from '@/lib/errors';
+import { ensureProductCollectionsTable, setCollectionProducts } from '@/lib/productCollections';
 
 type CountRow = { count: string };
 type CollectionNameRow = { name: string };
@@ -131,6 +132,7 @@ export async function GET() {
     }
 
     const collections = await sql`SELECT * FROM collections ORDER BY id ASC`;
+    await ensureProductCollectionsTable();
     return NextResponse.json(collections);
   } catch (error: unknown) {
     console.error('Error in collections GET:', error);
@@ -149,19 +151,14 @@ export async function POST(request: Request) {
 
     const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
-    await sql`
+    const created = await sql`
       INSERT INTO collections (name, description, slug, image_url, show_in_slider, slider_subtitle, thumb_image_1, thumb_image_2, thumb_image_3)
       VALUES (${name}, ${description}, ${slug}, ${image_url || ''}, ${!!show_in_slider}, ${slider_subtitle || ''}, ${thumb_image_1 || ''}, ${thumb_image_2 || ''}, ${thumb_image_3 || ''})
-    `;
+      RETURNING id
+    ` as unknown as { id: number }[];
 
     // Associate product ids if provided
-    if (Array.isArray(productIds) && productIds.length > 0) {
-      for (const prodId of productIds) {
-        const productId = Number(prodId);
-        if (!Number.isInteger(productId) || productId <= 0) continue;
-        await sql`UPDATE products SET collection = ${name} WHERE id = ${productId} AND deleted_at IS NULL`;
-      }
-    }
+    await setCollectionProducts(created[0].id, (Array.isArray(productIds) ? productIds : []).map(Number));
 
     revalidateCollectionStorefront();
     return NextResponse.json({ success: true });
@@ -182,16 +179,8 @@ export async function PUT(request: Request) {
 
     const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
-    // 1. Fetch old collection name
-    const oldCollRes = await sql`SELECT name FROM collections WHERE id = ${parseInt(id, 10)}` as unknown as CollectionNameRow[];
-    if (oldCollRes.length > 0) {
-      const oldName = oldCollRes[0].name;
-
-      // 2. Clear old products associated with this collection
-      await sql`UPDATE products SET collection = 'Unassigned' WHERE collection = ${oldName}`;
-    }
-
-    // 3. Update collection details
+    // Update collection details without changing a product's membership in any
+    // other collection.
     await sql`
       UPDATE collections
       SET name = ${name}, 
@@ -206,14 +195,7 @@ export async function PUT(request: Request) {
       WHERE id = ${parseInt(id, 10)}
     `;
 
-    // 4. Associate new products
-    if (Array.isArray(productIds) && productIds.length > 0) {
-      for (const prodId of productIds) {
-        const productId = Number(prodId);
-        if (!Number.isInteger(productId) || productId <= 0) continue;
-        await sql`UPDATE products SET collection = ${name} WHERE id = ${productId} AND deleted_at IS NULL`;
-      }
-    }
+    await setCollectionProducts(parseInt(id, 10), (Array.isArray(productIds) ? productIds : []).map(Number));
 
     revalidateCollectionStorefront();
     return NextResponse.json({ success: true });
@@ -237,7 +219,10 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Collection not found.' }, { status: 404 });
     }
 
-    // Products are kept, but no longer remain linked to a collection that was deleted.
+    await ensureProductCollectionsTable();
+    await sql`DELETE FROM product_collections WHERE collection_id = ${id}`;
+    // Products are kept, but their legacy primary value no longer points to a
+    // collection that no longer exists.
     await sql`UPDATE products SET collection = 'Unassigned' WHERE collection = ${collectionRows[0].name}`;
     await sql`DELETE FROM collections WHERE id = ${id}`;
 

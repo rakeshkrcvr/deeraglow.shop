@@ -7,6 +7,7 @@ export interface Product {
   name: string;
   slug: string;
   collection: string;
+  collections?: string[];
   price: number;
   compare_price?: number | null;
   inventory?: number | null;
@@ -452,6 +453,29 @@ export async function getProducts(options: { includeDeleted?: boolean } = {}): P
           }
         }
       }
+    }
+
+    // Collection membership is many-to-many. Keep `collection` as the primary
+    // category for older UI, filters, and imports, while exposing every
+    // collection in `collections`.
+    try {
+      const { ensureProductCollectionsTable } = await import('./productCollections');
+      await ensureProductCollectionsTable();
+      const membershipRows = await sql`
+        SELECT pc.product_id, c.name
+        FROM product_collections pc
+        INNER JOIN collections c ON c.id = pc.collection_id
+      ` as unknown as { product_id: number; name: string }[];
+      const memberships = new Map<number, string[]>();
+      membershipRows.forEach(({ product_id, name }) => {
+        memberships.set(product_id, [...(memberships.get(product_id) || []), name]);
+      });
+      allProducts = allProducts.map(product => ({
+        ...product,
+        collections: memberships.get(product.id) || (product.collection && product.collection !== 'Unassigned' ? [product.collection] : [])
+      }));
+    } catch (error) {
+      console.error('Error loading product collection memberships:', error);
     }
 
     const sanitizedProducts = allProducts.map(p => ({

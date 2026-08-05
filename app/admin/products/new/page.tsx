@@ -54,7 +54,9 @@ function ProductFormContent() {
 
   // Form states
   const [name, setName] = useState('');
-  const [collection, setCollection] = useState('Rings');
+  // A collection must be chosen deliberately. Defaulting to "Rings" caused
+  // every newly created product to be assigned there unintentionally.
+  const [collection, setCollection] = useState('');
   const [price, setPrice] = useState('');
   const [comparePrice, setComparePrice] = useState('');
   const [inventory, setInventory] = useState('10');
@@ -113,7 +115,7 @@ function ProductFormContent() {
           const target = data.find(p => p.id === parseInt(editId, 10));
           if (target) {
             setName(target.name || '');
-            setCollection(target.collection || 'Rings');
+            setCollection(target.collection || '');
             setPrice(target.price ? target.price.toString() : '');
             setComparePrice(target.compare_price ? target.compare_price.toString() : '');
             setInventory(target.inventory?.toString() ?? '10');
@@ -187,9 +189,6 @@ function ProductFormContent() {
       if (res.ok) {
         const data = await res.json();
         setCollections(data);
-        if (data.length > 0 && !collection) {
-          setCollection(data[0].name);
-        }
       }
     } catch (err) {
       console.error('Error fetching collections:', err);
@@ -536,14 +535,18 @@ function ProductFormContent() {
                     <select
                       value={collection}
                       onChange={(e) => setCollection(e.target.value)}
+                      required
                       style={{ padding: '10px 14px', border: '1px solid #ccc', borderRadius: '6px', backgroundColor: '#ffffff', fontSize: '14px' }}
                     >
                       {collections.length === 0 ? (
-                        <option value="Rings">Rings</option>
+                        <option value="">No collections available</option>
                       ) : (
-                        collections.map((coll) => (
-                          <option key={coll.id} value={coll.name}>{coll.name}</option>
-                        ))
+                        <>
+                          <option value="" disabled>Select a collection</option>
+                          {collections.map((coll) => (
+                            <option key={coll.id} value={coll.name}>{coll.name}</option>
+                          ))}
+                        </>
                       )}
                     </select>
                   </div>

@@ -6,7 +6,11 @@ import { defaultStoreSettings, ensureStoreSettingsTable, getStoreSettings } from
 
 export async function GET() {
   try {
-    return NextResponse.json(await getStoreSettings(), {
+    const settings = await getStoreSettings();
+    // Shiprocket credentials are server-only environment variables. Never send
+    // legacy database values to the browser.
+    const { shiprocketEmail: _email, shiprocketPassword: _password, shiprocketToken: _token, ...publicSettings } = settings;
+    return NextResponse.json(publicSettings, {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
       }

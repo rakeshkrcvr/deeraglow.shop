@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { sql } from '@/lib/db';
 import { getErrorMessage } from '@/lib/errors';
 import { getProducts } from '@/lib/products';
+import { addProductToNamedCollection, ensureProductCollectionsTable } from '@/lib/productCollections';
 
 // Helper to format string into URL-friendly slug
 const generateSlug = (name: string) => {
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
     const inventoryValue = parseInt(inventory, 10);
     const parsedInventory = Number.isFinite(inventoryValue) && inventoryValue >= 0 ? inventoryValue : 10;
 
-    await sql`
+    const created = await sql`
       INSERT INTO products (
         name, slug, collection, price, compare_price, inventory, rating, reviews_count, description, image_url, features,
         tagline, fragrances, dimensions, weight, burn_hours, acc_burn_time, acc_ingredients, acc_instructions, acc_shipping,
@@ -75,7 +76,10 @@ export async function POST(request: Request) {
         ${acc_shipping || 'Free standard shipping on orders over ₹999. Deliveries take 3-5 working days. Returns are accepted within 7 days of delivery if the candle is completely unburned and in its original packaging.'},
         ${images || ''}
       )
-    `;
+      RETURNING id
+    ` as unknown as { id: number }[];
+    await ensureProductCollectionsTable();
+    await addProductToNamedCollection(created[0].id, collection);
 
     revalidateProductStorefront();
 
@@ -118,6 +122,8 @@ export async function PUT(request: Request) {
           acc_shipping = ${acc_shipping}, images = ${images || ''}
       WHERE id = ${parseInt(id, 10)}
     `;
+    await ensureProductCollectionsTable();
+    await addProductToNamedCollection(parseInt(id, 10), collection);
 
     revalidateProductStorefront();
 

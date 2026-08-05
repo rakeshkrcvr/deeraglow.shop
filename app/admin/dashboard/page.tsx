@@ -34,6 +34,7 @@ interface Product {
   name: string;
   slug: string;
   collection: string;
+  collections?: string[];
   price: number;
   compare_price?: number | null;
   inventory?: number | null;
@@ -441,9 +442,8 @@ export default function AdminDashboard() {
   // Integration API states
   const [razorpayKeyId, setRazorpayKeyId] = useState('');
   const [razorpayKeySecret, setRazorpayKeySecret] = useState('');
-  const [shiprocketEmail, setShiprocketEmail] = useState('');
-  const [shiprocketPassword, setShiprocketPassword] = useState('');
-  const [shiprocketToken, setShiprocketToken] = useState('');
+  const [shiprocketStatus, setShiprocketStatus] = useState<'idle' | 'testing' | 'connected' | 'error'>('idle');
+  const [shiprocketMessage, setShiprocketMessage] = useState('');
   const [settingsSuccess, setSettingsSuccess] = useState('');
   const [settingsError, setSettingsError] = useState('');
 
@@ -1325,9 +1325,6 @@ export default function AdminDashboard() {
         setIsCodActive(data.isCodActive === 'true');
         setRazorpayKeyId(data.razorpayKeyId || '');
         setRazorpayKeySecret(data.razorpayKeySecret || '');
-        setShiprocketEmail(data.shiprocketEmail || '');
-        setShiprocketPassword(data.shiprocketPassword || '');
-        setShiprocketToken(data.shiprocketToken || '');
         setGoogleTagId(data.googleTagId || '');
         setGoogleTagCode(data.googleTagCode || '');
         setFacebookPixelId(data.facebookPixelId || '');
@@ -1460,6 +1457,21 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       setSettingsError('Network error saving settings.');
+    }
+  };
+
+  const handleTestShiprocketConnection = async () => {
+    setShiprocketStatus('testing');
+    setShiprocketMessage('');
+    try {
+      const response = await fetch('/api/admin/shiprocket/test', { method: 'POST' });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Shiprocket connection failed.');
+      setShiprocketStatus('connected');
+      setShiprocketMessage(data.message || 'Shiprocket is connected.');
+    } catch (error) {
+      setShiprocketStatus('error');
+      setShiprocketMessage(error instanceof Error ? error.message : 'Shiprocket connection failed.');
     }
   };
 
@@ -1707,7 +1719,7 @@ export default function AdminDashboard() {
     try {
       for (const coll of collections) {
         const associatedIds = products
-          .filter(p => p.collection.toLowerCase() === coll.name.toLowerCase())
+          .filter(p => (p.collections || [p.collection]).some(name => name.toLowerCase() === coll.name.toLowerCase()))
           .map(p => p.id);
 
         const hasImagesConfigured = !!(
@@ -2485,9 +2497,8 @@ export default function AdminDashboard() {
         setSelectedProductIds([]);
         setEditingCollId(null);
         setShowCollForm(false);
-        // The collection API changes each selected product's `collection` value.
-        // Refresh both data sets so the card count immediately reflects the saved
-        // selection instead of continuing to count the stale products state.
+        // Collection membership is many-to-many; refresh both data sets so the
+        // card count reflects the newly saved association.
         await Promise.all([fetchProducts(), fetchCollections()]);
         alert(editingCollId ? 'Collection updated!' : 'New Collection added!');
       } else {
@@ -2509,7 +2520,7 @@ export default function AdminDashboard() {
 
     // Find products currently in this collection
     const associatedIds = products
-      .filter(p => !p.deleted_at && p.collection.toLowerCase() === coll.name.toLowerCase())
+      .filter(p => !p.deleted_at && (p.collections || [p.collection]).some(name => name.toLowerCase() === coll.name.toLowerCase()))
       .map(p => p.id);
     setSelectedProductIds(associatedIds);
 
@@ -3863,6 +3874,9 @@ export default function AdminDashboard() {
                   {/* Products Association Section (Shopify Style) */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
                     <label style={{ fontWeight: '600', color: '#1a1a1a', fontSize: '14px' }}>Products</label>
+                    <p style={{ margin: 0, color: '#6d6d6d', fontSize: '12px', lineHeight: 1.4 }}>
+                      A product can be added to multiple collections. Your changes apply only after you click Update Collection.
+                    </p>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                       <div style={{ position: 'relative', flexGrow: 1 }}>
                         <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#8c8c8c', fontSize: '14px' }}>🔍</span>
@@ -4080,7 +4094,7 @@ export default function AdminDashboard() {
                                   <div style={{ flexGrow: 1 }}>
                                     <div style={{ fontSize: '13px', fontWeight: '500', color: '#1a1a1a' }}>{prod.name}</div>
                                     <div style={{ fontSize: '11px', color: '#8c8c8c' }}>
-                                      Collection: {prod.collection || 'Unassigned'} • ₹{prod.price}
+                                      Collections: {(prod.collections || [prod.collection]).join(', ') || 'Unassigned'} • ₹{prod.price}
                                     </div>
                                   </div>
                                 </label>
@@ -4193,7 +4207,7 @@ export default function AdminDashboard() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f0f0f0', paddingTop: '12px' }}>
                       <span style={{ fontSize: '12px', color: '#9e9e9e' }}>Active Catalog Products</span>
                       <span style={{ fontSize: '12px', fontWeight: '700', backgroundColor: '#e2ece9', color: '#2d5c4d', padding: '3px 8px', borderRadius: '12px' }}>
-                        {products.filter(p => p.collection.toLowerCase() === coll.name.toLowerCase()).length} items
+                        {products.filter(p => (p.collections || [p.collection]).some(name => name.toLowerCase() === coll.name.toLowerCase())).length} items
                       </span>
                     </div>
                   </div>
@@ -7065,50 +7079,22 @@ export default function AdminDashboard() {
                       Open Shiprocket Login ↗
                     </a>
                   </div>
-                  <p style={{ margin: '0 0 2px', color: '#6d6d6d', fontSize: '12px', lineHeight: 1.45 }}>
-                    Log in in the new tab, then enter your Shiprocket account details and API token here.
+                  <p style={{ margin: '0 0 12px', color: '#6d6d6d', fontSize: '12px', lineHeight: 1.45 }}>
+                    Credentials are stored server-side. The API token is created and refreshed automatically, never exposed in this dashboard.
                   </p>
-                  <form onSubmit={e => { e.preventDefault(); handleSaveSettings({ shiprocketEmail, shiprocketPassword, shiprocketToken }); }} style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px' }}>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Account Email / Username</label>
-                      <input
-                        type="text"
-                        value={shiprocketEmail}
-                        onChange={e => setShiprocketEmail(e.target.value)}
-                        placeholder="Email or Shiprocket username"
-                        autoComplete="username"
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                      />
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>Password</label>
-                      <input
-                        type="password"
-                        value={shiprocketPassword}
-                        onChange={e => setShiprocketPassword(e.target.value)}
-                        placeholder="••••••••"
-                        autoComplete="current-password"
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                      />
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <label style={{ fontWeight: '600', color: '#6d6d6d' }}>API Token / Channel ID</label>
-                      <input
-                        type="text"
-                        value={shiprocketToken}
-                        onChange={e => setShiprocketToken(e.target.value)}
-                        placeholder="API Authentication Token"
-                        style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }}
-                      />
-                    </div>
-
-                    <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', alignSelf: 'flex-start', marginTop: '6px' }}>
-                      Save Shiprocket Credentials
-                    </button>
-                  </form>
+                  <button
+                    type="button"
+                    onClick={handleTestShiprocketConnection}
+                    disabled={shiprocketStatus === 'testing'}
+                    style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: shiprocketStatus === 'testing' ? 'wait' : 'pointer', alignSelf: 'flex-start', opacity: shiprocketStatus === 'testing' ? 0.7 : 1 }}
+                  >
+                    {shiprocketStatus === 'testing' ? 'Testing connection…' : 'Test Shiprocket Connection'}
+                  </button>
+                  {shiprocketMessage && (
+                    <p style={{ margin: '10px 0 0', color: shiprocketStatus === 'connected' ? '#19764c' : '#b42318', fontSize: '12px', fontWeight: '600' }}>
+                      {shiprocketStatus === 'connected' ? '✓ ' : '⚠ '}{shiprocketMessage}
+                    </p>
+                  )}
                 </div>
 
                 {/* Website Branding (Logos) */}

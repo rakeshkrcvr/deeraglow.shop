@@ -87,7 +87,7 @@ export async function getSliderCollections(): Promise<SliderCollectionItem[]> {
     if (rows && rows.length > 0) {
       return rows.map(coll => {
         const collProds = allProducts.filter(
-          p => p.collection && p.collection.toLowerCase() === coll.name.toLowerCase()
+          p => (p.collections || [p.collection]).some(name => name.toLowerCase() === coll.name.toLowerCase())
         );
         return {
           ...coll,
