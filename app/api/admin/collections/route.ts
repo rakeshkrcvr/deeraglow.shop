@@ -1,9 +1,20 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { sql } from '@/lib/db';
 import { getErrorMessage } from '@/lib/errors';
 
 type CountRow = { count: string };
 type CollectionNameRow = { name: string };
+
+// A collection assignment changes the products displayed on the storefront as
+// well as the homepage slider, so invalidate every page that reads that data.
+function revalidateCollectionStorefront() {
+  revalidatePath('/');
+  revalidatePath('/collections');
+  revalidatePath('/category/[slug]', 'page');
+  revalidatePath('/products/[slug]', 'page');
+  revalidatePath('/product/[slug]', 'page');
+}
 
 export async function GET() {
   try {
@@ -152,6 +163,7 @@ export async function POST(request: Request) {
       }
     }
 
+    revalidateCollectionStorefront();
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     console.error('Error in collections POST:', error);
@@ -203,6 +215,7 @@ export async function PUT(request: Request) {
       }
     }
 
+    revalidateCollectionStorefront();
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     console.error('Error in collections PUT:', error);
@@ -228,6 +241,7 @@ export async function DELETE(request: Request) {
     await sql`UPDATE products SET collection = 'Unassigned' WHERE collection = ${collectionRows[0].name}`;
     await sql`DELETE FROM collections WHERE id = ${id}`;
 
+    revalidateCollectionStorefront();
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     console.error('Error in collections DELETE:', error);

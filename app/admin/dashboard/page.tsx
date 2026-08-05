@@ -2485,7 +2485,10 @@ export default function AdminDashboard() {
         setSelectedProductIds([]);
         setEditingCollId(null);
         setShowCollForm(false);
-        fetchCollections();
+        // The collection API changes each selected product's `collection` value.
+        // Refresh both data sets so the card count immediately reflects the saved
+        // selection instead of continuing to count the stale products state.
+        await Promise.all([fetchProducts(), fetchCollections()]);
         alert(editingCollId ? 'Collection updated!' : 'New Collection added!');
       } else {
         const errData = await res.json();
