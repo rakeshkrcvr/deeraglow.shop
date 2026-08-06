@@ -3,6 +3,7 @@ import { sql } from '@/lib/db';
 import { getErrorMessage } from '@/lib/errors';
 import { getProducts } from '@/lib/products';
 import { sendOrderConfirmationEmail } from '@/lib/email';
+import { createShiprocketOrder, ShiprocketError } from '@/lib/shiprocket';
 
 type CountRow = { count: string };
 type MaxOrderRow = { max: number | null };
@@ -29,6 +30,8 @@ type OrderRow = {
   advance_paid?: string | null;
   remaining_cod?: string | null;
   payment_method?: string | null;
+  shiprocket_sync_status?: string | null;
+  shiprocket_order_id?: string | null;
 };
 
 type PurchasedItem = {
@@ -81,12 +84,17 @@ const ensureOrdersTable = async () => {
       advance_paid VARCHAR(50),
       remaining_cod VARCHAR(50),
       payment_method VARCHAR(50)
+      ,shiprocket_sync_status VARCHAR(50)
+      ,shiprocket_order_id VARCHAR(100)
+      ,shiprocket_response TEXT
+      ,shiprocket_error TEXT
+      ,shiprocket_synced_at TIMESTAMPTZ
     )
   `;
 
   const migrations = [
     'customer_email', 'customer_phone', 'shipping_address', 'billing_address', 'notes', 'order_items',
-    'subtotal', 'delivery_charge', 'cod_fee', 'advance_paid', 'remaining_cod', 'payment_method'
+    'subtotal', 'delivery_charge', 'cod_fee', 'advance_paid', 'remaining_cod', 'payment_method', 'shiprocket_sync_status', 'shiprocket_order_id', 'shiprocket_response', 'shiprocket_error', 'shiprocket_synced_at'
   ];
   for (const migration of migrations) {
     try {
@@ -102,6 +110,11 @@ const ensureOrdersTable = async () => {
       if (migration === 'advance_paid') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS advance_paid VARCHAR(50)`;
       if (migration === 'remaining_cod') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS remaining_cod VARCHAR(50)`;
       if (migration === 'payment_method') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50)`;
+      if (migration === 'shiprocket_sync_status') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS shiprocket_sync_status VARCHAR(50)`;
+      if (migration === 'shiprocket_order_id') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS shiprocket_order_id VARCHAR(100)`;
+      if (migration === 'shiprocket_response') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS shiprocket_response TEXT`;
+      if (migration === 'shiprocket_error') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS shiprocket_error TEXT`;
+      if (migration === 'shiprocket_synced_at') await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS shiprocket_synced_at TIMESTAMPTZ`;
     } catch (error) {
       console.error('Order migration error for ' + migration + ':', error);
     }
@@ -269,6 +282,31 @@ export async function POST(request: Request) {
 
     await decrementPurchasedInventory(order_items);
 
+    // A local order is durable before sync. Shiprocket failures are persisted and logged,
+    // so a successful checkout is never silently lost and can be retried safely.
+    let shiprocketSynced = false;
+    try {
+      const shiprocketResponse = await createShiprocketOrder({
+        orderNumber: order_number,
+        customerName: customer || '',
+        email: customer_email || '',
+        phone: customer_phone || '',
+        address: shipping_address || '',
+        paymentMethod: payment_method || '',
+        subtotal: subtotal || total_price || '',
+        items: Array.isArray(order_items) ? order_items : [],
+      });
+      const nestedOrder = shiprocketResponse.order as { id?: unknown } | undefined;
+      const shiprocketOrderId = String(shiprocketResponse.order_id || nestedOrder?.id || '');
+      await sql`UPDATE orders SET shiprocket_sync_status = 'synced', shiprocket_order_id = ${shiprocketOrderId}, shiprocket_response = ${JSON.stringify(shiprocketResponse)}, shiprocket_error = NULL, shiprocket_synced_at = NOW() WHERE order_number = ${order_number}`;
+      shiprocketSynced = true;
+      console.info('[Shiprocket] order synced', { localOrderNumber: order_number, shiprocketOrderId });
+    } catch (error) {
+      const details = error instanceof ShiprocketError ? { message: error.message, status: error.status, response: error.response } : error;
+      console.error('[Shiprocket] order sync failed', { localOrderNumber: order_number, details });
+      await sql`UPDATE orders SET shiprocket_sync_status = 'failed', shiprocket_error = ${JSON.stringify(details)} WHERE order_number = ${order_number}`;
+    }
+
     // Trigger Order Confirmation Email to Customer & Admin Notification Email via Gmail SMTP
     try {
       await sendOrderConfirmationEmail({
@@ -290,7 +328,7 @@ export async function POST(request: Request) {
       console.error('Error sending order email:', e);
     }
 
-    return NextResponse.json({ success: true, order_number });
+    return NextResponse.json({ success: true, order_number, shiprocket_synced: shiprocketSynced });
   } catch (error: unknown) {
     console.error('Error creating order:', error);
     return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
@@ -363,4 +401,3 @@ export async function DELETE(request: Request) {
 }
 
 export const dynamic = 'force-dynamic';
-

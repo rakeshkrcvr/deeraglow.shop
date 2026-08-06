@@ -442,6 +442,10 @@ export default function AdminDashboard() {
   // Integration API states
   const [razorpayKeyId, setRazorpayKeyId] = useState('');
   const [razorpayKeySecret, setRazorpayKeySecret] = useState('');
+  const [shiprocketEmail, setShiprocketEmail] = useState('');
+  const [shiprocketPassword, setShiprocketPassword] = useState('');
+  const [shiprocketToken, setShiprocketToken] = useState('');
+  const [shiprocketPickupLocation, setShiprocketPickupLocation] = useState('Primary');
   const [shiprocketStatus, setShiprocketStatus] = useState<'idle' | 'testing' | 'connected' | 'error'>('idle');
   const [shiprocketMessage, setShiprocketMessage] = useState('');
   const [settingsSuccess, setSettingsSuccess] = useState('');
@@ -1325,6 +1329,10 @@ export default function AdminDashboard() {
         setIsCodActive(data.isCodActive === 'true');
         setRazorpayKeyId(data.razorpayKeyId || '');
         setRazorpayKeySecret(data.razorpayKeySecret || '');
+        setShiprocketEmail(data.shiprocketEmail || '');
+        setShiprocketPassword(data.shiprocketPassword || '');
+        setShiprocketToken(data.shiprocketToken || '');
+        setShiprocketPickupLocation(data.shiprocketPickupLocation || 'Primary');
         setGoogleTagId(data.googleTagId || '');
         setGoogleTagCode(data.googleTagCode || '');
         setFacebookPixelId(data.facebookPixelId || '');
@@ -7079,14 +7087,29 @@ export default function AdminDashboard() {
                       Open Shiprocket Login ↗
                     </a>
                   </div>
-                  <p style={{ margin: '0 0 12px', color: '#6d6d6d', fontSize: '12px', lineHeight: 1.45 }}>
-                    Credentials are stored server-side. The API token is created and refreshed automatically, never exposed in this dashboard.
-                  </p>
+                  <form onSubmit={e => { e.preventDefault(); handleSaveSettings({ shiprocketEmail, shiprocketPassword, shiprocketToken, shiprocketPickupLocation }); }} style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '13px' }}>
+                    <p style={{ margin: 0, color: '#6d6d6d', fontSize: '12px', lineHeight: 1.45 }}>
+                      The API token is used first and is refreshed automatically after 240 hours or an authorization failure. The pickup location must exactly match a Shiprocket pickup-address name.
+                    </p>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>Account Email / API User
+                      <input type="email" value={shiprocketEmail} onChange={e => setShiprocketEmail(e.target.value)} required style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                    </label>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>Password
+                      <input type="password" value={shiprocketPassword} onChange={e => setShiprocketPassword(e.target.value)} required style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                    </label>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>API Token
+                      <input type="password" value={shiprocketToken} onChange={e => setShiprocketToken(e.target.value)} placeholder="Generated automatically when empty or expired" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                    </label>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontWeight: '600', color: '#6d6d6d' }}>Pickup Location
+                      <input type="text" value={shiprocketPickupLocation} onChange={e => setShiprocketPickupLocation(e.target.value)} required placeholder="e.g. Primary" style={{ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px' }} />
+                    </label>
+                    <button type="submit" style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', alignSelf: 'flex-start' }}>Save Shiprocket Credentials</button>
+                  </form>
                   <button
                     type="button"
                     onClick={handleTestShiprocketConnection}
                     disabled={shiprocketStatus === 'testing'}
-                    style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: shiprocketStatus === 'testing' ? 'wait' : 'pointer', alignSelf: 'flex-start', opacity: shiprocketStatus === 'testing' ? 0.7 : 1 }}
+                    style={{ backgroundColor: '#1a1a1a', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '10px 16px', fontSize: '13px', fontWeight: '600', cursor: shiprocketStatus === 'testing' ? 'wait' : 'pointer', alignSelf: 'flex-start', opacity: shiprocketStatus === 'testing' ? 0.7 : 1, marginTop: '12px' }}
                   >
                     {shiprocketStatus === 'testing' ? 'Testing connection…' : 'Test Shiprocket Connection'}
                   </button>
