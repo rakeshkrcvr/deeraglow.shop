@@ -53,6 +53,15 @@ function getApiMessage(data: ApiResponse, fallback: string) {
   return typeof firstError === 'string' ? firstError : fallback;
 }
 
+function getCreatedOrderId(data: ApiResponse) {
+  if (data.order_id !== undefined && data.order_id !== null) return String(data.order_id);
+  const nested = data.data;
+  if (nested && typeof nested === 'object' && 'order_id' in nested && (nested as Record<string, unknown>).order_id !== undefined) {
+    return String((nested as Record<string, unknown>).order_id);
+  }
+  return '';
+}
+
 function tokenExpiry(token: string, issuedAt?: string) {
   try {
     const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString()) as { exp?: number };
@@ -173,9 +182,18 @@ export async function createShiprocketOrder(input: ShiprocketOrderInput) {
     height: Number(settings.shiprocketPackageHeight) || 5,
     weight: Number(settings.shiprocketPackageWeight) || 0.5,
   };
+  log('Starting Shiprocket sync', { localOrderNumber: input.orderNumber });
   const { response, data } = await authorizedRequest('/orders/create/adhoc', { method: 'POST', body: JSON.stringify(payload) });
-  if (!response.ok) throw new ShiprocketError(getApiMessage(data, 'Shiprocket order creation failed.'), data, response.status);
+  // Shiprocket can reply with HTTP 200 for validation errors. An order is only
+  // considered synced when its API response contains the generated order ID.
+  if (!response.ok || !getCreatedOrderId(data)) {
+    throw new ShiprocketError(getApiMessage(data, 'Shiprocket did not return an order ID.'), data, response.status);
+  }
   return data;
+}
+
+export function getShiprocketCreatedOrderId(data: ApiResponse) {
+  return getCreatedOrderId(data);
 }
 
 /** Authenticates and makes a harmless authenticated API request. */

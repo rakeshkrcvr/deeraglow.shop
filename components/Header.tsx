@@ -343,11 +343,18 @@ export default function Header() {
           }))
         })
       });
-      if (res.ok) {
-        console.log("Order saved to database successfully with payment ID:", paymentId);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Order could not be saved.');
+      console.log('Order saved to database successfully with payment ID:', paymentId);
+      if (!data.shiprocket_synced) {
+        console.error('[Shiprocket] Order was saved locally but sync failed:', data);
+        alert('Your order was placed, but shipping sync needs attention. Our team has been notified.');
       }
+      return { saved: true, shiprocketSynced: Boolean(data.shiprocket_synced) };
     } catch (err) {
-      console.error("Error saving order to database:", err);
+      console.error('Error saving order to database:', err);
+      alert('We could not save your order. Please contact support before trying again.');
+      return { saved: false, shiprocketSynced: false };
     }
   };
 

@@ -3,7 +3,7 @@ import { sql } from '@/lib/db';
 import { getErrorMessage } from '@/lib/errors';
 import { getProducts } from '@/lib/products';
 import { sendOrderConfirmationEmail } from '@/lib/email';
-import { createShiprocketOrder, ShiprocketError } from '@/lib/shiprocket';
+import { createShiprocketOrder, getShiprocketCreatedOrderId, ShiprocketError } from '@/lib/shiprocket';
 
 type CountRow = { count: string };
 type MaxOrderRow = { max: number | null };
@@ -286,6 +286,7 @@ export async function POST(request: Request) {
     // so a successful checkout is never silently lost and can be retried safely.
     let shiprocketSynced = false;
     try {
+      console.info('[Shiprocket] Starting Shiprocket sync', { localOrderNumber: order_number });
       const shiprocketResponse = await createShiprocketOrder({
         orderNumber: order_number,
         customerName: customer || '',
@@ -296,8 +297,7 @@ export async function POST(request: Request) {
         subtotal: subtotal || total_price || '',
         items: Array.isArray(order_items) ? order_items : [],
       });
-      const nestedOrder = shiprocketResponse.order as { id?: unknown } | undefined;
-      const shiprocketOrderId = String(shiprocketResponse.order_id || nestedOrder?.id || '');
+      const shiprocketOrderId = getShiprocketCreatedOrderId(shiprocketResponse);
       await sql`UPDATE orders SET shiprocket_sync_status = 'synced', shiprocket_order_id = ${shiprocketOrderId}, shiprocket_response = ${JSON.stringify(shiprocketResponse)}, shiprocket_error = NULL, shiprocket_synced_at = NOW() WHERE order_number = ${order_number}`;
       shiprocketSynced = true;
       console.info('[Shiprocket] order synced', { localOrderNumber: order_number, shiprocketOrderId });
