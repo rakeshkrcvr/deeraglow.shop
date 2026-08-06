@@ -45,20 +45,10 @@ interface ReviewFormData {
 
 export default function ProductDetail({ product, allProducts }: ProductDetailProps) {
   const { addToCart, setIsCartOpen } = useCart();
-  const finishes = useMemo(() => {
-    const configuredFinishes = product.features
-      ?.split(/[•,]/)
-      .map((finish) => finish.trim())
-      .filter(Boolean);
-
-    return configuredFinishes?.length ? configuredFinishes : ['Gold Plated', 'Silver', 'Rose Gold'];
-  }, [product.features]);
-
   // Interactivity States
   const [quantity, setQuantity] = useState<number>(1);
   const [adding, setAdding] = useState<boolean>(false);
   const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
-  const [selectedFinish, setSelectedFinish] = useState<string>(() => finishes[0]);
   const [showStickyActions, setShowStickyActions] = useState<boolean>(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState<boolean>(false);
   const [isPhotoGalleryOpen, setIsPhotoGalleryOpen] = useState<boolean>(false);
@@ -165,7 +155,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
     setAdding(true);
     addToCart({
       ...product,
-      name: `${product.name} (${selectedFinish})`,
+      name: product.name,
     }, quantity);
     setTimeout(() => setAdding(false), 1200);
   };
@@ -174,7 +164,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
     if (isSoldOut) return;
     addToCart({
       ...product,
-      name: `${product.name} (${selectedFinish})`,
+      name: product.name,
     }, quantity);
     setIsCartOpen(true);
   };
@@ -392,23 +382,6 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
                   <strong>Secure Checkout</strong>
                   <p>100% protected</p>
                 </div>
-              </div>
-            </div>
-
-            {/* Select Finish */}
-            <div className={styles.finishSection}>
-              <label className={styles.finishLabel}>SELECT FINISH</label>
-              <div className={styles.finishGrid}>
-                {finishes.map((finish) => (
-                  <button
-                    key={finish}
-                    type="button"
-                    className={`${styles.finishBtn} ${selectedFinish === finish ? styles.finishActive : ''}`}
-                    onClick={() => setSelectedFinish(finish)}
-                  >
-                    {finish}
-                  </button>
-                ))}
               </div>
             </div>
 
