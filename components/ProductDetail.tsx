@@ -25,6 +25,7 @@ import {
   normalizeCustomerVideos
 } from '@/lib/customerVideos';
 import styles from './ProductDetail.module.css';
+import { trackMetaEvent } from '@/lib/metaPixelClient';
 
 const INITIAL_OFFER_SECONDS = 5 * 60 * 60 + 12 * 60 + 48;
 const RENEWED_OFFER_SECONDS = 6 * 60 * 60;
@@ -73,6 +74,16 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
   const [peopleViewing, setPeopleViewing] = useState(18);
   const [soldThisWeek, setSoldThisWeek] = useState(284);
   const saleEndsAtRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    trackMetaEvent('ViewContent', {
+      content_ids: [String(product.id)],
+      content_name: product.name,
+      content_type: 'product',
+      currency: 'INR',
+      value: Number(product.price),
+    });
+  }, [product.id, product.name, product.price]);
 
   useEffect(() => {
     // Keep the offer ticking from a real end time instead of decrementing a

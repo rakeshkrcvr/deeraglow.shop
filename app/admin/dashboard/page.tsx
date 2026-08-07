@@ -2568,6 +2568,12 @@ export default function AdminDashboard() {
   const trashedProductsCount = products.filter(product => product.deleted_at).length;
   const visibleCatalogProducts = products.filter(product => catalogView === 'trash' ? product.deleted_at : !product.deleted_at);
   const availableCollectionProducts = products.filter(product => !product.deleted_at);
+  const browseVisibleProducts = availableCollectionProducts.filter(prod => {
+    if (!modalSearchQuery) return true;
+    return prod.name.toLowerCase().includes(modalSearchQuery.toLowerCase());
+  });
+  const areAllBrowseProductsSelected = browseVisibleProducts.length > 0
+    && browseVisibleProducts.every(prod => tempSelectedProductIds.includes(prod.id));
   const filteredProducts = visibleCatalogProducts.filter(prod => {
     const query = productSearchQuery.toLowerCase();
     return (
@@ -4054,18 +4060,28 @@ export default function AdminDashboard() {
 
                         {/* Modal Product List */}
                         <div style={{ overflowY: 'auto', flexGrow: 1, padding: '8px 0' }}>
-                          {availableCollectionProducts.filter(prod => {
-                            if (!modalSearchQuery) return true;
-                            return prod.name.toLowerCase().includes(modalSearchQuery.toLowerCase());
-                          }).length === 0 ? (
+                          {browseVisibleProducts.length === 0 ? (
                             <div style={{ padding: '24px', textAlign: 'center', color: '#8c8c8c', fontSize: '13px' }}>
                               No products match your search.
                             </div>
                           ) : (
-                            availableCollectionProducts.filter(prod => {
-                              if (!modalSearchQuery) return true;
-                              return prod.name.toLowerCase().includes(modalSearchQuery.toLowerCase());
-                            }).map((prod) => {
+                            <>
+                              <label style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 20px', cursor: 'pointer', borderBottom: '1px solid #e3e3e3', backgroundColor: '#f9f9f9', fontSize: '13px', fontWeight: '600', color: '#1a1a1a' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={areAllBrowseProductsSelected}
+                                  onChange={(e) => {
+                                    const visibleIds = browseVisibleProducts.map(prod => prod.id);
+                                    setTempSelectedProductIds(currentIds => e.target.checked
+                                      ? Array.from(new Set([...currentIds, ...visibleIds]))
+                                      : currentIds.filter(id => !visibleIds.includes(id))
+                                    );
+                                  }}
+                                  style={{ width: '16px', height: '16px' }}
+                                />
+                                Select all {modalSearchQuery ? 'matching products' : 'products'}
+                              </label>
+                              {browseVisibleProducts.map((prod) => {
                               const isChecked = tempSelectedProductIds.includes(prod.id);
                               return (
                                 <label
@@ -4107,7 +4123,8 @@ export default function AdminDashboard() {
                                   </div>
                                 </label>
                               );
-                            })
+                              })}
+                            </>
                           )}
                         </div>
 

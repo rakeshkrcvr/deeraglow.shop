@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { Product } from '@/lib/products';
+import { trackMetaEvent } from '@/lib/metaPixelClient';
 import styles from './Header.module.css';
 
 type RazorpayResponse = { razorpay_payment_id: string };
@@ -350,11 +351,11 @@ export default function Header() {
         console.error('[Shiprocket] Order was saved locally but sync failed:', data);
         alert('Your order was placed, but shipping sync needs attention. Our team has been notified.');
       }
-      return { saved: true, shiprocketSynced: Boolean(data.shiprocket_synced) };
+      return { saved: true, shiprocketSynced: Boolean(data.shiprocket_synced), orderNumber: String(data.order_number || '') };
     } catch (err) {
       console.error('Error saving order to database:', err);
       alert('We could not save your order. Please contact support before trying again.');
-      return { saved: false, shiprocketSynced: false };
+      return { saved: false, shiprocketSynced: false, orderNumber: '' };
     }
   };
 
@@ -394,7 +395,16 @@ export default function Header() {
     if (paymentMethod === 'cod' && codAdvanceAmount === 0) {
       setIsProcessingCheckout(true);
       await markDiscountUsed();
-      await saveOrderToDb('COD-DIRECT-NO-ADVANCE');
+      const order = await saveOrderToDb('COD-DIRECT-NO-ADVANCE');
+      if (!order.saved) return;
+      trackMetaEvent('Purchase', {
+        content_ids: cartItems.map(item => String(item.product.id)),
+        content_type: 'product',
+        currency: 'INR',
+        value: totalOrderValue,
+        num_items: cartCount,
+        contents: cartItems.map(item => ({ id: String(item.product.id), quantity: item.quantity, item_price: Number(item.product.price) })),
+      }, order.orderNumber);
       setIsProcessingCheckout(false);
       setCheckoutSuccess(true);
       return;
@@ -422,7 +432,16 @@ export default function Header() {
         handler: async function (response: RazorpayResponse) {
           setIsProcessingCheckout(false);
           await markDiscountUsed();
-          await saveOrderToDb(response.razorpay_payment_id);
+          const order = await saveOrderToDb(response.razorpay_payment_id);
+          if (!order.saved) return;
+          trackMetaEvent('Purchase', {
+            content_ids: cartItems.map(item => String(item.product.id)),
+            content_type: 'product',
+            currency: 'INR',
+            value: totalOrderValue,
+            num_items: cartCount,
+            contents: cartItems.map(item => ({ id: String(item.product.id), quantity: item.quantity, item_price: Number(item.product.price) })),
+          }, order.orderNumber);
           setCheckoutSuccess(true);
         },
         prefill: {
@@ -1114,6 +1133,14 @@ export default function Header() {
                   <button
                     className={styles.checkoutBtnPill}
                     onClick={() => {
+                      trackMetaEvent('InitiateCheckout', {
+                        content_ids: cartItems.map(item => String(item.product.id)),
+                        content_type: 'product',
+                        currency: 'INR',
+                        value: estimatedTotal,
+                        num_items: cartCount,
+                        contents: cartItems.map(item => ({ id: String(item.product.id), quantity: item.quantity, item_price: Number(item.product.price) })),
+                      });
                       setCheckoutSuccess(false);
                       setAbandonedCheckoutReference(createCheckoutReference());
                       setIsCheckoutOpen(true);

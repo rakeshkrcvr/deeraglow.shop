@@ -1,22 +1,22 @@
 .footer {
   background-color: #000000;
   color: #ffffff;
-  padding: 80px 0 0 0;
+  padding: 64px 0 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .container {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 40px;
-  padding-bottom: 60px;
+  display: grid;
+  grid-template-columns: minmax(250px, 1.8fr) repeat(5, minmax(115px, 1fr));
+  align-items: start;
+  column-gap: clamp(24px, 3vw, 48px);
+  row-gap: 44px;
+  padding-bottom: 56px;
 }
 
 .brandCol {
-  flex: 2;
-  min-width: 280px;
-  max-width: 380px;
+  min-width: 0;
+  max-width: 340px;
 }
 
 .logo {
@@ -84,8 +84,7 @@
 
 /* Links Columns */
 .linksCol {
-  flex: 1;
-  min-width: 150px;
+  min-width: 0;
 }
 
 .linksCol h3 {
@@ -102,7 +101,7 @@
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 11px;
 }
 
 .linksCol a {
@@ -120,7 +119,7 @@
 /* Footer Bottom */
 .footerBottom {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 30px 0;
+  padding: 22px 0;
   background-color: #000000;
   font-size: 13px;
   color: rgba(255, 255, 255, 0.75);
@@ -143,14 +142,59 @@
 }
 
 /* Responsiveness */
-@media (max-width: 768px) {
+@media (max-width: 1100px) {
   .container {
-    flex-direction: column;
-    gap: 32px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 36px;
   }
-  
+
   .brandCol {
+    grid-column: 1 / -1;
     max-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .footer {
+    padding-top: 48px;
+  }
+
+  .container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 22px;
+    row-gap: 36px;
+    padding-bottom: 44px;
+  }
+
+  .brandCol {
+    grid-column: 1 / -1;
+  }
+
+  .logoImage {
+    height: 54px;
+  }
+
+  .bio {
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  .linksCol h3 {
+    font-size: 12px;
     margin-bottom: 16px;
+  }
+
+  .linksCol ul {
+    gap: 10px;
+  }
+
+  .linksCol a {
+    font-size: 13px;
+  }
+
+  .bottomContainer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
   }
 }

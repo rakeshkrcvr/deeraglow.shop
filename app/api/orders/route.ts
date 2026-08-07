@@ -4,6 +4,8 @@ import { getErrorMessage } from '@/lib/errors';
 import { getProducts } from '@/lib/products';
 import { sendOrderConfirmationEmail } from '@/lib/email';
 import { createShiprocketOrder, getShiprocketCreatedOrderId, ShiprocketError } from '@/lib/shiprocket';
+import { getStoreSettings } from '@/lib/settings';
+import { sendMetaPurchaseEvent } from '@/lib/metaConversionsApi';
 
 type CountRow = { count: string };
 type MaxOrderRow = { max: number | null };
@@ -281,6 +283,28 @@ export async function POST(request: Request) {
     `;
 
     await decrementPurchasedInventory(order_items);
+
+    // This is intentionally server-side so a completed purchase is still sent
+    // when an ad blocker prevents the browser pixel from reaching Meta.
+    try {
+      const settings = await getStoreSettings();
+      const pixelId = settings.facebookPixelId || process.env.META_PIXEL_ID || '4388165921425895';
+      const accessToken = process.env.META_PIXEL_ACCESS_TOKEN || settings.metaAccessToken || '';
+      const orderValue = Number(String(total_price || '').replace(/[^0-9.]/g, ''));
+      await sendMetaPurchaseEvent({
+        pixelId,
+        accessToken,
+        eventId: order_number,
+        value: Number.isFinite(orderValue) ? orderValue : 0,
+        email: customer_email,
+        phone: customer_phone,
+        items: order_items,
+        request,
+      });
+    } catch (error) {
+      // Never turn a paid order into a failed checkout because analytics failed.
+      console.error('[Meta CAPI] Purchase event failed', error);
+    }
 
     // A local order is durable before sync. Shiprocket failures are persisted and logged,
     // so a successful checkout is never silently lost and can be retried safely.

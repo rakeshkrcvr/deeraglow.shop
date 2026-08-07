@@ -100,6 +100,14 @@ export default async function CategoryPage({ params }: PageProps) {
 
   if (slug === 'all-jewellery' || slug === 'all-candles' || slug === 'all') {
     filteredProducts = products;
+  } else if (matchedColl) {
+    // A collection page must show only the products the admin selected for
+    // that exact collection. Keyword matching here made a Rings collection
+    // pull in earrings whose names or other collections happened to match.
+    const collNameLower = matchedColl.name.toLowerCase();
+    filteredProducts = products.filter(p =>
+      productCollectionNames(p).some(name => name === collNameLower)
+    );
   } else {
     // 1. Filter out unassigned products from specific category pages
     const validProducts = products.filter(p => productCollectionNames(p).length > 0);
@@ -123,11 +131,6 @@ export default async function CategoryPage({ params }: PageProps) {
       filteredProducts = validProducts.filter(p => {
         const collectionNames = productCollectionNames(p);
         return collectionNames.some(name => name.includes('bracelet') || name.includes('bangle') || name.includes('cuff')) || /\bbracelets?\b/i.test(p.name);
-      });
-    } else if (matchedColl) {
-      const collNameLower = matchedColl.name.toLowerCase();
-      filteredProducts = validProducts.filter(p => {
-        return productCollectionNames(p).some(name => name === collNameLower);
       });
     } else {
       const matchTerm = slug.toLowerCase().replace(/-/g, ' ');

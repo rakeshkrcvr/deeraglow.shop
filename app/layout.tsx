@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { CartProvider } from "@/context/CartContext";
 import { getStoreSettings } from "@/lib/settings";
+import MetaPixelPageView from "@/components/MetaPixelPageView";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -50,8 +52,10 @@ export default async function RootLayout({
   const faviconUrl = settings.faviconUrl || settings.logoHeaderUrl || '';
   const googleTagId = settings.googleTagId || '';
   const googleTagCode = settings.googleTagCode || '';
-  const facebookPixelId = settings.facebookPixelId || '';
-  const facebookPixelCode = settings.facebookPixelCode || '';
+  // Never render the admin's pasted Meta snippet directly: it often contains its
+  // own <script> tags, which makes invalid nested markup. Keep the ID editable,
+  // but always emit one canonical pixel bootstrap instead.
+  const facebookPixelId = settings.facebookPixelId || process.env.NEXT_PUBLIC_META_PIXEL_ID || '4388165921425895';
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -123,44 +127,19 @@ export default async function RootLayout({
           </>
         ) : null}
 
-        {/* Dynamic Facebook / Meta Pixel Integration */}
-        {facebookPixelCode ? (
-          <script dangerouslySetInnerHTML={{ __html: facebookPixelCode }} />
-        ) : facebookPixelId ? (
-          <>
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  !function(f,b,e,v,n,t,s)
-                  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-                  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-                  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-                  n.queue=[];t=b.createElement(e);t.async=!0;
-                  t.src=v;s=b.getElementsByTagName(e)[0];
-                  s.parentNode.insertBefore(t,s)}(window, document,'script',
-                  'https://connect.facebook.net/en_US/fbevents.js');
-                  fbq('init', '${facebookPixelId}');
-                  fbq('track', 'PageView');
-                `,
-              }}
-            />
-            <noscript>
-              <img
-                height="1"
-                width="1"
-                style={{ display: "none" }}
-                src={`https://www.facebook.com/tr?id=${facebookPixelId}&ev=PageView&noscript=1`}
-                alt=""
-              />
-            </noscript>
-          </>
-        ) : null}
       </head>
       <body>
         <CartProvider>
           {children}
           <RecentSalesPopup />
         </CartProvider>
+        <noscript>
+          <img height="1" width="1" style={{ display: "none" }} src={`https://www.facebook.com/tr?id=${facebookPixelId}&ev=PageView&noscript=1`} alt="" />
+        </noscript>
+        <Script id="meta-pixel-base" strategy="beforeInteractive">
+          {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${facebookPixelId}');`}
+        </Script>
+        <MetaPixelPageView />
       </body>
     </html>
   );

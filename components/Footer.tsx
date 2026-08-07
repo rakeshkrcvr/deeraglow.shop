@@ -89,7 +89,7 @@ export default function Footer() {
             <li><Link href="/category/bracelets">Bracelets</Link></li>
             <li><Link href="/category/necklaces">Necklaces</Link></li>
             <li><Link href="/category/earrings">Earrings</Link></li>
-            <li><Link href="/category/charms">Charms & Pendants</Link></li>
+            <li><Link href="/category/charms">Charms &amp; Pendants</Link></li>
             <li><Link href="/category/bangles">Bangles</Link></li>
             <li><Link href="/category/anklets">Anklets</Link></li>
           </ul>
@@ -110,7 +110,7 @@ export default function Footer() {
 
         {/* Shop by Style & Occasion */}
         <div className={styles.linksCol}>
-          <h3>💝 Style & Occasion</h3>
+          <h3>💝 Occasion</h3>
           <ul>
             <li><Link href="/category/daily-wear">Daily Wear</Link></li>
             <li><Link href="/category/office-wear">Office Wear</Link></li>
@@ -141,17 +141,6 @@ export default function Footer() {
             <li><Link href="/category/limited-edition">Limited Edition</Link></li>
             <li><Link href="/category/luxury-collection">Luxury Collection</Link></li>
             <li><Link href="/category/combo-packs">Combo Packs</Link></li>
-          </ul>
-        </div>
-
-        {/* Shop by Price */}
-        <div className={styles.linksCol}>
-          <h3>💰 Price</h3>
-          <ul>
-            <li><Link href="/category/under-499">Under ₹499</Link></li>
-            <li><Link href="/category/500-999">₹500–₹999</Link></li>
-            <li><Link href="/category/1000-1999">₹1,000–₹1,999</Link></li>
-            <li><Link href="/category/above-2000">Above ₹2,000</Link></li>
           </ul>
         </div>
 

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { Product } from '@/lib/products';
+import { trackMetaEvent } from '@/lib/metaPixelClient';
 
 export interface CartItem {
   product: Product;
@@ -139,6 +140,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     saveCartItems(newItems);
+    trackMetaEvent('AddToCart', {
+      content_ids: [String(targetProduct.id)],
+      content_name: targetProduct.name,
+      content_type: 'product',
+      currency: 'INR',
+      value: Number(targetProduct.price) * quantity,
+      contents: [{ id: String(targetProduct.id), quantity, item_price: Number(targetProduct.price) }],
+    });
     showCartNotice(targetProduct.name);
   };
 
