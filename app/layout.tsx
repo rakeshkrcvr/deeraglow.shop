@@ -43,6 +43,23 @@ export const metadata: Metadata = {
 
 import RecentSalesPopup from "@/components/RecentSalesPopup";
 
+type CustomScript = {
+  src?: string;
+  content?: string;
+};
+
+// The admin field accepts the standard Google snippet, which already contains
+// <script> tags. Rendering that entire value inside another <script> produces
+// invalid HTML and can leave the document parser in an unexpected state.
+function parseCustomScripts(snippet: string): CustomScript[] {
+  const scripts = [...snippet.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].map((match) => {
+    const src = match[1].match(/\bsrc\s*=\s*["']([^"']+)["']/i)?.[1];
+    return src ? { src } : { content: match[2].trim() };
+  });
+
+  return scripts.length > 0 ? scripts : snippet.trim() ? [{ content: snippet.trim() }] : [];
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -51,11 +68,12 @@ export default async function RootLayout({
   const settings = await getStoreSettings();
   const faviconUrl = settings.faviconUrl || settings.logoHeaderUrl || '';
   const googleTagId = settings.googleTagId || '';
-  const googleTagCode = settings.googleTagCode || '';
+  const customGoogleScripts = parseCustomScripts(settings.googleTagCode || '');
   // Never render the admin's pasted Meta snippet directly: it often contains its
   // own <script> tags, which makes invalid nested markup. Keep the ID editable,
   // but always emit one canonical pixel bootstrap instead.
   const facebookPixelId = settings.facebookPixelId || process.env.NEXT_PUBLIC_META_PIXEL_ID || '4388165921425895';
+  const clarityProjectId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID || 'xyp5x0gfdo';
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -109,21 +127,29 @@ export default async function RootLayout({
           </>
         )}
         {/* Dynamic Google Tag / Analytics Integration */}
-        {googleTagCode ? (
-          <script dangerouslySetInnerHTML={{ __html: googleTagCode }} />
+        {customGoogleScripts.length > 0 ? (
+          customGoogleScripts.map((script, index) => script.src ? (
+            <Script
+              id={`custom-google-src-${index}`}
+              key={`custom-google-src-${index}`}
+              src={script.src}
+              strategy="afterInteractive"
+            />
+          ) : (
+            <Script
+              id={`custom-google-inline-${index}`}
+              key={`custom-google-inline-${index}`}
+              strategy="afterInteractive"
+            >
+              {script.content ?? ''}
+            </Script>
+          ))
         ) : googleTagId ? (
           <>
-            <script async src={`https://www.googletagmanager.com/gtag/js?id=${googleTagId}`}></script>
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', '${googleTagId}');
-                `,
-              }}
-            />
+            <Script id="google-tag-library" src={`https://www.googletagmanager.com/gtag/js?id=${googleTagId}`} strategy="afterInteractive" />
+            <Script id="google-tag-config" strategy="afterInteractive">
+              {`window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', '${googleTagId}');`}
+            </Script>
           </>
         ) : null}
 
@@ -138,6 +164,9 @@ export default async function RootLayout({
         </noscript>
         <Script id="meta-pixel-base" strategy="beforeInteractive">
           {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${facebookPixelId}');`}
+        </Script>
+        <Script id="microsoft-clarity" strategy="afterInteractive">
+          {`(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src='https://www.clarity.ms/tag/'+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,'clarity','script','${clarityProjectId}');`}
         </Script>
         <MetaPixelPageView />
       </body>

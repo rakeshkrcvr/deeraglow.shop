@@ -9,13 +9,6 @@ interface Collection {
   slug: string;
 }
 
-interface MediaFile {
-  id: string;
-  name: string;
-  url: string;
-  size: number;
-}
-
 interface Product {
   id: number;
   name: string;
@@ -62,8 +55,8 @@ function ProductFormContent() {
   const [inventory, setInventory] = useState('10');
   const [description, setDescription] = useState('');
   const [features, setFeatures] = useState('');
-  const [imageUrl, setImageUrl] = useState('/images/category_banner_jewellery.png');
-  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [imageUrl, setImageUrl] = useState('');
+  const [imageUrlError, setImageUrlError] = useState('');
   
   // Custom specifications
   const [tagline, setTagline] = useState('100% tarnish-free — 925 sterling silver — premium cubic zirconia');
@@ -81,25 +74,34 @@ function ProductFormContent() {
   const [formSuccess, setFormSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Media selector modal states
-  const [showMediaModal, setShowMediaModal] = useState(false);
-  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
-  const [loadingMedia, setLoadingMedia] = useState(false);
-  const [mediaSearchQuery, setMediaSearchQuery] = useState('');
-  const [selectedMediaUrls, setSelectedMediaUrls] = useState<string[]>([]);
+  async function fetchCollections() {
+    try {
+      const res = await fetch('/api/admin/collections');
+      if (res.ok) {
+        const data = await res.json();
+        setCollections(data);
+      }
+    } catch (err) {
+      console.error('Error fetching collections:', err);
+    }
+  }
 
   // 1. Auth check
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem('deeksha_admin_logged_in') === 'true';
-    if (!isLoggedIn) {
-      setHasCheckedAuth(true);
-      router.push('/admin');
-    } else {
-      setAuthorized(true);
-      setHasCheckedAuth(true);
-      fetchCollections();
-      fetchMediaFiles();
-    }
+    void (async () => {
+      // Yield before updating state so this effect only synchronizes browser-only
+      // session state after hydration.
+      await Promise.resolve();
+      const isLoggedIn = localStorage.getItem('deeksha_admin_logged_in') === 'true';
+      if (!isLoggedIn) {
+        setHasCheckedAuth(true);
+        router.push('/admin');
+      } else {
+        setAuthorized(true);
+        setHasCheckedAuth(true);
+        await fetchCollections();
+      }
+    })();
   }, [router]);
 
   // 2. Fetch product details if in edit mode
@@ -121,12 +123,7 @@ function ProductFormContent() {
             setInventory(target.inventory?.toString() ?? '10');
             setDescription(target.description || '');
             setFeatures(target.features || '');
-            setImageUrl(target.image_url || '/images/category_banner_jewellery.png');
-            if (target.images && target.images.trim()) {
-              setGalleryImages(target.images.split(',').map(s => s.trim()).filter(Boolean));
-            } else {
-              setGalleryImages([target.image_url || '/images/category_banner_jewellery.png']);
-            }
+            setImageUrl(target.image_url || '');
 
             setTagline(target.tagline || '100% tarnish-free — 925 sterling silver — premium cubic zirconia');
             setFragrances(target.fragrances || '925 Sterling Silver, Gold Plated, Cubic Zirconia');
@@ -152,9 +149,13 @@ function ProductFormContent() {
   // 3. Auto-restore local draft for new products
   useEffect(() => {
     if (!editId && authorized) {
-      const savedDraft = localStorage.getItem('deeraglow_new_product_draft');
-      if (savedDraft) {
-        try {
+      void (async () => {
+        // Yield before applying the local draft to avoid a synchronous effect
+        // state update and keep hydration deterministic.
+        await Promise.resolve();
+        const savedDraft = localStorage.getItem('deeraglow_new_product_draft');
+        if (savedDraft) {
+          try {
           const parsed = JSON.parse(savedDraft);
           if (parsed.name && !name) setName(parsed.name);
           if (parsed.price && !price) setPrice(parsed.price);
@@ -163,96 +164,28 @@ function ProductFormContent() {
           if (parsed.description && !description) setDescription(parsed.description);
           if (parsed.features && !features) setFeatures(parsed.features);
           if (parsed.collection && !collection) setCollection(parsed.collection);
-          if (parsed.galleryImages && parsed.galleryImages.length > 0 && galleryImages.length === 0) {
-            setGalleryImages(parsed.galleryImages);
+          if (parsed.imageUrl && !imageUrl) setImageUrl(parsed.imageUrl);
+          } catch (e) {
+            console.error('Error parsing draft:', e);
           }
-        } catch (e) {
-          console.error('Error parsing draft:', e);
         }
-      }
+      })();
     }
   }, [authorized, editId]);
 
   // Auto-save draft on change for new product
   useEffect(() => {
-    if (!editId && (name || price || description || features || galleryImages.length > 0)) {
-      const draftData = { name, collection, price, comparePrice, inventory, description, features, galleryImages };
+    if (!editId && (name || price || description || features || imageUrl)) {
+      const draftData = { name, collection, price, comparePrice, inventory, description, features, imageUrl };
       localStorage.setItem('deeraglow_new_product_draft', JSON.stringify(draftData));
     }
-  }, [name, collection, price, comparePrice, inventory, description, features, galleryImages, editId]);
-
-
-
-  const fetchCollections = async () => {
-    try {
-      const res = await fetch('/api/admin/collections');
-      if (res.ok) {
-        const data = await res.json();
-        setCollections(data);
-      }
-    } catch (err) {
-      console.error('Error fetching collections:', err);
-    }
-  };
-
-  const fetchMediaFiles = async () => {
-    setLoadingMedia(true);
-    try {
-      const res = await fetch('/api/admin/media', { cache: 'no-store' });
-      if (res.ok) {
-        const data = await res.json();
-        const rawFiles = Array.isArray(data) ? data : (data.files || []);
-        const formattedFiles: MediaFile[] = rawFiles.map((f: any) => ({
-          id: String(f.id || f.storage_key || f.url),
-          name: String(f.filename || f.name || 'image'),
-          url: String(f.url || ''),
-          size: Number(f.file_size || f.size || 0)
-        }));
-        setMediaFiles(formattedFiles);
-      }
-    } catch (err) {
-      console.error('Error fetching media:', err);
-    } finally {
-      setLoadingMedia(false);
-    }
-  };
-
-  const uploadMediaFile = async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const uploadRes = await fetch('/api/admin/media', {
-      method: 'POST',
-      body: formData
-    });
-    const data = await uploadRes.json().catch(() => null);
-
-    if (!uploadRes.ok) {
-      throw new Error(data?.error || 'Failed to upload image.');
-    }
-
-    const url = data?.file?.url || data?.url;
-    if (!url) {
-      throw new Error('Upload finished, but the server did not return an image URL.');
-    }
-
-    if (data?.file) {
-      const formattedItem: MediaFile = {
-        id: String(data.file.id || data.file.storage_key || data.file.url),
-        name: String(data.file.filename || data.file.name || file.name),
-        url,
-        size: Number(data.file.file_size || file.size)
-      };
-      setMediaFiles((prev) => [formattedItem, ...prev.filter((item) => item.id !== formattedItem.id)]);
-    }
-
-    return { url };
-  };
+  }, [name, collection, price, comparePrice, inventory, description, features, imageUrl, editId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
     setFormSuccess('');
+    setImageUrlError('');
     setSubmitting(true);
 
     if (!name || !collection || !price || !description || !features) {
@@ -261,14 +194,16 @@ function ProductFormContent() {
       return;
     }
 
-    if (galleryImages.length === 0) {
-      setFormError('Please select or upload at least one image.');
+    const trimmedImageUrl = imageUrl.trim();
+    if (trimmedImageUrl && !isValidImageUrl(trimmedImageUrl)) {
+      const error = 'Enter a valid HTTP or HTTPS image URL.';
+      setImageUrlError(error);
+      setFormError(error);
       setSubmitting(false);
       return;
     }
 
     try {
-      const coverImage = galleryImages[0] || '/images/category_banner_jewellery.png';
       const method = editId ? 'PUT' : 'POST';
       const payload = {
         name,
@@ -277,7 +212,7 @@ function ProductFormContent() {
         compare_price: comparePrice,
         inventory,
         description,
-        image_url: coverImage,
+        image_url: trimmedImageUrl,
         features,
         tagline,
         fragrances,
@@ -288,7 +223,6 @@ function ProductFormContent() {
         acc_ingredients: accIngredients,
         acc_instructions: accInstructions,
         acc_shipping: accShipping,
-        images: galleryImages.join(',')
       };
 
       const body = editId ? { id: parseInt(editId, 10), ...payload } : payload;
@@ -327,7 +261,17 @@ function ProductFormContent() {
     );
   }
 
-  const filteredMediaFiles = mediaFiles.filter(f => f.name.toLowerCase().includes(mediaSearchQuery.toLowerCase()));
+  const isValidImageUrl = (value: string) => {
+    if (value.startsWith('/') && !value.startsWith('//')) return true;
+    try {
+      const parsed = new URL(value);
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
+  const showImagePreview = Boolean(imageUrl.trim()) && isValidImageUrl(imageUrl.trim());
 
   const navigateToDashboard = () => {
     setIsSidebarOpen(false);
@@ -614,196 +558,37 @@ function ProductFormContent() {
               </div>
             </div>
 
-            {/* CARD 2: Product Media Gallery */}
+            {/* CARD 2: Product image URLs */}
             <div style={{ backgroundColor: '#ffffff', border: '1px solid #e3e3e3', borderRadius: '10px', padding: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
               <h2 style={{ fontSize: '16px', fontWeight: '700', margin: '0 0 4px 0', color: '#1a1a1a' }}>
-                Product Media Gallery *
+                Product Images
               </h2>
               <p style={{ margin: '0 0 16px 0', fontSize: '12px', color: '#777' }}>
-                Upload or select product images. Drag to reorder. The first image will be set as the primary cover.
+                Paste a direct image URL. The image file is not uploaded; only its URL string is stored in Neon.
               </p>
-
-              {/* Gallery Grid */}
-              <div style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '12px',
-                minHeight: '120px',
-                padding: '16px',
-                border: '2px dashed #e0e0e0',
-                borderRadius: '8px',
-                backgroundColor: '#fafafa',
-                alignItems: 'center',
-                marginBottom: '16px'
-              }}>
-                {galleryImages.length === 0 ? (
-                  <div style={{ width: '100%', textAlign: 'center', color: '#888', fontSize: '13px', padding: '24px 0' }}>
-                    No images added yet. Click "Browse Media" or "Upload File" below.
-                  </div>
-                ) : (
-                  galleryImages.map((imgUrl, index) => (
-                    <div
-                      key={`${imgUrl}-${index}`}
-                      draggable
-                      onDragStart={(e) => {
-                        e.dataTransfer.setData('text/plain', index.toString());
-                        e.currentTarget.style.opacity = '0.5';
-                      }}
-                      onDragEnd={(e) => {
-                        e.currentTarget.style.opacity = '1';
-                      }}
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        e.currentTarget.style.borderColor = '#1a1a1a';
-                      }}
-                      onDragLeave={(e) => {
-                        e.currentTarget.style.borderColor = 'transparent';
-                      }}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        e.currentTarget.style.borderColor = 'transparent';
-                        const sourceIdxStr = e.dataTransfer.getData('text/plain');
-                        if (!sourceIdxStr) return;
-                        const sourceIdx = parseInt(sourceIdxStr, 10);
-                        if (sourceIdx === index) return;
-
-                        const newImages = [...galleryImages];
-                        const [dragged] = newImages.splice(sourceIdx, 1);
-                        newImages.splice(index, 0, dragged);
-                        setGalleryImages(newImages);
-                      }}
-                      style={{
-                        position: 'relative',
-                        width: '100px',
-                        height: '100px',
-                        borderRadius: '8px',
-                        overflow: 'hidden',
-                        border: '2px solid transparent',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                        cursor: 'grab',
-                        backgroundColor: '#ffffff'
-                      }}
-                    >
-                      <img
-                        src={imgUrl}
-                        alt={`Product image ${index + 1}`}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-
-                      {/* Cover Badge */}
-                      {index === 0 && (
-                        <div style={{
-                          position: 'absolute',
-                          bottom: '4px',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          backgroundColor: '#1a1a1a',
-                          color: '#ffffff',
-                          fontSize: '8px',
-                          fontWeight: '700',
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px'
-                        }}>
-                          Cover
-                        </div>
-                      )}
-
-                      {/* Delete Overlay */}
-                      <button
-                        type="button"
-                        onClick={() => setGalleryImages(prev => prev.filter((_, i) => i !== index))}
-                        style={{
-                          position: 'absolute',
-                          top: '4px',
-                          right: '4px',
-                          width: '20px',
-                          height: '20px',
-                          borderRadius: '50%',
-                          backgroundColor: 'rgba(0,0,0,0.65)',
-                          color: '#ffffff',
-                          border: 'none',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '10px',
-                          cursor: 'pointer',
-                          fontWeight: 'bold'
-                        }}
-                        title="Remove image"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))
-                )}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontWeight: '600', color: '#444' }}>Image URL</label>
+                <input
+                  type="url"
+                  inputMode="url"
+                  value={imageUrl}
+                  onChange={(e) => {
+                    setImageUrl(e.target.value);
+                    setImageUrlError('');
+                  }}
+                  placeholder="https://example.com/products/product-1.webp"
+                  aria-invalid={Boolean(imageUrlError)}
+                  style={{ padding: '10px 14px', border: `1px solid ${imageUrlError ? '#c23b3b' : '#ccc'}`, borderRadius: '6px', fontSize: '14px' }}
+                />
+                <span style={{ color: '#777', fontSize: '11px' }}>Optional. Use a publicly accessible HTTP/HTTPS image URL.</span>
+                {imageUrlError && <span role="alert" style={{ color: '#b42318', fontSize: '12px' }}>{imageUrlError}</span>}
               </div>
 
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedMediaUrls([]);
-                    fetchMediaFiles();
-                    setShowMediaModal(true);
-                  }}
-                  style={{
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #cccccc',
-                    borderRadius: '6px',
-                    padding: '8px 16px',
-                    fontSize: '13px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <span>🖼️</span> Browse Media
-                </button>
-                <label
-                  style={{
-                    backgroundColor: '#202020',
-                    color: '#ffffff',
-                    borderRadius: '6px',
-                    padding: '8px 16px',
-                    fontSize: '13px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <span>📤</span> Upload Files
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={async (e) => {
-                      if (e.target.files && e.target.files.length > 0) {
-                        const fileList = Array.from(e.target.files);
-                        try {
-                          const uploadedUrls: string[] = [];
-                          for (const file of fileList) {
-                            const res = await uploadMediaFile(file);
-                            uploadedUrls.push(res.url);
-                          }
-                          setGalleryImages(prev => [...prev, ...uploadedUrls]);
-                        } catch (err) {
-                          alert(err instanceof Error ? err.message : 'Upload failed');
-                        } finally {
-                          e.target.value = '';
-                        }
-                      }
-                    }}
-                    style={{ display: 'none' }}
-                  />
-                </label>
-              </div>
+              {showImagePreview && (
+                <div style={{ marginTop: '16px', width: 'min(260px, 100%)', aspectRatio: '1', border: '1px solid #e0e0e0', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#fafafa' }}>
+                  <img src={imageUrl.trim()} alt="Product image preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              )}
             </div>
 
             {/* CARD 3: Specifications & Accordions */}
@@ -959,196 +744,6 @@ function ProductFormContent() {
       </main>
 
       </div>
-
-      {/* Media Selector Modal */}
-      {showMediaModal && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '24px'
-          }}
-          onClick={() => setShowMediaModal(false)}
-        >
-          <div
-            style={{
-              width: 'min(750px, 100%)',
-              maxHeight: '80vh',
-              backgroundColor: '#ffffff',
-              borderRadius: '12px',
-              padding: '24px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-              overflow: 'hidden'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#1a1a1a' }}>Select Media File</h3>
-              <button
-                type="button"
-                onClick={() => setShowMediaModal(false)}
-                style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#888' }}
-              >
-                ✕
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <input
-                type="text"
-                placeholder="Search images..."
-                value={mediaSearchQuery}
-                onChange={(e) => setMediaSearchQuery(e.target.value)}
-                style={{ flexGrow: 1, padding: '8px 12px', border: '1px solid #ccc', borderRadius: '6px', fontSize: '13px' }}
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  if (selectedMediaUrls.length === filteredMediaFiles.length && filteredMediaFiles.length > 0) {
-                    setSelectedMediaUrls([]);
-                  } else {
-                    setSelectedMediaUrls(filteredMediaFiles.map(f => f.url));
-                  }
-                }}
-                style={{
-                  padding: '8px 14px',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  border: '1px solid #ccc',
-                  borderRadius: '6px',
-                  backgroundColor: '#f9f9f9',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                {selectedMediaUrls.length === filteredMediaFiles.length && filteredMediaFiles.length > 0
-                  ? 'Deselect All'
-                  : 'Select All'}
-              </button>
-            </div>
-
-            <div style={{ flexGrow: 1, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '12px', padding: '4px' }}>
-              {loadingMedia ? (
-                <p style={{ color: '#888', gridColumn: '1 / -1' }}>Loading media gallery...</p>
-              ) : filteredMediaFiles.length === 0 ? (
-                <p style={{ color: '#888', gridColumn: '1 / -1' }}>No media files found.</p>
-              ) : (
-                filteredMediaFiles.map((file) => {
-                  const isSelected = selectedMediaUrls.includes(file.url);
-                  return (
-                    <div
-                      key={file.id}
-                      onClick={() => {
-                        setSelectedMediaUrls(prev =>
-                          prev.includes(file.url)
-                            ? prev.filter(u => u !== file.url)
-                            : [...prev, file.url]
-                        );
-                      }}
-                      style={{
-                        position: 'relative',
-                        height: '110px',
-                        borderRadius: '8px',
-                        overflow: 'hidden',
-                        border: isSelected ? '3px solid #202020' : '2px solid #e0e0e0',
-                        cursor: 'pointer',
-                        transition: 'transform 0.15s, border-color 0.15s'
-                      }}
-                    >
-                      <img src={file.url} alt={file.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-
-                      {/* Checkbox Badge */}
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: '6px',
-                          left: '6px',
-                          width: '22px',
-                          height: '22px',
-                          borderRadius: '4px',
-                          backgroundColor: isSelected ? '#202020' : 'rgba(255,255,255,0.9)',
-                          color: isSelected ? '#ffffff' : '#888888',
-                          border: isSelected ? '1px solid #202020' : '1px solid #cccccc',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '12px',
-                          fontWeight: 'bold',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-                        }}
-                      >
-                        {isSelected ? '✓' : ''}
-                      </div>
-
-                      {isSelected && (
-                        <div style={{
-                          position: 'absolute',
-                          inset: 0,
-                          backgroundColor: 'rgba(32, 32, 32, 0.15)',
-                          pointerEvents: 'none'
-                        }} />
-                      )}
-                    </div>
-                  );
-                })
-              )}
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid #eeeeee' }}>
-              <span style={{ fontSize: '13px', color: '#666666', fontWeight: '500' }}>
-                {selectedMediaUrls.length > 0
-                  ? `${selectedMediaUrls.length} image${selectedMediaUrls.length > 1 ? 's' : ''} selected`
-                  : 'Click images to select multiple'}
-              </span>
-
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedMediaUrls([]);
-                    setShowMediaModal(false);
-                  }}
-                  style={{ backgroundColor: '#f0f0f0', color: '#1a1a1a', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="button"
-                  disabled={selectedMediaUrls.length === 0}
-                  onClick={() => {
-                    setGalleryImages(prev => [...prev, ...selectedMediaUrls]);
-                    setSelectedMediaUrls([]);
-                    setShowMediaModal(false);
-                  }}
-                  style={{
-                    backgroundColor: selectedMediaUrls.length > 0 ? '#202020' : '#cccccc',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '6px',
-                    padding: '8px 20px',
-                    fontSize: '13px',
-                    fontWeight: '600',
-                    cursor: selectedMediaUrls.length > 0 ? 'pointer' : 'not-allowed',
-                    boxShadow: selectedMediaUrls.length > 0 ? '0 2px 6px rgba(0,0,0,0.15)' : 'none'
-                  }}
-                >
-                  Add Selected Images {selectedMediaUrls.length > 0 ? `(${selectedMediaUrls.length})` : ''}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );
