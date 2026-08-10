@@ -20,6 +20,8 @@ export default function CategoryPageClient({ slug, title, products, bannerImage,
   const { addToCart, setIsCartOpen } = useCart();
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [selectedMaxPrice, setSelectedMaxPrice] = useState<number | null>(null);
+  const isAllJewelleryPage = slug === 'all-jewellery' || slug === 'all' || slug === 'all-candles';
+  const allJewelleryBannerUrl = 'https://storage.mlcdn.com/account_image/2566542/poUKaQKX4RL7I5b4y3fQPKb2aLSu0cTjRsafS1pM.png';
 
   const toggleWishlist = (id: number) => {
     setWishlist(prev =>
@@ -64,7 +66,18 @@ export default function CategoryPageClient({ slug, title, products, bannerImage,
     <main className={styles.main}>
       <div className="container">
 
+        {isAllJewelleryPage && (
+          <section className={styles.allJewelleryBanner} aria-label="All jewellery banner">
+            <img
+              src={allJewelleryBannerUrl}
+              alt="Deera Glow all jewellery collection"
+              className={styles.allJewelleryBannerImage}
+            />
+          </section>
+        )}
+
         {/* 1. TOP LUXURY HERO BANNER CARD */}
+        {!isAllJewelleryPage && <>
         <section className={styles.heroBanner}>
           <div className={styles.heroLeft}>
             <span className={styles.heroEyebrow}>WORLD OF ELEGANCE</span>
@@ -241,6 +254,7 @@ export default function CategoryPageClient({ slug, title, products, bannerImage,
             </div>
           </div>
         </section>
+        </>}
 
         {/* 3. PRODUCT GRID SECTION */}
         <section id="collection-products" style={{ scrollMarginTop: '80px' }}>
