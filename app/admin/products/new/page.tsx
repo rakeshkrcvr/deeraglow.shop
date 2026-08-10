@@ -56,6 +56,7 @@ function ProductFormContent() {
   const [description, setDescription] = useState('');
   const [features, setFeatures] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [additionalImageUrls, setAdditionalImageUrls] = useState<string[]>(['']);
   const [imageUrlError, setImageUrlError] = useState('');
   
   // Custom specifications
@@ -124,6 +125,11 @@ function ProductFormContent() {
             setDescription(target.description || '');
             setFeatures(target.features || '');
             setImageUrl(target.image_url || '');
+            const existingAdditionalImages = (target.images || '')
+              .split(',')
+              .map((url) => url.trim())
+              .filter((url) => url && url !== target.image_url);
+            setAdditionalImageUrls(existingAdditionalImages.length > 0 ? existingAdditionalImages : ['']);
 
             setTagline(target.tagline || '100% tarnish-free — 925 sterling silver — premium cubic zirconia');
             setFragrances(target.fragrances || '925 Sterling Silver, Gold Plated, Cubic Zirconia');
@@ -165,6 +171,7 @@ function ProductFormContent() {
           if (parsed.features && !features) setFeatures(parsed.features);
           if (parsed.collection && !collection) setCollection(parsed.collection);
           if (parsed.imageUrl && !imageUrl) setImageUrl(parsed.imageUrl);
+          if (Array.isArray(parsed.additionalImageUrls)) setAdditionalImageUrls(parsed.additionalImageUrls);
           } catch (e) {
             console.error('Error parsing draft:', e);
           }
@@ -175,11 +182,11 @@ function ProductFormContent() {
 
   // Auto-save draft on change for new product
   useEffect(() => {
-    if (!editId && (name || price || description || features || imageUrl)) {
-      const draftData = { name, collection, price, comparePrice, inventory, description, features, imageUrl };
+    if (!editId && (name || price || description || features || imageUrl || additionalImageUrls.some(Boolean))) {
+      const draftData = { name, collection, price, comparePrice, inventory, description, features, imageUrl, additionalImageUrls };
       localStorage.setItem('deeraglow_new_product_draft', JSON.stringify(draftData));
     }
-  }, [name, collection, price, comparePrice, inventory, description, features, imageUrl, editId]);
+  }, [name, collection, price, comparePrice, inventory, description, features, imageUrl, additionalImageUrls, editId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -197,6 +204,15 @@ function ProductFormContent() {
     const trimmedImageUrl = imageUrl.trim();
     if (trimmedImageUrl && !isValidImageUrl(trimmedImageUrl)) {
       const error = 'Enter a valid HTTP or HTTPS image URL.';
+      setImageUrlError(error);
+      setFormError(error);
+      setSubmitting(false);
+      return;
+    }
+
+    const trimmedAdditionalImageUrls = additionalImageUrls.map((url) => url.trim()).filter(Boolean);
+    if (trimmedAdditionalImageUrls.some((url) => !isValidImageUrl(url))) {
+      const error = 'Every additional image link must be a valid HTTP or HTTPS URL.';
       setImageUrlError(error);
       setFormError(error);
       setSubmitting(false);
@@ -223,6 +239,8 @@ function ProductFormContent() {
         acc_ingredients: accIngredients,
         acc_instructions: accInstructions,
         acc_shipping: accShipping,
+        // Keep the cover image first so the storefront gallery starts with it.
+        images: [trimmedImageUrl, ...trimmedAdditionalImageUrls].filter(Boolean).join(','),
       };
 
       const body = editId ? { id: parseInt(editId, 10), ...payload } : payload;
@@ -564,7 +582,7 @@ function ProductFormContent() {
                 Product Images
               </h2>
               <p style={{ margin: '0 0 16px 0', fontSize: '12px', color: '#777' }}>
-                Paste a direct image URL. The image file is not uploaded; only its URL string is stored in Neon.
+                Paste direct image links. The image files are not uploaded; only their URL strings are stored in Neon.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <label style={{ fontWeight: '600', color: '#444' }}>Image URL</label>
@@ -589,6 +607,42 @@ function ProductFormContent() {
                   <img src={imageUrl.trim()} alt="Product image preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
               )}
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '18px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                  <label style={{ fontWeight: '600', color: '#444' }}>Additional Image Links</label>
+                  <button
+                    type="button"
+                    onClick={() => setAdditionalImageUrls((urls) => [...urls, ''])}
+                    style={{ padding: '7px 11px', border: '1px solid #3e0030', borderRadius: '6px', background: '#fff', color: '#3e0030', fontWeight: '600', cursor: 'pointer' }}
+                  >
+                    + Add image link
+                  </button>
+                </div>
+                <span style={{ color: '#777', fontSize: '11px' }}>Add as many public HTTP/HTTPS image links as needed. They will appear in the product gallery.</span>
+                {additionalImageUrls.map((url, index) => (
+                  <div key={index} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <input
+                      type="url"
+                      inputMode="url"
+                      value={url}
+                      onChange={(e) => setAdditionalImageUrls((urls) => urls.map((currentUrl, currentIndex) => currentIndex === index ? e.target.value : currentUrl))}
+                      placeholder={`Additional image link ${index + 1}`}
+                      style={{ flex: 1, padding: '10px 14px', border: `1px solid ${imageUrlError ? '#c23b3b' : '#ccc'}`, borderRadius: '6px', fontSize: '14px' }}
+                    />
+                    {additionalImageUrls.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setAdditionalImageUrls((urls) => urls.filter((_, currentIndex) => currentIndex !== index))}
+                        aria-label={`Remove additional image link ${index + 1}`}
+                        style={{ padding: '9px 11px', border: '1px solid #c23b3b', borderRadius: '6px', background: '#fff', color: '#b42318', cursor: 'pointer' }}
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* CARD 3: Specifications & Accordions */}
