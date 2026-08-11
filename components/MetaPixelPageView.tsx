@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { trackMetaEvent } from "@/lib/metaPixelClient";
 
 export default function MetaPixelPageView() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const hasTrackedInitialPageView = useRef(false);
 
   useEffect(() => {
@@ -19,7 +18,7 @@ export default function MetaPixelPageView() {
     }
 
     trackMetaEvent("PageView");
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   return null;
 }
