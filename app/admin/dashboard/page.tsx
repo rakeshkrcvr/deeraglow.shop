@@ -1726,10 +1726,6 @@ export default function AdminDashboard() {
 
     try {
       for (const coll of collections) {
-        const associatedIds = products
-          .filter(p => (p.collections || [p.collection]).some(name => name.toLowerCase() === coll.name.toLowerCase()))
-          .map(p => p.id);
-
         const hasImagesConfigured = !!(
           (coll.image_url && coll.image_url.trim()) ||
           (coll.thumb_image_1 && coll.thumb_image_1.trim()) ||
@@ -1744,7 +1740,6 @@ export default function AdminDashboard() {
             id: coll.id,
             name: coll.name,
             description: coll.description,
-            productIds: associatedIds,
             image_url: coll.image_url || '',
             show_in_slider: coll.show_in_slider !== undefined ? coll.show_in_slider || hasImagesConfigured : hasImagesConfigured,
             slider_subtitle: coll.slider_subtitle || '',

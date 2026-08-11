@@ -470,10 +470,20 @@ export async function getProducts(options: { includeDeleted?: boolean } = {}): P
       membershipRows.forEach(({ product_id, name }) => {
         memberships.set(product_id, [...(memberships.get(product_id) || []), name]);
       });
-      allProducts = allProducts.map(product => ({
-        ...product,
-        collections: memberships.get(product.id) || (product.collection && product.collection !== 'Unassigned' ? [product.collection] : [])
-      }));
+      allProducts = allProducts.map(product => {
+        // `collection` remains the product's primary category. Preserve it in
+        // the displayed memberships even if an older product has no row in
+        // product_collections yet, or its curated memberships were edited.
+        const primaryCollection = product.collection && product.collection !== 'Unassigned'
+          ? [product.collection]
+          : [];
+        const collectionNames = [...primaryCollection, ...(memberships.get(product.id) || [])];
+
+        return {
+          ...product,
+          collections: Array.from(new Set(collectionNames.map(name => name.trim()).filter(Boolean)))
+        };
+      });
     } catch (error) {
       console.error('Error loading product collection memberships:', error);
     }

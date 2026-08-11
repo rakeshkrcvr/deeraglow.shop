@@ -195,7 +195,12 @@ export async function PUT(request: Request) {
       WHERE id = ${parseInt(id, 10)}
     `;
 
-    await setCollectionProducts(parseInt(id, 10), (Array.isArray(productIds) ? productIds : []).map(Number));
+    // A collection-details update (for example, banner or slider settings)
+    // must never clear its product assignments. Only the collection editor,
+    // which intentionally sends `productIds`, may replace memberships.
+    if (Array.isArray(productIds)) {
+      await setCollectionProducts(parseInt(id, 10), productIds.map(Number));
+    }
 
     revalidateCollectionStorefront();
     return NextResponse.json({ success: true });
