@@ -81,6 +81,23 @@ interface Order {
   payment_method?: string;
 }
 
+const REVIEW_CITIES = ['Noida', 'Delhi NCR', 'Gurugram', 'Mumbai', 'Pune', 'Chennai', 'Bengaluru', 'Hyderabad'];
+const REVIEW_CUSTOMERS = [
+  'Aarav Sharma', 'Ananya Verma', 'Kavya Mehta', 'Riya Kapoor', 'Ishita Nair',
+  'Meera Joshi', 'Aditi Singh', 'Nisha Gupta', 'Pooja Shah', 'Sana Khan',
+  'Neha Arora', 'Simran Kaur', 'Tanya Bhatia', 'Priya Malhotra', 'Radhika Jain',
+  'Sneha Iyer', 'Divya Menon', 'Kriti Kapoor', 'Ayesha Ali', 'Ira Mehta'
+];
+const REVIEW_TARGETS = [13, 15, 20, 17, 11, 16, 15, 18, 12, 19, 14];
+
+const reviewTextForProduct = (productName: string, position: number) => [
+  `${productName} looks even more beautiful in person. The finishing feels premium and it is very comfortable to wear.`,
+  `Loved my ${productName}! It arrived safely, looks elegant, and the quality is excellent for everyday wear.`,
+  `The design of ${productName} is gorgeous and exactly like the photos. I have already received many compliments.`,
+  `Very happy with ${productName}. It is lightweight, nicely finished, and adds a lovely touch to every outfit.`,
+  `${productName} is a great purchase. Beautiful shine, secure packaging, and it feels premium from the first wear.`
+][position % 5];
+
 interface OrderItem {
   product_id?: number;
   name: string;
@@ -590,6 +607,48 @@ export default function AdminDashboard() {
     window.dispatchEvent(new Event('deeksha-reviews-updated'));
   };
 
+  const ensureFiveReviewsPerLiveProduct = (liveProducts: Product[]) => {
+    const activeProducts = liveProducts.filter((product) => !product.deleted_at);
+    if (activeProducts.length === 0) return;
+
+    let savedReviews: CustomerReview[] = [];
+    try {
+      const stored = localStorage.getItem(CUSTOMER_REVIEWS_STORAGE_KEY);
+      savedReviews = stored ? normalizeCustomerReviews(JSON.parse(stored)) : [];
+    } catch {
+      savedReviews = [];
+    }
+
+    const nextReviews = [...savedReviews];
+    activeProducts.forEach((product, productIndex) => {
+      const linkedReviews = nextReviews.filter((review) => review.productId === product.id);
+      const targetReviewCount = REVIEW_TARGETS[productIndex % REVIEW_TARGETS.length];
+      const reviewsToAdd = Math.max(0, targetReviewCount - linkedReviews.length);
+
+      for (let index = 0; index < reviewsToAdd; index += 1) {
+        const reviewIndex = linkedReviews.length + index;
+        nextReviews.push({
+          id: `catalog-review-${product.id}-${Date.now()}-${index}`,
+          name: REVIEW_CUSTOMERS[reviewIndex % REVIEW_CUSTOMERS.length],
+          city: REVIEW_CITIES[(productIndex + reviewIndex) % REVIEW_CITIES.length],
+          time: `${reviewIndex + 2} days ago`,
+          helpful: 8 + ((productIndex * 7 + reviewIndex * 5) % 24),
+          avatar: product.image_url || '/images/earrings_category.png',
+          quote: reviewTextForProduct(product.name, reviewIndex),
+          rating: 5,
+          verified: true,
+          productId: product.id,
+          productName: product.name,
+          productImage: product.image_url || '/images/earrings_category.png'
+        });
+      }
+    });
+
+    if (nextReviews.length !== savedReviews.length) {
+      saveCustomerReviews(nextReviews);
+    }
+  };
+
   const saveCustomerMoments = async (nextMoments: CustomerMoment[]) => {
     setCustomerMoments(nextMoments);
     localStorage.setItem(CUSTOMER_MOMENTS_STORAGE_KEY, JSON.stringify(nextMoments));
@@ -637,11 +696,12 @@ export default function AdminDashboard() {
       const savedReviews = localStorage.getItem(CUSTOMER_REVIEWS_STORAGE_KEY);
       if (savedReviews) {
         const parsed = JSON.parse(savedReviews);
-        if (Array.isArray(parsed) && parsed.length >= 20) {
-          setCustomerReviews(normalizeCustomerReviews(parsed));
-        } else {
-          localStorage.setItem(CUSTOMER_REVIEWS_STORAGE_KEY, JSON.stringify(defaultCustomerReviews));
-          setCustomerReviews(defaultCustomerReviews);
+        const normalizedReviews = normalizeCustomerReviews(parsed);
+        setCustomerReviews(normalizedReviews);
+        // Persist the one-time legacy-demo cleanup so every page sees the
+        // same real review list after this dashboard is opened.
+        if (JSON.stringify(parsed) !== JSON.stringify(normalizedReviews)) {
+          localStorage.setItem(CUSTOMER_REVIEWS_STORAGE_KEY, JSON.stringify(normalizedReviews));
         }
       } else {
         localStorage.setItem(CUSTOMER_REVIEWS_STORAGE_KEY, JSON.stringify(defaultCustomerReviews));
@@ -1049,7 +1109,9 @@ export default function AdminDashboard() {
       const res = await fetch(getInventoryApiUrl(), { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json() as Product[];
-        setProducts(normalizeInventoryProducts(data));
+        const normalizedProducts = normalizeInventoryProducts(data);
+        setProducts(normalizedProducts);
+        ensureFiveReviewsPerLiveProduct(normalizedProducts);
       }
     } catch (err) {
       console.error('Error loading products:', err);
@@ -2578,11 +2640,15 @@ export default function AdminDashboard() {
   });
   const filteredCustomerReviews = customerReviews.filter(review => {
     const query = reviewSearchQuery.toLowerCase();
+    const liveProductName = review.productId
+      ? products.find((product) => product.id === review.productId && !product.deleted_at)?.name
+      : undefined;
     return (
       review.name.toLowerCase().includes(query) ||
       review.city.toLowerCase().includes(query) ||
       review.quote.toLowerCase().includes(query) ||
-      review.productName.toLowerCase().includes(query)
+      review.productName.toLowerCase().includes(query) ||
+      liveProductName?.toLowerCase().includes(query)
     );
   });
 
@@ -4766,6 +4832,11 @@ export default function AdminDashboard() {
                         </tr>
                       ) : filteredCustomerReviews.map((review) => {
                         const isSelected = selectedReviewIds.includes(review.id);
+                        const liveProduct = review.productId
+                          ? products.find((product) => product.id === review.productId && !product.deleted_at)
+                          : undefined;
+                        const productName = liveProduct?.name || review.productName;
+                        const productImage = liveProduct?.image_url || review.productImage;
                         return (
                           <tr key={review.id} style={{ borderBottom: '1px solid #e3e3e3', verticalAlign: 'top', backgroundColor: isSelected ? '#f5f9ff' : 'transparent' }}>
                             <td style={{ padding: '12px 16px', textAlign: 'center' }}>
@@ -4788,8 +4859,8 @@ export default function AdminDashboard() {
                             </td>
                             <td style={{ padding: '12px 16px' }}>
                               <div style={{ display: 'flex', gap: '10px', alignItems: 'center', minWidth: '220px' }}>
-                                <img src={review.productImage} alt={review.productName} style={{ width: '46px', height: '46px', borderRadius: '6px', objectFit: 'cover', backgroundColor: '#f1f1f1' }} />
-                                <span style={{ fontWeight: '600' }}>{review.productName}</span>
+                                <img src={productImage} alt={productName} style={{ width: '46px', height: '46px', borderRadius: '6px', objectFit: 'cover', backgroundColor: '#f1f1f1' }} />
+                                <span style={{ fontWeight: '600' }}>{productName}</span>
                               </div>
                             </td>
                             <td style={{ padding: '12px 16px', color: '#3d3d3d', maxWidth: '360px', lineHeight: 1.5 }}>{review.quote}</td>

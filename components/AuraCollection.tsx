@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { Product } from '@/lib/products';
+import { useProductReviewCounts } from '@/lib/useProductReviewCounts';
 import styles from './AuraCollection.module.css';
 
 interface AuraCollectionProps {
@@ -12,6 +13,7 @@ interface AuraCollectionProps {
 }
 
 export default function AuraCollection({ products }: AuraCollectionProps) {
+  const getReviewCount = useProductReviewCounts();
   const { addToCart, setIsCartOpen } = useCart();
   const [addingId, setAddingId] = useState<number | null>(null);
 
@@ -91,7 +93,7 @@ export default function AuraCollection({ products }: AuraCollectionProps) {
                     <div className={styles.stars}>★★★★★</div>
                     <span className={styles.ratingValue}>{product.rating}</span>
                     <span className={styles.ratingSeparator}>|</span>
-                    <span className={styles.reviewsCount}>{product.reviews_count} Reviews</span>
+                    <span className={styles.reviewsCount}>{getReviewCount(product.id)} Reviews</span>
                   </div>
 
                   <div className={styles.priceRow}>

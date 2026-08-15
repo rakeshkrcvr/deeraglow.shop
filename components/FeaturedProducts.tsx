@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { Product } from '@/lib/products';
+import { useProductReviewCounts } from '@/lib/useProductReviewCounts';
 import styles from './FeaturedProducts.module.css';
 
 interface FeaturedProductsProps {
@@ -14,6 +15,7 @@ interface FeaturedProductsProps {
 export default function FeaturedProducts({ products }: FeaturedProductsProps) {
   const { addToCart, setIsCartOpen } = useCart();
   const [addingId, setAddingId] = useState<number | null>(null);
+  const getReviewCount = useProductReviewCounts();
 
   const handleAddToCart = (product: Product) => {
     setAddingId(product.id);
@@ -91,7 +93,7 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
                     <div className={styles.stars}>★★★★★</div>
                     <span className={styles.ratingValue}>{product.rating}</span>
                     <span className={styles.ratingSeparator}>|</span>
-                    <span className={styles.reviewsCount}>{product.reviews_count} Reviews</span>
+                    <span className={styles.reviewsCount}>{getReviewCount(product.id)} Reviews</span>
                   </div>
 
                   <div className={styles.priceRow}>

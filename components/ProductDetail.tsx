@@ -148,7 +148,15 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
       }
     };
     loadReviews();
+    window.addEventListener('storage', loadReviews);
+    window.addEventListener('deeksha-reviews-updated', loadReviews);
+    return () => {
+      window.removeEventListener('storage', loadReviews);
+      window.removeEventListener('deeksha-reviews-updated', loadReviews);
+    };
   }, []);
+
+  const productReviews = reviewCards.filter((review) => review.productId === product.id);
 
   const currentPrice = Number(product.price);
   const comparePrice = Number(product.compare_price);
@@ -333,7 +341,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
             <div className={styles.ratingRow}>
               <span className={styles.stars}>★★★★★</span>
               <strong className={styles.ratingScore}>{product.rating || '4.9'}</strong>
-              <span className={styles.ratingCount}>({(product.reviews_count || 1284).toLocaleString()} Reviews)</span>
+              <span className={styles.ratingCount}>({productReviews.length.toLocaleString()} Reviews)</span>
               <span className={styles.ratingSep}>|</span>
               <span className={styles.verifiedText}>✓ Verified Buyers</span>
             </div>
@@ -608,7 +616,7 @@ export default function ProductDetail({ product, allProducts }: ProductDetailPro
       </div>
 
       {/* Customer Experience Section (What Our Customers Love, Real Moments, Watch Videos, Trust Stats) */}
-      <CustomerExperience />
+      <CustomerExperience reviewProduct={product} />
     </div>
   );
 }

@@ -37,9 +37,14 @@ interface CustomerExperienceProps {
   promoBanner2Link?: string;
   beforeAfterImage?: string;
   customerMomentsJson?: string;
+  reviewProduct?: {
+    id: number;
+    name: string;
+    image_url: string;
+  };
 }
 
-export default function CustomerExperience({ promoBanner2Image, promoBanner2Link, beforeAfterImage, customerMomentsJson }: CustomerExperienceProps) {
+export default function CustomerExperience({ promoBanner2Image, promoBanner2Link, beforeAfterImage, customerMomentsJson, reviewProduct }: CustomerExperienceProps) {
   const beforeAfterImg = beforeAfterImage || "https://www.deeraglow.shop/api/media/1785230756833-5ea86cd4-49f2-4af1-bdbe-81ebcc3460cc-afterbefore.png";
   // Modal & Slide States
   const [isReviewModalOpen, setIsReviewModalOpen] = useState<boolean>(false);
@@ -160,7 +165,7 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
   }, []);
 
   // Review slider computed details
-  const totalReviewCount = 1284 + Math.max(0, reviewCards.length - defaultCustomerReviews.length);
+  const totalReviewCount = reviewCards.length;
   const visibleReviewCards = [0, 1, 2]
     .map(offset => reviewCards[(activeReviewIndex + offset) % reviewCards.length])
     .filter(Boolean);
@@ -194,9 +199,9 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
       quote: reviewForm.quote.trim(),
       rating: Number(reviewForm.rating),
       verified: reviewForm.verified,
-      productId: 0,
-      productName: 'Signature Sterling Silver Ring',
-      productImage: '/images/rings_category.png'
+      productId: reviewProduct?.id,
+      productName: reviewProduct?.name || 'Deera Glow jewellery',
+      productImage: reviewProduct?.image_url || '/images/rings_category.png'
     };
 
     if (!submittedReview.quote) return;

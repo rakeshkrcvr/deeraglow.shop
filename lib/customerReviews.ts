@@ -15,7 +15,9 @@ export interface CustomerReview {
 
 export const CUSTOMER_REVIEWS_STORAGE_KEY = 'deeraglow_customer_reviews';
 
-export const defaultCustomerReviews: CustomerReview[] = [
+// Kept only so existing browsers can be migrated away from the old demo data.
+// Real reviews must be created in the admin dashboard and linked to a product.
+const legacyDemoCustomerReviews: CustomerReview[] = [
   { id: 'review-1', name: 'Priya Mehra', city: 'Delhi', time: '3 days ago', helpful: 24, avatar: '/images/earrings_category.png', quote: "The Royal Pearl Drops are absolutely stunning! They look so elegant and premium, and the polish hasn't faded at all even after multiple wears.", rating: 5, verified: true, productName: 'Royal Pearl Drops', productImage: '/images/earrings_category.png' },
   { id: 'review-2', name: 'Aditya Rane', city: 'Mumbai', time: '1 week ago', helpful: 18, avatar: '/images/rings_category.png', quote: "Bought the Golden Solitaire Ring as a gift for my sister and she loved it! The packaging is extremely premium and looks like real gold.", rating: 5, verified: true, productName: 'Golden Solitaire Ring', productImage: '/images/rings_category.png' },
   { id: 'review-3', name: 'Sneha Kapoor', city: 'Bengaluru', time: '2 weeks ago', helpful: 31, avatar: '/images/necklaces_category.png', quote: "This necklace has become my everyday go-to. It is so lightweight, minimalist, and goes with everything. Highly recommend Deera Glow!", rating: 5, verified: true, productName: 'Classic Heart Pendant', productImage: '/images/necklaces_category.png' },
@@ -68,8 +70,12 @@ export const defaultCustomerReviews: CustomerReview[] = [
   { id: 'review-50', name: 'Richa Sharma', city: 'Shimla', time: '4 weeks ago', helpful: 25, avatar: '/images/hero_slide_2.png', quote: "Carrier bangle is thick and holds charms nicely without slipping. Highly recommended!", rating: 5, verified: true, productName: 'Charm Carrier Bangle', productImage: '/images/hero_slide_2.png' }
 ];
 
+const legacyDemoReviewIds = new Set(legacyDemoCustomerReviews.map((review) => review.id));
+
+export const defaultCustomerReviews: CustomerReview[] = [];
+
 export function normalizeCustomerReviews(value: unknown): CustomerReview[] {
-  if (!Array.isArray(value) || value.length < 20) return defaultCustomerReviews;
+  if (!Array.isArray(value)) return defaultCustomerReviews;
 
   const reviews = value.filter((item): item is Partial<CustomerReview> => (
     typeof item === 'object' &&
@@ -91,5 +97,11 @@ export function normalizeCustomerReviews(value: unknown): CustomerReview[] {
     productImage: typeof item.productImage === 'string' && item.productImage ? item.productImage : '/images/rings_category.png'
   }));
 
-  return reviews.length >= 20 ? reviews : defaultCustomerReviews;
+  // Versions before this change seeded 50 fictional reviews. Preserve a legacy
+  // entry only if an admin has linked it to a real product; this keeps edited
+  // reviews (such as the Royal Cherry Pearl review) and removes demo records.
+  return reviews.filter((review) => (
+    !legacyDemoReviewIds.has(review.id) ||
+    (typeof review.productId === 'number' && review.productId > 0)
+  ));
 }

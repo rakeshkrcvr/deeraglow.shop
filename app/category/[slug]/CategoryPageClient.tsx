@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Product } from '@/lib/products';
 import { useCart } from '@/context/CartContext';
 import CustomerExperience from '@/components/CustomerExperience';
+import { useProductReviewCounts } from '@/lib/useProductReviewCounts';
 import styles from './page.module.css';
 
 interface CategoryPageClientProps {
@@ -20,6 +21,7 @@ export default function CategoryPageClient({ slug, title, products, bannerImage,
   const { addToCart, setIsCartOpen } = useCart();
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [selectedMaxPrice, setSelectedMaxPrice] = useState<number | null>(null);
+  const getReviewCount = useProductReviewCounts();
   const isAllJewelleryPage = slug === 'all-jewellery' || slug === 'all' || slug === 'all-candles';
   const allJewelleryBannerUrl = 'https://storage.mlcdn.com/account_image/2566542/poUKaQKX4RL7I5b4y3fQPKb2aLSu0cTjRsafS1pM.png';
 
@@ -324,7 +326,7 @@ export default function CategoryPageClient({ slug, title, products, bannerImage,
                       <span className={styles.stars}>★★★★★</span>
                       <span>{prod.rating}</span>
                       <span style={{ color: '#aaa' }}>|</span>
-                      <span>{prod.reviews_count} Reviews</span>
+                      <span>{getReviewCount(prod.id)} Reviews</span>
                     </div>
 
                     <div className={styles.priceRow}>
