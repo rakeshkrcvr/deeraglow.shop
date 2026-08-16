@@ -18,6 +18,7 @@ import {
   CUSTOMER_VIDEOS_STORAGE_KEY,
   CustomerVideo,
   defaultCustomerVideos,
+  getInstagramEmbedUrl,
   normalizeCustomerVideos
 } from '@/lib/customerVideos';
 import styles from './CustomerExperience.module.css';
@@ -42,6 +43,35 @@ interface CustomerExperienceProps {
     name: string;
     image_url: string;
   };
+}
+
+function CustomerVideoPlayer({ video, className, muted = true }: { video: CustomerVideo; className?: string; muted?: boolean }) {
+  const instagramEmbedUrl = getInstagramEmbedUrl(video.videoUrl);
+
+  if (instagramEmbedUrl) {
+    return (
+      <iframe
+        src={instagramEmbedUrl}
+        title={video.title}
+        className={className}
+        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+        allowFullScreen
+        scrolling="no"
+      />
+    );
+  }
+
+  return (
+    <video
+      src={video.videoUrl}
+      poster={video.thumbnail}
+      loop
+      muted={muted}
+      autoPlay
+      playsInline
+      className={className}
+    />
+  );
 }
 
 export default function CustomerExperience({ promoBanner2Image, promoBanner2Link, beforeAfterImage, customerMomentsJson, reviewProduct }: CustomerExperienceProps) {
@@ -473,23 +503,18 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
               {previewCustomerVideos.map((video) => (
                 <article key={video.id} className={styles.customerVideoCard}>
                   <div className={styles.videoThumb}>
-                    <video
-                      src={video.videoUrl}
-                      poster={video.thumbnail}
-                      loop
-                      muted={!unmutedVideoIds[video.id]}
-                      autoPlay
-                      playsInline
-                    />
+                    <CustomerVideoPlayer video={video} muted={!unmutedVideoIds[video.id]} />
                     <span className={styles.playButton}>▶</span>
-                    <button
-                      type="button"
-                      className={styles.videoMuteButton}
-                      onClick={() => toggleVideoSound(video.id)}
-                      aria-label={unmutedVideoIds[video.id] ? 'Mute video' : 'Unmute video'}
-                    >
-                      {unmutedVideoIds[video.id] ? '🔊' : '🔇'}
-                    </button>
+                    {!getInstagramEmbedUrl(video.videoUrl) && (
+                      <button
+                        type="button"
+                        className={styles.videoMuteButton}
+                        onClick={() => toggleVideoSound(video.id)}
+                        aria-label={unmutedVideoIds[video.id] ? 'Mute video' : 'Unmute video'}
+                      >
+                        {unmutedVideoIds[video.id] ? '🔊' : '🔇'}
+                      </button>
+                    )}
                     <time>{video.duration}</time>
                   </div>
                   <div className={styles.videoInfo}>
@@ -536,23 +561,17 @@ export default function CustomerExperience({ promoBanner2Image, promoBanner2Link
           <div className={styles.instagramGrid}>
             {customerVideos.map((video) => (
               <div key={video.id} className={styles.instagramCard}>
-                <video
-                  src={video.videoUrl}
-                  poster={video.thumbnail}
-                  loop
-                  muted={!unmutedVideoIds[`instagram-${video.id}`]}
-                  autoPlay
-                  playsInline
-                  className={styles.instagramVideo}
-                />
-                <button
-                  type="button"
-                  className={styles.instagramMuteButton}
-                  onClick={() => toggleVideoSound(`instagram-${video.id}`)}
-                  aria-label={unmutedVideoIds[`instagram-${video.id}`] ? 'Mute video' : 'Unmute video'}
-                >
-                  {unmutedVideoIds[`instagram-${video.id}`] ? '🔊' : '🔇'}
-                </button>
+                <CustomerVideoPlayer video={video} className={styles.instagramVideo} muted={!unmutedVideoIds[`instagram-${video.id}`]} />
+                {!getInstagramEmbedUrl(video.videoUrl) && (
+                  <button
+                    type="button"
+                    className={styles.instagramMuteButton}
+                    onClick={() => toggleVideoSound(`instagram-${video.id}`)}
+                    aria-label={unmutedVideoIds[`instagram-${video.id}`] ? 'Mute video' : 'Unmute video'}
+                  >
+                    {unmutedVideoIds[`instagram-${video.id}`] ? '🔊' : '🔇'}
+                  </button>
+                )}
                 <a href={video.link} target="_blank" rel="noopener noreferrer" className={styles.instagramOverlay}>
                   <div className={styles.instagramHoverContent}>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.instagramSvg}>

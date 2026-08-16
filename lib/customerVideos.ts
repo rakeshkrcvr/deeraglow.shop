@@ -11,6 +11,25 @@ export interface CustomerVideo {
 
 export const CUSTOMER_VIDEOS_STORAGE_KEY = 'deeraglow_customer_videos';
 
+/**
+ * Instagram post and reel pages are HTML pages, not direct video files. Convert
+ * them to Instagram's embeddable player before rendering in a video card.
+ */
+export function getInstagramEmbedUrl(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.replace(/^www\./, '').toLowerCase();
+    if (hostname !== 'instagram.com') return null;
+
+    const parts = parsed.pathname.split('/').filter(Boolean);
+    if (!['p', 'reel', 'reels', 'tv'].includes(parts[0]) || !parts[1]) return null;
+
+    return `https://www.instagram.com/${parts[0]}/${parts[1]}/embed/captioned/?autoplay=1&muted=1`;
+  } catch {
+    return null;
+  }
+}
+
 export const defaultCustomerVideos: CustomerVideo[] = [
   {
     id: 'video-unboxing',

@@ -19,6 +19,7 @@ import {
   CUSTOMER_VIDEOS_STORAGE_KEY,
   CustomerVideo,
   defaultCustomerVideos,
+  getInstagramEmbedUrl,
   normalizeCustomerVideos
 } from '@/lib/customerVideos';
 import {
@@ -5278,7 +5279,18 @@ export default function AdminDashboard() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' }}>
                   {customerVideos.map((video, index) => (
                     <div key={video.id} style={{ border: '1px solid #e3e3e3', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#fafafa' }}>
-                      <video src={video.videoUrl} poster={video.thumbnail} muted playsInline controls style={{ width: '100%', aspectRatio: '1.55 / 1', objectFit: 'cover', display: 'block', backgroundColor: '#111111' }} />
+                      {getInstagramEmbedUrl(video.videoUrl) ? (
+                        <iframe
+                          src={getInstagramEmbedUrl(video.videoUrl)!}
+                          title={video.title}
+                          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                          allowFullScreen
+                          scrolling="no"
+                          style={{ width: '100%', aspectRatio: '9 / 16', border: 0, display: 'block', backgroundColor: '#ffffff' }}
+                        />
+                      ) : (
+                        <video src={video.videoUrl} poster={video.thumbnail} muted playsInline controls style={{ width: '100%', aspectRatio: '1.55 / 1', objectFit: 'cover', display: 'block', backgroundColor: '#111111' }} />
+                      )}
                       <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <div>
                           <strong style={{ display: 'block', fontSize: '13px' }}>Video {index + 1}: {video.title}</strong>
